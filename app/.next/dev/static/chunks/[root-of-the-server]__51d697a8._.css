@@ -1179,6 +1179,10 @@
     max-height: calc(var(--spacing) * 64);
   }
 
+  .max-h-\[70vh\] {
+    max-height: 70vh;
+  }
+
   .max-h-\[80vh\] {
     max-height: 80vh;
   }
@@ -1425,6 +1429,10 @@
 
   .min-w-\[var\(--radix-select-trigger-width\)\] {
     min-width: var(--radix-select-trigger-width);
+  }
+
+  .min-w-fit {
+    min-width: fit-content;
   }
 
   .flex-1 {

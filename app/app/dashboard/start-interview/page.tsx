@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Video, Loader2, Copy, Check, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { getSignalingHttpBase } from "@/lib/signaling"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 
 export default function StartInterviewPage() {
@@ -35,7 +36,7 @@ export default function StartInterviewPage() {
     }
     setUsername(name)
     // load templates for selection (backend)
-    const base = (process.env.NEXT_PUBLIC_SIGNALING_SERVER || 'http://localhost:8000').replace('ws://','http://').replace('wss://','https://')
+  const base = getSignalingHttpBase()
     fetch(`${base}/templates?account=${encodeURIComponent(name)}`)
       .then(r=>r.json())
       .then((arr)=>{

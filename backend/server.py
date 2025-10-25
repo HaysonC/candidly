@@ -4,6 +4,8 @@ import json
 import logging
 import secrets
 from typing import Dict, Set, Optional
+import threading
+import json as _json
 import os
 from pathlib import Path
 
@@ -40,6 +42,67 @@ rooms: Dict[str, Set[WebSocket]] = {}
 interview_sessions: Dict[str, InterviewSession] = {}  # meeting_code -> session info
 websocket_roles: Dict[WebSocket, str] = {}  # websocket -> "interviewer" or "interviewee"
 templates_by_account: Dict[str, Dict[str, Template]] = {}
+_templates_lock = threading.Lock()
+
+def _accounts_base_dir() -> Path:
+    data_dir = Path(__file__).parent / "data" / "accounts"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir
+
+def _safe_account_dirname(account: str) -> str:
+    # Minimal sanitization: disallow path separators
+    return account.replace("/", "_").replace("\\", "_")
+
+def _account_templates_dir(account: str) -> Path:
+    base = _accounts_base_dir()
+    safe = _safe_account_dirname(account)
+    dir_path = base / safe / "templates"
+    dir_path.mkdir(parents=True, exist_ok=True)
+    return dir_path
+
+def _load_templates_from_disk() -> None:
+    """Load templates_by_account from per-account directories (best-effort)."""
+    root = _accounts_base_dir()
+    if not root.exists():
+        return
+    loaded: Dict[str, Dict[str, Template]] = {}
+    try:
+        for acct_dir in root.iterdir():
+            if not acct_dir.is_dir():
+                continue
+            account = acct_dir.name
+            tdir = acct_dir / "templates"
+            if not tdir.exists():
+                continue
+            loaded[account] = {}
+            for f in tdir.glob("*.json"):
+                try:
+                    tdict = _json.loads(f.read_text(encoding="utf-8"))
+                    tpl = Template(**tdict)
+                    loaded[account][tpl.id] = tpl
+                except Exception:
+                    continue
+        templates_by_account.clear()
+        templates_by_account.update(loaded)
+    except Exception as e:
+        logger.warning(f"Failed to load templates: {e}")
+
+def _write_template_to_disk(tpl: Template) -> None:
+    try:
+        tdir = _account_templates_dir(tpl.account)
+        fpath = tdir / f"{tpl.id}.json"
+        fpath.write_text(tpl.model_dump_json(indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"Failed to write template {tpl.id}: {e}")
+
+def _delete_template_from_disk(account: str, tpl_id: str) -> None:
+    try:
+        tdir = _account_templates_dir(account)
+        fpath = tdir / f"{tpl_id}.json"
+        if fpath.exists():
+            fpath.unlink()
+    except Exception as e:
+        logger.warning(f"Failed to delete template {tpl_id}: {e}")
 
 def generate_meeting_code() -> str:
     """Generate a unique 6-character meeting code"""
@@ -50,7 +113,9 @@ async def root():
     return {
         "status": "Interview Signaling Server Running",
         "active_rooms": len(rooms),
-        "active_sessions": len(interview_sessions)
+        "active_sessions": len(interview_sessions),
+        "template_accounts": len(templates_by_account),
+        "template_total": sum(len(v) for v in templates_by_account.values()),
     }
 
 
@@ -119,7 +184,9 @@ async def create_template(tpl_in: TemplateCreate):
         criteria=tpl_in.criteria or [],
         coding_questions=tpl_in.coding_questions or [],
     )
-    templates_by_account.setdefault(account, {})[t.id] = t
+    with _templates_lock:
+        templates_by_account.setdefault(account, {})[t.id] = t
+        _write_template_to_disk(t)
     return t
 
 
@@ -149,7 +216,10 @@ async def update_template(template_id: str, tpl_upd: TemplateUpdate, account: Op
     if tpl_upd.coding_questions is not None:
         data["coding_questions"] = tpl_upd.coding_questions
     updated = Template(**data)
-    acct_map[template_id] = updated
+    with _templates_lock:
+        acct_map[template_id] = updated
+        templates_by_account[account] = acct_map
+        _write_template_to_disk(updated)
     return updated
 
 
@@ -160,7 +230,10 @@ async def delete_template(template_id: str, account: Optional[str] = None):
     acct_map = templates_by_account.get(account, {})
     if template_id not in acct_map:
         raise HTTPException(status_code=404, detail="Template not found")
-    deleted = acct_map.pop(template_id)
+    with _templates_lock:
+        deleted = acct_map.pop(template_id)
+        templates_by_account[account] = acct_map
+        _delete_template_from_disk(account, template_id)
     return {"deleted": True, "id": template_id, "name": deleted.name}
 
 @app.get("/api/verify-email/{meeting_code}/{email}")
@@ -286,4 +359,9 @@ async def websocket_endpoint(websocket: WebSocket, meeting_code: str, role: str)
 
 if __name__ == "__main__":
     import uvicorn
+    # Load templates from disk on startup
+    try:
+        _load_templates_from_disk()
+    except Exception as _e:
+        logger.warning(f"Startup load templates failed: {_e}")
     uvicorn.run(app, host="0.0.0.0", port=8000)

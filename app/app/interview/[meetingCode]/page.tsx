@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { fetchTemplatesForAccount, fetchTemplateById } from "@/lib/templates"
 import { Card } from "@/components/ui/card"
 import { Copy, Mic, MicOff, Phone, Video, VideoOff, Monitor, Loader2, Eye, Code2 } from "lucide-react"
 import { CodeEditorPanel, type EditorLanguage } from "@/components/editor/CodeEditor"
@@ -62,6 +63,8 @@ export default function InterviewPage() {
   const [showAssignDialog, setShowAssignDialog] = useState(false)
   const [selectedQuestion, setSelectedQuestion] = useState<string>("")
   const [customQuestion, setCustomQuestion] = useState<string>("")
+  const [templatesList, setTemplatesList] = useState<Array<{id:string; name:string}>>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -105,6 +108,7 @@ export default function InterviewPage() {
         if (res.ok) {
           const data = await res.json()
           setTemplateData(data)
+          setSelectedTemplateId(tid)
           return
         }
         setTemplateData(null)
@@ -117,6 +121,14 @@ export default function InterviewPage() {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, accountName])
+
+  // Load templates list for account (interviewer)
+  useEffect(() => {
+    if (!accountName || role !== 'interviewer') return
+    fetchTemplatesForAccount(accountName)
+      .then(list => setTemplatesList(list.map(t => ({ id: String(t.id), name: t.name || 'Untitled' }))))
+      .catch(() => setTemplatesList([]))
+  }, [accountName, role])
 
   useEffect(() => {
     if (hasConsented) {
@@ -878,6 +890,15 @@ export default function InterviewPage() {
     setShowAssignDialog(true)
   }
 
+  const handleSelectTemplate = async (newId: string) => {
+    setSelectedTemplateId(newId)
+    setSelectedQuestion("")
+    setCustomQuestion("")
+    if (!accountName) return
+    const t = await fetchTemplateById(accountName, newId)
+    if (t) setTemplateData(t)
+  }
+
   const assignSelectedQuestion = () => {
     if (!templateData) return
     const questions: string[] = Array.isArray(templateData?.coding_questions) ? templateData.coding_questions : []
@@ -1241,6 +1262,21 @@ export default function InterviewPage() {
           </DialogHeader>
 
           <div className="space-y-3">
+            {role === 'interviewer' && templatesList.length > 0 && (
+              <div className="space-y-1">
+                <div className="text-sm font-medium">Template</div>
+                <Select value={selectedTemplateId ?? undefined} onValueChange={handleSelectTemplate}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose a template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templatesList.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <Select value={selectedQuestion} onValueChange={setSelectedQuestion}>

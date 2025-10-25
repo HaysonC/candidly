@@ -90,6 +90,38 @@ export default function InterviewPage() {
   const [docName, setDocName] = useState("coding-task-1")
   const [editorValue, setEditorValue] = useState("")
   const [showGazeOnEditor, setShowGazeOnEditor] = useState(true)
+  const [questionAssigned, setQuestionAssigned] = useState(false)
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState<number | null>(null)
+  const [timerActive, setTimerActive] = useState(false)
+  const [timerSeconds, setTimerSeconds] = useState(0)
+  const [timerStartTime, setTimerStartTime] = useState<number | null>(null)
+  
+  // Timer functionality
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined
+    if (timerActive) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev + 1)
+      }, 1000)
+    } else if (interval) {
+      clearInterval(interval)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [timerActive])
+
+  const handleTimerToggle = (active: boolean) => {
+    setTimerActive(active)
+    if (active) {
+      setTimerStartTime(Date.now())
+    } else {
+      setTimerStartTime(null)
+    }
+    
+    // Sync timer state with remote peer
+    sendEditorUpdate({ kind: "timer-sync", active, reset: active && timerSeconds === 0 })
+  }
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -591,6 +623,20 @@ export default function InterviewPage() {
                 if (typeof p.open === "boolean") setEditorOpen(p.open)
                 if (typeof p.minimized === "boolean") setEditorMinimized(p.minimized)
               }
+              if (p.kind === "question-assigned") {
+                setQuestionAssigned(p.assigned)
+                setCurrentQuestionNumber(p.questionNumber)
+                // Trigger reset for candidate when new question is assigned
+                if (role === "interviewee") {
+                  console.log("[debug] New question assigned, resetting candidate editor state");
+                }
+              }
+              if (p.kind === "timer-sync") {
+                setTimerActive(p.active)
+                if (p.reset) {
+                  setTimerSeconds(0)
+                }
+              }
             }
             break
 
@@ -1025,14 +1071,34 @@ export default function InterviewPage() {
     try {
       // Store the assigned question for later use
       setAssignedQuestion(chosen)
-      // Update task counter and docName for new assignment
-      const newDocName = `coding-task-${taskCounter}`
+      
+      // Find the question number from the template questions array
+      let questionNumber: number | null = null;
+      if (templateData?.coding_questions && selectedQuestion) {
+        const questionIndex = templateData.coding_questions.findIndex((q: string) => q === selectedQuestion);
+        if (questionIndex !== -1) {
+          questionNumber = questionIndex + 1;
+        }
+      }
+      
+      // Update task name based on question number or use sequential counter
+      const newDocName = questionNumber ? `coding-task-${questionNumber}` : `coding-task-${taskCounter}`
       setDocName(newDocName)
+      setCurrentQuestionNumber(questionNumber)
       setTaskCounter(prevCounter => prevCounter + 1)
+      setQuestionAssigned(true)
+      
       // Ensure editor is open for both peers
       sendEditorUpdate({ kind: "toggle", open: true, minimized: false })
-      // Send content
+      // Send content and question assignment status
       sendEditorUpdate({ kind: "update", value: content })
+      sendEditorUpdate({ kind: "question-assigned", assigned: true, questionNumber })
+      
+      // Reset timer when new question is assigned
+      setTimerActive(false)
+      setTimerSeconds(0)
+      setTimerStartTime(null)
+      
       setShowAssignDialog(false)
       toast({ title: "Question assigned", description: `Sent to the shared editor as ${newDocName}.` })
     } catch (e) {
@@ -1327,6 +1393,15 @@ export default function InterviewPage() {
             interviewerName={sessionInfo?.interviewer_name}
             showGazeOverlay={role === 'interviewer' && showGazeOnEditor}
             remoteGaze={role === 'interviewer' ? gazeData : null}
+            questionAssigned={questionAssigned}
+            role={role}
+            timerActive={timerActive}
+            timerSeconds={timerSeconds}
+            onTimerToggle={handleTimerToggle}
+            onNewQuestion={() => {
+              // Reset submission state when new question is assigned
+              console.log('New question assigned, resetting editor state');
+            }}
           />
         </div>
       </div>

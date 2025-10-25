@@ -40,6 +40,11 @@ export interface CodeEditorProps {
   originalQuestion?: string
   interviewerName?: string
   onNewQuestion?: () => void // Callback to reset submission state when new question assigned
+  questionAssigned?: boolean // Whether a question has been assigned
+  role?: 'interviewer' | 'interviewee'
+  timerActive?: boolean
+  timerSeconds?: number
+  onTimerToggle?: (active: boolean) => void
 }
 
 export function CodeEditorPanel(props: CodeEditorProps) {
@@ -59,6 +64,11 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     originalQuestion,
     interviewerName,
     onNewQuestion,
+    questionAssigned = false,
+    role,
+    timerActive = false,
+    timerSeconds = 0,
+    onTimerToggle,
   } = props
 
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -74,6 +84,12 @@ export function CodeEditorPanel(props: CodeEditorProps) {
       setSaveSuccess(false)
     }
   }, [originalQuestion, onNewQuestion])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   const handleSave = async () => {
     try {
@@ -260,6 +276,31 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     )
   }
 
+  // If no question assigned, show waiting message
+  if (!questionAssigned) {
+    return (
+      <Card className="relative overflow-hidden">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-blue-800">
+              {role === 'interviewer' ? 'Ready to Assign Question' : 'Waiting for Question'}
+            </h3>
+            <p className="text-gray-600">
+              {role === 'interviewer' 
+                ? 'Click "Assign Question" to start the coding session' 
+                : 'The interviewer will assign a coding question shortly'}
+            </p>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   // If code has been submitted, show success message instead of editor
   if (isSubmitted) {
     return (
@@ -290,6 +331,22 @@ export function CodeEditorPanel(props: CodeEditorProps) {
         </div>
         <div className="flex items-center gap-3">
           <div className="text-sm font-medium">{docName}</div>
+          
+          {role === 'interviewer' && (
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                {formatTime(timerSeconds)}
+              </div>
+              <Button 
+                size="sm" 
+                variant={timerActive ? "destructive" : "default"}
+                onClick={() => onTimerToggle && onTimerToggle(!timerActive)}
+              >
+                {timerActive ? "Stop" : "Start"} Timer
+              </Button>
+            </div>
+          )}
+          
           <Select value={language} onValueChange={(v) => handleLanguageChange(v as EditorLanguage)}>
             <SelectTrigger className="w-36">
               <SelectValue placeholder="Language" />

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ArrowLeft, RefreshCcw } from 'lucide-react'
 import { getSignalingHttpBase } from '@/lib/signaling'
 import { fetchTemplatesForAccount } from '@/lib/templates'
+import { Spinner } from '@/components/ui/spinner'
 
 interface Template {
   id: string
@@ -18,7 +19,7 @@ export default function InterviewTemplatePage() {
   const router = useRouter()
   const [templates, setTemplates] = useState<Template[]>([])
   const [username, setUsername] = useState<string>("")
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     const name = sessionStorage.getItem('interviewer_name') || ''
@@ -58,7 +59,11 @@ export default function InterviewTemplatePage() {
         </div>
       </div>
 
-      {templates.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Spinner className="w-8 h-8 text-muted-foreground" />
+        </div>
+      ) : templates.length === 0 ? (
         <Card className="p-6">
           <CardHeader className="p-0 mb-2">
             <CardTitle>No templates yet</CardTitle>

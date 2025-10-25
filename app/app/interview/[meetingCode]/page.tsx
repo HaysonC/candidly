@@ -96,17 +96,14 @@ export default function InterviewPage() {
     }
   }
 
-  // Load template by query param (?template=ID) once accountName is known
   useEffect(() => {
     const tid = searchParams.get("template")
     if (!tid || !accountName) return
     const load = async () => {
       try {
-        // Prefer backend explicit storage
-        const httpBase = getBackendHttpBase()
-        let res = await fetch(`${httpBase}/templates/${tid}?account=${encodeURIComponent(accountName)}`)
-        if (res.ok) {
-          const data = await res.json()
+        // Use shared helper (adds ngrok bypass header and correct base)
+        const data = await fetchTemplateById(accountName, tid)
+        if (data) {
           setTemplateData(data)
           setSelectedTemplateId(tid)
           return
@@ -878,12 +875,8 @@ export default function InterviewPage() {
     const ensureFresh = async () => {
       if (!tid || !accountName) return
       try {
-        const httpBase = getBackendHttpBase()
-        const res = await fetch(`${httpBase}/templates/${tid}?account=${encodeURIComponent(accountName)}`)
-        if (res.ok) {
-          const data = await res.json()
-          setTemplateData(data)
-        }
+        const data = await fetchTemplateById(accountName, tid)
+        if (data) setTemplateData(data)
       } catch {}
     }
     ensureFresh()

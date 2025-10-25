@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChevronDown, Maximize2, Minimize2 } from 'lucide-react'
+import { uploadCandidateInterviewed } from '@/lib/upload'
 
 export type EditorLanguage = 'python' | 'cpp' | 'java'
 
@@ -158,7 +159,31 @@ export function CodeEditorPanel(props: CodeEditorProps) {
       </div>
       <div className="px-3 py-2 border-t">
         <Button 
-          onClick={() => console.log('Code submitted:', value)}
+          onClick={async () => {
+            try {
+              // TODO: Replace with actual candidate name logic
+              const candidateName = 'candidate'; // This should come from props or context
+              
+              const codeData = {
+                filename: docName,
+                content: value,
+                language: language
+              };
+              
+              const success = await uploadCandidateInterviewed(candidateName, codeData);
+              
+              if (success) {
+                console.log('Code submitted successfully');
+                // TODO: Add success notification
+              } else {
+                console.error('Failed to submit code');
+                // TODO: Add error notification
+              }
+            } catch (error) {
+              console.error('Error submitting code:', error);
+              // TODO: Add error notification
+            }
+          }}
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
           Submit Code

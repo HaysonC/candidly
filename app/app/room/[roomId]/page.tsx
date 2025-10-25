@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Copy, Mic, MicOff, Phone, Video, VideoOff, Monitor, Loader2 } from "lucide-react"
@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function RoomPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const roomId = params.roomId as string
 
@@ -18,6 +19,8 @@ export default function RoomPage() {
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isScreenSharing, setIsScreenSharing] = useState(false)
+  const [candidateReady, setCandidateReady] = useState(false)
+  const [templateData, setTemplateData] = useState<any | null>(null)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -25,6 +28,18 @@ export default function RoomPage() {
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
   const screenStreamRef = useRef<MediaStream | null>(null)
+
+  // Load template by query param (?template=ID)
+  useEffect(() => {
+    const tid = searchParams.get("template")
+    if (!tid) return
+    fetch(`/api/templates/${tid}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setTemplateData(data))
+      .catch(() => setTemplateData(null))
+    // do not include setTemplateData in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   useEffect(() => {
     initializeCall()
@@ -82,6 +97,15 @@ export default function RoomPage() {
             toast({
               title: "User joined",
               description: "Another participant has joined the call",
+            })
+            break
+          case "calibration-complete":
+            // Candidate finished calibration; unlock assignment actions
+            console.log("[debug] Calibration complete received")
+            setCandidateReady(true)
+            toast({
+              title: "Calibration complete",
+              description: "You can now assign the questions to the candidate.",
             })
             break
 
@@ -317,6 +341,45 @@ export default function RoomPage() {
     router.push("/")
   }
 
+  // Prepare and send assignment payload to the peer
+  const assignTemplateToEditor = () => {
+    if (!templateData) return
+    // Create a commented header compatible with multiple languages
+    const line = (s: string) => `// ${s}`
+    const crit: string[] = Array.isArray(templateData?.criteria) ? templateData.criteria : []
+    const questions: string[] = Array.isArray(templateData?.coding_questions)
+      ? templateData.coding_questions
+      : []
+    const header = [
+      line("=== Interview Template ==="),
+      line(`Name: ${templateData?.name || "Untitled"}`),
+      line(""),
+      line("Criteria:"),
+      ...crit.map((c) => line(`- ${c}`)),
+      line(""),
+      line("Questions:"),
+      ...questions.map((q, i) => line(`${i + 1}. ${q}`)),
+      line("=========================="),
+      "",
+    ].join("\n")
+
+    try {
+      wsRef.current?.send(
+        JSON.stringify({
+          type: "editor",
+          payload: { kind: "update", value: header },
+        }),
+      )
+      toast({ title: "Assigned", description: "Questions sent to the candidate." })
+    } catch (e) {
+      toast({
+        title: "Assignment failed",
+        description: "Could not send questions to the candidate.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const cleanup = () => {
     localStreamRef.current?.getTracks().forEach((track) => track.stop())
     screenStreamRef.current?.getTracks().forEach((track) => track.stop())
@@ -365,10 +428,17 @@ export default function RoomPage() {
               </span>
             )}
           </div>
-          <Button variant="outline" size="sm" onClick={copyRoomId}>
-            <Copy className="w-4 h-4 mr-2" />
-            Copy Room Code
-          </Button>
+          <div className="flex items-center gap-2">
+            {candidateReady && templateData && (
+              <Button size="sm" onClick={assignTemplateToEditor}>
+                Assign Template Questions
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={copyRoomId}>
+              <Copy className="w-4 h-4 mr-2" />
+              Copy Room Code
+            </Button>
+          </div>
         </div>
 
         {/* Video Grid */}

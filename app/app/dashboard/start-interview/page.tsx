@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getSignalingHttpBase } from "@/lib/signaling"
 import { fetchTemplatesForAccount } from "@/lib/templates"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
+import { RefreshCcw } from "lucide-react"
 
 export default function StartInterviewPage() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export default function StartInterviewPage() {
   const [meetingCode, setMeetingCode] = useState("")
   const [joinLink, setJoinLink] = useState("")
   const [copied, setCopied] = useState(false)
+  const [templatesLoading, setTemplatesLoading] = useState(false)
 
   useEffect(() => {
     const name = sessionStorage.getItem("interviewer_name")
@@ -36,13 +38,39 @@ export default function StartInterviewPage() {
       return
     }
     setUsername(name)
-    // load templates for selection (backend)
-    fetchTemplatesForAccount(name)
-      .then((arr)=>{
+    const load = async () => {
+      setTemplatesLoading(true)
+      try {
+        const arr = await fetchTemplatesForAccount(name)
         const opts = Array.isArray(arr) ? arr.map((t:any)=>({id:String(t.id), name: t.name||'Untitled'})) : []
         setTemplates(opts)
-      }).catch(()=>setTemplates([]))
+      } catch {
+        setTemplates([])
+      } finally {
+        setTemplatesLoading(false)
+      }
+    }
+    load()
+    const onVis = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [router])
+
+  const refreshTemplates = async () => {
+    if (!username) return
+    setTemplatesLoading(true)
+    try {
+      const arr = await fetchTemplatesForAccount(username)
+      const opts = Array.isArray(arr) ? arr.map((t:any)=>({id:String(t.id), name: t.name||'Untitled'})) : []
+      setTemplates(opts)
+    } catch {
+      setTemplates([])
+    } finally {
+      setTemplatesLoading(false)
+    }
+  }
 
   const handleCreateSession = async () => {
     if (!candidateName.trim() || !candidateEmail.trim()) {
@@ -171,7 +199,13 @@ export default function StartInterviewPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Template (Optional)</Label>
+              <div className="flex items-center justify-between">
+                <Label>Template (Optional)</Label>
+                <Button variant="outline" size="sm" onClick={refreshTemplates} disabled={templatesLoading}>
+                  <RefreshCcw className="w-4 h-4 mr-2" />
+                  {templatesLoading ? 'Refreshing…' : 'Refresh'}
+                </Button>
+              </div>
               <Select
                 value={selectedTemplate}
                 onValueChange={(val) => setSelectedTemplate(val === 'none' ? undefined : val)}

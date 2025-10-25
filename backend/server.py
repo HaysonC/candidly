@@ -82,6 +82,28 @@ def _load_templates_from_disk() -> None:
                     loaded[account][tpl.id] = tpl
                 except Exception:
                     continue
+        # Backward-compat: migrate from legacy backend/data/templates.json if present
+        legacy = (Path(__file__).parent / "data" / "templates.json")
+        if legacy.exists():
+            try:
+                legacy_obj = _json.loads(legacy.read_text(encoding="utf-8"))
+                if isinstance(legacy_obj, dict):
+                    for account, by_id in legacy_obj.items():
+                        if not isinstance(by_id, dict):
+                            continue
+                        if account not in loaded:
+                            loaded[account] = {}
+                        for tid, tdict in by_id.items():
+                            try:
+                                tpl = Template(**tdict)
+                                if tpl.id not in loaded[account]:
+                                    loaded[account][tpl.id] = tpl
+                                    # persist to new per-account location
+                                    _write_template_to_disk(tpl)
+                            except Exception:
+                                continue
+            except Exception as _e:
+                logger.warning(f"Failed to migrate legacy templates.json: {_e}")
         templates_by_account.clear()
         templates_by_account.update(loaded)
     except Exception as e:

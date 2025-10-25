@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, RefreshCcw } from 'lucide-react'
 import { getSignalingHttpBase } from '@/lib/signaling'
 import { fetchTemplatesForAccount } from '@/lib/templates'
 
@@ -18,14 +18,27 @@ export default function InterviewTemplatePage() {
   const router = useRouter()
   const [templates, setTemplates] = useState<Template[]>([])
   const [username, setUsername] = useState<string>("")
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     const name = sessionStorage.getItem('interviewer_name') || ''
     setUsername(name)
     if (!name) return
-    fetchTemplatesForAccount(name)
-      .then((data) => setTemplates(Array.isArray(data) ? data : []))
-      .catch(() => setTemplates([]))
+    const load = async () => {
+      setLoading(true)
+      try {
+        const data = await fetchTemplatesForAccount(name)
+        setTemplates(Array.isArray(data) ? data : [])
+      } catch {
+        setTemplates([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+    const onVis = () => { if (document.visibilityState === 'visible') load() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [])
 
   return (
@@ -37,7 +50,12 @@ export default function InterviewTemplatePage() {
           </Button>
           <h1 className="text-2xl font-bold">Interview Templates</h1>
         </div>
-  <Button onClick={() => router.push('/interview-template/new')}>+ New Template</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => window.location.reload()} disabled={loading}>
+            <RefreshCcw className="w-4 h-4 mr-2" /> {loading ? 'Refreshing…' : 'Refresh'}
+          </Button>
+          <Button onClick={() => router.push('/interview-template/new')}>+ New Template</Button>
+        </div>
       </div>
 
       {templates.length === 0 ? (

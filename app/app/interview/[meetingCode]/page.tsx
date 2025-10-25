@@ -1293,8 +1293,17 @@ export default function InterviewPage() {
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <Select value={selectedQuestion} onValueChange={setSelectedQuestion}>
-                  <SelectTrigger className="w-full min-h-[40px] h-auto whitespace-normal text-wrap">
-                    <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} className="text-wrap whitespace-normal" />
+                  <SelectTrigger className="w-full min-h-[60px] h-auto">
+                    <SelectValue 
+                      placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} 
+                      className="whitespace-normal break-words text-left overflow-hidden"
+                    >
+                      {selectedQuestion && (
+                        <div className="whitespace-normal break-words text-sm leading-relaxed py-1">
+                          {selectedQuestion.length > 120 ? selectedQuestion.slice(0, 120) + "..." : selectedQuestion}
+                        </div>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-h-64 w-[600px] max-w-[90vw]">
                     {Array.isArray(templateData?.coding_questions) && templateData.coding_questions.length > 0 ? (

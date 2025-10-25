@@ -11,7 +11,11 @@ export type BackendTemplate = {
 export async function fetchTemplatesForAccount(account: string): Promise<BackendTemplate[]> {
   if (!account) return []
   const base = getSignalingHttpBase()
-  const res = await fetch(`${base}/templates?account=${encodeURIComponent(account)}`)
+  const res = await fetch(`${base}/templates?account=${encodeURIComponent(account)}`, {
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+    },
+  })
   if (!res.ok) return []
   const data = await res.json()
   return Array.isArray(data) ? data : []
@@ -20,7 +24,11 @@ export async function fetchTemplatesForAccount(account: string): Promise<Backend
 export async function fetchTemplateById(account: string, id: string): Promise<BackendTemplate | null> {
   if (!account || !id) return null
   const base = getSignalingHttpBase()
-  const res = await fetch(`${base}/templates/${id}?account=${encodeURIComponent(account)}`)
+  const res = await fetch(`${base}/templates/${id}?account=${encodeURIComponent(account)}`, {
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+    },
+  })
   if (!res.ok) return null
   const data = await res.json()
   return data as BackendTemplate

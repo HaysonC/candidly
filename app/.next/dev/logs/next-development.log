@@ -132,3 +132,4 @@
 [00:08:27.980] Browser LOG     [debug] Remote play attempt 2/5
 [00:08:27.980] Browser LOG     [debug] Remote video readyState: 0, paused: true
 [00:22:18.139] Browser LOG     [debug] WebSocket closed
+[01:08:10.944] Server  LOG      ✓ Compiled in 102ms

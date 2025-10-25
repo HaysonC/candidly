@@ -1,0 +1,18 @@
+{
+  "id": "1761416524575",
+  "account": "Eric Xie",
+  "name": "Cock",
+  "criteria": [
+    "This interview evaluates the candidate's problem-solving skills, coding ability, and communication skills with a focus on algorithms.",
+    "Problem Solving",
+    "Coding Ability",
+    "Communication",
+    "Algorithm Knowledge"
+  ],
+  "coding_questions": [
+    "Reverse Linked List — Given the head of a singly linked list, reverse the list, and return the reversed list.\n\nFor example:\nInput: head = [1,2,3,4,5]\nOutput: [5,4,3,2,1]\n\nInput: head = [1,2]\nOutput: [2,1]\n\nInput: head = []\nOutput: []",
+    "Binary Tree Inorder Traversal — Given the root of a binary tree, perform an inorder traversal and return the list of the nodes' values.\n\nFor example:\nInput: root = [1,null,2,3]\nOutput: [1,3,2]\n\nInput: root = []\nOutput: []\n\nInput: root = [1]\nOutput: [1]",
+    "Merge Intervals — Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.\n\nintervals: An array of intervals, where each interval is represented as [start, end].\nstart: An integer representing the start time of the interval (0 <= start <= 10000).\nend: An integer representing the end time of the interval (0 <= end <= 10000, start <= end).\n\nFor example:\nInput: intervals = [[1,3],[2,6],[8,10],[15,18]]\nOutput: [[1,6],[8,10],[15,18]]\n\nInput: intervals = [[1,4],[4,5]]\nOutput: [[1,5]]",
+    "Shortest Path in Binary Matrix — Given an n x n binary matrix grid, return the length of the shortest clear path from top-left to bottom-right. If there is no such path, return -1. A clear path is one that is all 0s and connects the top-left and bottom-right cells. The path can move in 8 directions (horizontally, vertically, and diagonally).\n\ngrid: A square matrix of size n x n, where each cell contains either 0 or 1.\nn: An integer representing the number of rows and columns in the grid (1 <= n <= 100).\ngrid[row][col]: An integer representing the value of the cell at the given row and column (0 <= row < n, 0 <= col < n).\n\nFor example:\nInput: grid = [[0,1],[1,0]]\nOutput: 2\n\nInput: grid = [[0,0,0],[1,1,0],[1,1,0]]\nOutput: 4\n\nInput: grid = [[1,0,0],[1,1,0],[1,1,0]]\nOutput: -1"
+  ]
+}

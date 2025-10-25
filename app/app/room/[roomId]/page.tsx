@@ -388,7 +388,17 @@ export default function RoomPage() {
   const assignTemplateToEditor = () => {
     if (!templateData) return
     // Create a commented header compatible with multiple languages
-    const line = (s: string) => `// ${s}`
+    // Detect desired language from URL (?lang=python, js, ts, java, c, cpp, go, swift, kt, sql, lua, hs, r, rb, sh, bash)
+    const lang = (searchParams.get('lang') || '').toLowerCase()
+    const getLineCommentForLang = (l: string): string => {
+      if (l.startsWith('py')) return '# '
+      if (l === 'r' || l === 'rb' || l.startsWith('sh') || l === 'bash') return '# '
+      if (l === 'sql' || l === 'hs' || l === 'haskell' || l === 'lua') return '-- '
+      if (l === 'lisp' || l === 'clj' || l === 'scheme') return '; '
+      // Default to C/JS-family styles
+      return '// '
+    }
+    const line = (s: string) => `${getLineCommentForLang(lang)}${s}`
     const crit: string[] = Array.isArray(templateData?.criteria) ? templateData.criteria : []
     const questions: string[] = Array.isArray(templateData?.coding_questions)
       ? templateData.coding_questions

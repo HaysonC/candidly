@@ -1259,10 +1259,10 @@ export default function InterviewPage() {
               <div className="space-y-1">
                 <div className="text-sm font-medium">Template</div>
                 <Select value={selectedTemplateId ?? undefined} onValueChange={handleSelectTemplate}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a template" />
+                  <SelectTrigger className="w-full truncate">
+                    <SelectValue placeholder="Choose a template" className="truncate" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-64 max-w-[600px] whitespace-normal break-words">
                     {templatesList.map((t) => (
                       <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                     ))}
@@ -1273,10 +1273,10 @@ export default function InterviewPage() {
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <Select value={selectedQuestion} onValueChange={setSelectedQuestion}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} />
+                  <SelectTrigger className="w-full truncate">
+                    <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} className="truncate" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-64 max-w-[800px] whitespace-normal break-words">
                     {Array.isArray(templateData?.coding_questions) && templateData.coding_questions.length > 0 ? (
                       templateData.coding_questions.map((q: string, i: number) => (
                         <SelectItem key={i} value={q}>{`${i + 1}. ${q.length > 80 ? q.slice(0, 80) + "…" : q}`}</SelectItem>

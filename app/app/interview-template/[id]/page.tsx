@@ -27,14 +27,18 @@ export default function EditTemplatePage() {
   const [aiContext, setAiContext] = useState('')
   const [aiBusy, setAiBusy] = useState(false)
   const { toast } = useToast()
+  const [username, setUsername] = useState<string>("")
 
   useEffect(() => {
-    if (!isNew) {
-      fetch(`/api/templates/${id}`)
-        .then((res) => res.json())
-        .then((data) => setTemplate(data || { name: '', criteria: [], coding_questions: [] }))
-        .finally(() => setLoading(false))
-    }
+    const name = sessionStorage.getItem('interviewer_name') || ''
+    setUsername(name)
+    if (isNew) return
+    if (!name) { setLoading(false); return }
+    const base = getSignalingHttpBase()
+    fetch(`${base}/templates/${id}?account=${encodeURIComponent(name)}`)
+      .then((res) => res.json())
+      .then((data) => setTemplate(data || { name: '', criteria: [], coding_questions: [] }))
+      .finally(() => setLoading(false))
   }, [id, isNew])
 
   const updateField = (section: 'criteria' | 'coding_questions', index: number, value: string) => {
@@ -59,15 +63,28 @@ export default function EditTemplatePage() {
   }
 
   const saveTemplate = async () => {
+    const base = getSignalingHttpBase()
+    if (!username) {
+      toast({ title: 'Missing account', description: 'Interviewer name not found.', variant: 'destructive' })
+      return
+    }
     const method = isNew ? 'POST' : 'PUT'
-    const url = isNew ? '/api/templates' : `/api/templates/${id}`
+    const url = isNew
+      ? `${base}/templates`
+      : `${base}/templates/${id}?account=${encodeURIComponent(username)}`
+    const body = isNew
+      ? JSON.stringify({ account: username, name: template.name, criteria: template.criteria, coding_questions: template.coding_questions })
+      : JSON.stringify({ name: template.name, criteria: template.criteria, coding_questions: template.coding_questions })
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(template),
+      body,
     })
     if (res.ok) {
       router.push('/interview-template')
+    } else {
+      const txt = await res.text()
+      toast({ title: 'Save failed', description: txt || 'Could not save template', variant: 'destructive' })
     }
   }
 

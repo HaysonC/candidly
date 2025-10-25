@@ -34,11 +34,14 @@ export default function StartInterviewPage() {
       return
     }
     setUsername(name)
-    // load templates for selection
-    fetch('/api/templates').then(r=>r.json()).then((arr)=>{
-      const opts = Array.isArray(arr) ? arr.map((t:any)=>({id:String(t.id), name: t.name||'Untitled'})) : []
-      setTemplates(opts)
-    }).catch(()=>setTemplates([]))
+    // load templates for selection (backend)
+    const base = (process.env.NEXT_PUBLIC_SIGNALING_SERVER || 'http://localhost:8000').replace('ws://','http://').replace('wss://','https://')
+    fetch(`${base}/templates?account=${encodeURIComponent(name)}`)
+      .then(r=>r.json())
+      .then((arr)=>{
+        const opts = Array.isArray(arr) ? arr.map((t:any)=>({id:String(t.id), name: t.name||'Untitled'})) : []
+        setTemplates(opts)
+      }).catch(()=>setTemplates([]))
   }, [router])
 
   const handleCreateSession = async () => {

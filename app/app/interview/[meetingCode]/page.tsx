@@ -37,6 +37,7 @@ export default function InterviewPage() {
 
   const meetingCode = params.meetingCode as string
   const role = searchParams.get("role") as "interviewer" | "interviewee"
+  const [accountName, setAccountName] = useState<string>("")
 
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
@@ -79,23 +80,35 @@ export default function InterviewPage() {
   const gazeDataBufferRef = useRef<GazeData[]>([])
   const isEyeTrackingActiveRef = useRef(false)
 
-  // Load template by query param (?template=ID)
+  // Helper: resolve backend HTTP base from signaling env (ws -> http)
+  const getBackendHttpBase = () => {
+    const base = process.env.NEXT_PUBLIC_SIGNALING_SERVER || "ws://localhost:8000"
+    try {
+      const url = new URL(base)
+      if (url.protocol === "ws:") url.protocol = "http:"
+      if (url.protocol === "wss:") url.protocol = "https:"
+      return url.toString().replace(/\/$/, "")
+    } catch {
+      return "http://localhost:8000"
+    }
+  }
+
+  // Load template by query param (?template=ID) once accountName is known
   useEffect(() => {
     const tid = searchParams.get("template")
-    if (!tid) return
+    if (!tid || !accountName) return
     const load = async () => {
       try {
-        let res = await fetch(`/api/templates/${tid}`)
-        if (!res.ok) {
-          res = await fetch(`/app/api/templates/${tid}`)
-        }
+        // Prefer backend explicit storage
+        const httpBase = getBackendHttpBase()
+        let res = await fetch(`${httpBase}/templates/${tid}?account=${encodeURIComponent(accountName)}`)
         if (res.ok) {
           const data = await res.json()
           setTemplateData(data)
-        } else {
-          setTemplateData(null)
-          toast({ title: "Template not found", description: `Could not load template ${tid}`, variant: "destructive" })
+          return
         }
+        setTemplateData(null)
+        toast({ title: "Template not found", description: `Could not load template ${tid}`, variant: "destructive" })
       } catch (e) {
         setTemplateData(null)
         toast({ title: "Template error", description: "Failed to fetch template data", variant: "destructive" })
@@ -103,7 +116,7 @@ export default function InterviewPage() {
     }
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  }, [searchParams, accountName])
 
   useEffect(() => {
     if (hasConsented) {
@@ -435,6 +448,7 @@ export default function InterviewPage() {
         switch (data.type) {
           case "session-info":
             setSessionInfo(data)
+            if (data?.interviewer_name) setAccountName(data.interviewer_name)
             console.log("[debug] Session info:", data)
             break
 
@@ -848,6 +862,19 @@ export default function InterviewPage() {
   const openAssignDialog = () => {
     setSelectedQuestion("")
     setCustomQuestion("")
+    const tid = searchParams.get("template")
+    const ensureFresh = async () => {
+      if (!tid || !accountName) return
+      try {
+        const httpBase = getBackendHttpBase()
+        const res = await fetch(`${httpBase}/templates/${tid}?account=${encodeURIComponent(accountName)}`)
+        if (res.ok) {
+          const data = await res.json()
+          setTemplateData(data)
+        }
+      } catch {}
+    }
+    ensureFresh()
     setShowAssignDialog(true)
   }
 

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
+import { getSignalingHttpBase } from '@/lib/signaling'
 
 interface Template {
   id: string
@@ -15,11 +16,16 @@ interface Template {
 export default function InterviewTemplatePage() {
   const router = useRouter()
   const [templates, setTemplates] = useState<Template[]>([])
+  const [username, setUsername] = useState<string>("")
 
   useEffect(() => {
-    fetch('/api/templates')
+    const name = sessionStorage.getItem('interviewer_name') || ''
+    setUsername(name)
+    if (!name) return
+    const base = getSignalingHttpBase()
+    fetch(`${base}/templates?account=${encodeURIComponent(name)}`)
       .then((res) => res.json())
-      .then((data) => setTemplates(data))
+      .then((data) => setTemplates(Array.isArray(data) ? data : []))
       .catch(() => setTemplates([]))
   }, [])
 
@@ -32,7 +38,7 @@ export default function InterviewTemplatePage() {
           </Button>
           <h1 className="text-2xl font-bold">Interview Templates</h1>
         </div>
-        <Button onClick={() => router.push('/interview-template/new')}>+ New Template</Button>
+  <Button onClick={() => router.push('/interview-template/new')}>+ New Template</Button>
       </div>
 
       {templates.length === 0 ? (

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Video, Loader2, Copy, Check, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 
 export default function StartInterviewPage() {
   const router = useRouter()
@@ -19,6 +20,8 @@ export default function StartInterviewPage() {
   const [candidateName, setCandidateName] = useState("")
   const [candidateEmail, setCandidateEmail] = useState("")
   const [notes, setNotes] = useState("")
+  const [templates, setTemplates] = useState<{id:string;name:string}[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>(undefined)
   const [isCreating, setIsCreating] = useState(false)
   const [meetingCode, setMeetingCode] = useState("")
   const [joinLink, setJoinLink] = useState("")
@@ -31,6 +34,11 @@ export default function StartInterviewPage() {
       return
     }
     setUsername(name)
+    // load templates for selection
+    fetch('/api/templates').then(r=>r.json()).then((arr)=>{
+      const opts = Array.isArray(arr) ? arr.map((t:any)=>({id:String(t.id), name: t.name||'Untitled'})) : []
+      setTemplates(opts)
+    }).catch(()=>setTemplates([]))
   }, [router])
 
   const handleCreateSession = async () => {
@@ -73,7 +81,8 @@ export default function StartInterviewPage() {
       const data = await response.json()
       setMeetingCode(data.meeting_code)
 
-      const fullJoinLink = `${window.location.origin}/join?code=${data.meeting_code}`
+  const tmplParam = selectedTemplate ? `&template=${encodeURIComponent(selectedTemplate)}` : ""
+  const fullJoinLink = `${window.location.origin}/join?code=${data.meeting_code}${tmplParam}`
       setJoinLink(fullJoinLink)
 
       toast({
@@ -95,7 +104,8 @@ export default function StartInterviewPage() {
   }
 
   const handleJoinCall = () => {
-    router.push(`/interview/${meetingCode}?role=interviewer`)
+    const tmplParam = selectedTemplate ? `&template=${encodeURIComponent(selectedTemplate)}` : ""
+    router.push(`/interview/${meetingCode}?role=interviewer${tmplParam}`)
   }
 
   const copyToClipboard = (text: string, label: string) => {
@@ -155,6 +165,24 @@ export default function StartInterviewPage() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Template (Optional)</Label>
+              <Select
+                value={selectedTemplate}
+                onValueChange={(val) => setSelectedTemplate(val === 'none' ? undefined : val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="No Template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Template</SelectItem>
+                  {templates.map((t)=> (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <Button onClick={handleCreateSession} disabled={isCreating} className="w-full" size="lg">

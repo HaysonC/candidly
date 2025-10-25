@@ -1,1 +1,9 @@
-{}
+{
+  "/api/templates/route": "app/api/templates/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/start-interview/page": "app/dashboard/start-interview/page.js",
+  "/interview-template/[id]/page": "app/interview-template/[id]/page.js",
+  "/interview-template/page": "app/interview-template/page.js",
+  "/page": "app/page.js",
+  "/start/page": "app/start/page.js"
+}

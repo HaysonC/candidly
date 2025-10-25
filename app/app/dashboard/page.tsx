@@ -66,6 +66,27 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Interview Templates entry */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
+                <h2 className="text-xl font-semibold mb-2">Want to prepare ahead?</h2>
+                <p className="text-muted-foreground text-pretty">
+                  Create a reusable interview template with custom questions and evaluation criteria.
+                </p>
+              </div>
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                onClick={() => router.push("/interview-template")}
+              >
+                Create Interview Template
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>

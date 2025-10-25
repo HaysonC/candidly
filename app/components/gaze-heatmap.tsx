@@ -95,6 +95,7 @@ export default function GazeHeatmap({
       ref={containerRef}
       className={className}
       style={{
+        backgroundColor: "#fff",
         border: "1px solid #ccc",
         background:
           "repeating-linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,.03) 24px, transparent 24px, transparent 48px)," +

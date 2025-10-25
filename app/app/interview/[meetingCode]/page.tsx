@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
-import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
+import { buildHeatmapReportFromSamples, buildPointsPreviewFromSamples } from "@/lib/heatmap"
 
 interface GazeData {
   x: number
@@ -80,6 +80,7 @@ export default function InterviewPage() {
     baseHeight: number
   } | null>(null)
   const [heatmapLoading, setHeatmapLoading] = useState(false)
+  const [heatmapSamples, setHeatmapSamples] = useState<any[]>([])
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -894,6 +895,7 @@ export default function InterviewPage() {
       if (!res.ok) throw new Error("Failed to fetch gaze data")
       const json = await res.json()
       const samples = Array.isArray(json?.data) ? json.data : []
+      setHeatmapSamples(samples)
 
       if (samples.length === 0) {
         toast({ title: "No gaze data", description: "No samples recorded for this session.", variant: "destructive" })
@@ -906,25 +908,41 @@ export default function InterviewPage() {
       const rW = Math.max(640, Math.round(rect?.width || 960))
       const rH = Math.max(360, Math.round(rect?.height || Math.round((rW * 9) / 16)))
 
-      const report = buildHeatmapReportFromSamples(samples, {
-        cellSize: 16,
-        dwellCapMs: 200,
+      // For debugging visibility: draw raw (x,y) points as red dots without any confidence or dwell filtering
+      const points = buildPointsPreviewFromSamples(samples, {
         renderWidth: rW,
         renderHeight: rH,
-        blurRadius: 30,
-        palette: "classic",
-        alpha: 0.95,
       })
+      setHeatmapUrl(points.dataUrl)
 
-      setHeatmapUrl(report.dataUrl)
+      // Compute basic stats for display
+      const sorted = [...samples].sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
+      const totalTimeSec = sorted.length > 1 ? Math.max(0, (sorted[sorted.length - 1].timestamp - sorted[0].timestamp) / 1000) : 0
+      // Infer base viewport from most frequent dims
+      const counts = new Map<string, { w: number; h: number; c: number }>()
+      for (const s of samples) {
+        const w = Number.isFinite(s.pageW) && s.pageW > 0 ? Math.round(s.pageW) : undefined
+        const h = Number.isFinite(s.pageH) && s.pageH > 0 ? Math.round(s.pageH) : undefined
+        if (!w || !h) continue
+        const key = `${w}x${h}`
+        const e = counts.get(key)
+        if (e) e.c += 1
+        else counts.set(key, { w, h, c: 1 })
+      }
+      let baseW = rW, baseH = rH
+      if (counts.size > 0) {
+        let best: { w: number; h: number; c: number } | null = null
+        for (const e of counts.values()) if (!best || e.c > best.c) best = e
+        if (best) { baseW = best.w; baseH = best.h }
+      }
       setHeatmapStats({
-        sampleCount: report.stats.sampleCount,
-        totalTimeSec: report.stats.totalTimeSec,
-        maxCell: report.stats.maxCell,
-        meanCell: report.stats.meanCell,
-        viewportChanges: report.stats.viewportChanges,
-        baseWidth: report.baseWidth,
-        baseHeight: report.baseHeight,
+        sampleCount: samples.length,
+        totalTimeSec,
+        maxCell: 0,
+        meanCell: 0,
+        viewportChanges: 0,
+        baseWidth: baseW,
+        baseHeight: baseH,
       })
       setShowHeatmapDialog(true)
     } catch (e) {
@@ -1461,6 +1479,30 @@ export default function InterviewPage() {
           </div>
 
           <DialogFooter>
+            {heatmapSamples && heatmapSamples.length > 0 && (
+              <button
+                onClick={() => {
+                  try {
+                    const lines = heatmapSamples
+                      .filter((s) => Number.isFinite(s.x) && Number.isFinite(s.y))
+                      .map((s) => `(${Math.round(s.x)}, ${Math.round(s.y)})`)
+                      .join("\n")
+                    const blob = new Blob([lines], { type: "text/plain;charset=utf-8" })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `gaze-tuples-${meetingCode}.txt`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    setTimeout(() => URL.revokeObjectURL(url), 1000)
+                  } catch {}
+                }}
+                className="inline-flex items-center justify-center h-9 px-4 rounded-md border text-sm mr-2"
+              >
+                Download (x,y) tuples
+              </button>
+            )}
             {heatmapUrl && (
               <a
                 href={heatmapUrl}

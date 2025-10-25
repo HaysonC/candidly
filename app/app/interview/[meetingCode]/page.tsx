@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
+import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
 
 interface GazeData {
   x: number
@@ -65,6 +66,19 @@ export default function InterviewPage() {
   const [customQuestion, setCustomQuestion] = useState<string>("")
   const [templatesList, setTemplatesList] = useState<Array<{id:string; name:string}>>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  // Heatmap report UI state
+  const [showHeatmapDialog, setShowHeatmapDialog] = useState(false)
+  const [heatmapUrl, setHeatmapUrl] = useState<string | null>(null)
+  const [heatmapStats, setHeatmapStats] = useState<{
+    sampleCount: number
+    totalTimeSec: number
+    maxCell: number
+    meanCell: number
+    viewportChanges: number
+    baseWidth: number
+    baseHeight: number
+  } | null>(null)
+  const [heatmapLoading, setHeatmapLoading] = useState(false)
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -867,6 +881,58 @@ export default function InterviewPage() {
     sendEditorUpdate({ kind: "toggle", open: true, minimized: next })
   }
 
+  // Generate end-of-interview heatmap report
+  const generateHeatmap = async () => {
+    try {
+      setHeatmapLoading(true)
+      setHeatmapUrl(null)
+      setHeatmapStats(null)
+
+      const res = await fetch(`/api/gaze-data?meetingCode=${encodeURIComponent(meetingCode)}`)
+      if (!res.ok) throw new Error("Failed to fetch gaze data")
+      const json = await res.json()
+      const samples = Array.isArray(json?.data) ? json.data : []
+
+      if (samples.length === 0) {
+        toast({ title: "No gaze data", description: "No samples recorded for this session.", variant: "destructive" })
+        setHeatmapLoading(false)
+        return
+      }
+
+      // Determine render size: prefer remote video display size if available
+      const rect = remoteVideoRef.current?.getBoundingClientRect()
+      const rW = Math.max(640, Math.round(rect?.width || 960))
+      const rH = Math.max(360, Math.round(rect?.height || Math.round((rW * 9) / 16)))
+
+      const report = buildHeatmapReportFromSamples(samples, {
+        cellSize: 16,
+        dwellCapMs: 200,
+        renderWidth: rW,
+        renderHeight: rH,
+        blurRadius: 30,
+        palette: "classic",
+        alpha: 0.95,
+      })
+
+      setHeatmapUrl(report.dataUrl)
+      setHeatmapStats({
+        sampleCount: report.stats.sampleCount,
+        totalTimeSec: report.stats.totalTimeSec,
+        maxCell: report.stats.maxCell,
+        meanCell: report.stats.meanCell,
+        viewportChanges: report.stats.viewportChanges,
+        baseWidth: report.baseWidth,
+        baseHeight: report.baseHeight,
+      })
+      setShowHeatmapDialog(true)
+    } catch (e) {
+      console.error("[debug] Heatmap generation failed:", e)
+      toast({ title: "Heatmap error", description: "Failed to generate report.", variant: "destructive" })
+    } finally {
+      setHeatmapLoading(false)
+    }
+  }
+
   // Prepare and send assignment payload to the peer
   const openAssignDialog = () => {
     setSelectedQuestion("")
@@ -1050,6 +1116,15 @@ export default function InterviewPage() {
             )}
             {role === "interviewer" && candidateReady && templateData && (
               <Button size="sm" onClick={openAssignDialog}>Assign Question</Button>
+            )}
+            {role === "interviewer" && (
+              <Button size="sm" variant="outline" onClick={generateHeatmap} disabled={heatmapLoading}>
+                {heatmapLoading ? (
+                  <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Generating…</span>
+                ) : (
+                  "Generate Heatmap"
+                )}
+              </Button>
             )}
             <Button variant="outline" size="sm" onClick={copyCode}>
               <Copy className="w-4 h-4 mr-2" />
@@ -1343,6 +1418,51 @@ export default function InterviewPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAssignDialog(false)}>Cancel</Button>
             <Button onClick={assignSelectedQuestion}>Assign</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Heatmap Report Dialog */}
+      <Dialog open={showHeatmapDialog} onOpenChange={setShowHeatmapDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Gaze Heatmap Report</DialogTitle>
+            <DialogDescription>
+              Aggregated dwell-time weighted gaze across the session.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {heatmapUrl ? (
+              <div className="w-full">
+                <img src={heatmapUrl} alt="Gaze Heatmap" className="w-full h-auto rounded" />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No image</div>
+            )}
+
+            {heatmapStats && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                <div><span className="text-muted-foreground">Samples:</span> {heatmapStats.sampleCount}</div>
+                <div><span className="text-muted-foreground">Total time:</span> {heatmapStats.totalTimeSec.toFixed(1)}s</div>
+                <div><span className="text-muted-foreground">Viewport changes:</span> {heatmapStats.viewportChanges}</div>
+                <div><span className="text-muted-foreground">Max cell (sec):</span> {heatmapStats.maxCell.toFixed(3)}</div>
+                <div><span className="text-muted-foreground">Mean cell (sec):</span> {heatmapStats.meanCell.toFixed(5)}</div>
+                <div><span className="text-muted-foreground">Base viewport:</span> {heatmapStats.baseWidth}×{heatmapStats.baseHeight}</div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            {heatmapUrl && (
+              <a
+                href={heatmapUrl}
+                download={`heatmap-${meetingCode}.png`}
+                className="inline-flex items-center justify-center h-9 px-4 rounded-md border text-sm"
+              >
+                Download PNG
+              </a>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

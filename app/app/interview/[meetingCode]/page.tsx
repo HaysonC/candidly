@@ -904,7 +904,27 @@ export default function InterviewPage() {
       return
     }
 
-    const line = (s: string) => `// ${s}`
+    // Detect language from query parameter or use editor language
+    const langParam = searchParams.get("lang") || editorLang
+    const getCommentPrefix = (lang: string) => {
+      switch (lang.toLowerCase()) {
+        case 'python':
+        case 'py':
+          return '#'
+        case 'cpp':
+        case 'c++':
+        case 'java':
+        case 'javascript':
+        case 'js':
+        case 'typescript':
+        case 'ts':
+        default:
+          return '//'
+      }
+    }
+    
+    const commentPrefix = getCommentPrefix(langParam)
+    const line = (s: string) => `${commentPrefix} ${s}`
     const content = [
       line("=== Coding Question ==="),
       line(`Template: ${templateData?.name || "Untitled"}`),
@@ -1246,7 +1266,7 @@ export default function InterviewPage() {
 
       {/* Assign Question Dialog */}
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Assign a question</DialogTitle>
             <DialogDescription>
@@ -1276,10 +1296,21 @@ export default function InterviewPage() {
                   <SelectTrigger className="w-full truncate">
                     <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} className="truncate" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-64 max-w-[800px] whitespace-normal break-words">
+                  <SelectContent className="max-h-64 w-full max-w-none">
                     {Array.isArray(templateData?.coding_questions) && templateData.coding_questions.length > 0 ? (
                       templateData.coding_questions.map((q: string, i: number) => (
-                        <SelectItem key={i} value={q}>{`${i + 1}. ${q.length > 80 ? q.slice(0, 80) + "…" : q}`}</SelectItem>
+                        <SelectItem 
+                          key={i} 
+                          value={q}
+                          className="whitespace-normal text-wrap break-words py-2"
+                        >
+                          <div className="w-full">
+                            <span className="font-medium text-xs text-muted-foreground">#{i + 1}</span>
+                            <div className="text-sm mt-1">
+                              {q.length > 100 ? q.slice(0, 100) + "…" : q}
+                            </div>
+                          </div>
+                        </SelectItem>
                       ))
                     ) : (
                       <div className="px-2 py-1 text-sm text-muted-foreground">No questions available</div>

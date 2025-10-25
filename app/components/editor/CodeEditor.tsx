@@ -11,6 +11,18 @@ import { uploadCandidateInterviewed } from '@/lib/upload'
 
 export type EditorLanguage = 'python' | 'cpp' | 'java'
 
+// Utility function to create language-specific comments
+export const getCommentPrefix = (language: EditorLanguage): string => {
+  switch (language) {
+    case 'python':
+      return '#'
+    case 'cpp':
+    case 'java':
+    default:
+      return '//'
+  }
+}
+
 export interface CodeEditorProps {
   open: boolean
   minimized: boolean

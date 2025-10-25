@@ -34,6 +34,26 @@ class InterviewPrepRequest(BaseModel):
     model: Optional[str] = Field("gemini-2.0-flash", description="LLM model id to use")
 
 
+# -------- Templates per Account (Interviewer) --------
+class Template(BaseModel):
+    id: str
+    account: str = Field(..., description="Interviewer account name (use interviewer_name for now)")
+    name: str
+    criteria: List[str] = Field(default_factory=list)
+    coding_questions: List[str] = Field(default_factory=list)
+
+class TemplateCreate(BaseModel):
+    account: str
+    name: str = "Untitled Template"
+    criteria: List[str] = Field(default_factory=list)
+    coding_questions: List[str] = Field(default_factory=list)
+
+class TemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    criteria: Optional[List[str]] = None
+    coding_questions: Optional[List[str]] = None
+
+
 # -------- In-memory state typing helpers (referenced by server) --------
 try:
     # These are only for type hints in server; actual values live in server or state module

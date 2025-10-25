@@ -10,6 +10,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from app.models import InterviewSession
 from app.models import InterviewPrepRequest, InterviewPrepResponse
+from app.models import Template, TemplateCreate, TemplateUpdate
 from app.ai.interview_prep import analyze_interview_prep
 
 # Configure logging
@@ -38,6 +39,7 @@ app.add_middleware(
 rooms: Dict[str, Set[WebSocket]] = {}
 interview_sessions: Dict[str, InterviewSession] = {}  # meeting_code -> session info
 websocket_roles: Dict[WebSocket, str] = {}  # websocket -> "interviewer" or "interviewee"
+templates_by_account: Dict[str, Dict[str, Template]] = {}
 
 def generate_meeting_code() -> str:
     """Generate a unique 6-character meeting code"""
@@ -93,6 +95,73 @@ async def create_session(session: InterviewSession):
         "meeting_code": meeting_code,
         "join_link": f"/join?code={meeting_code}"
     }
+
+
+# -------- Templates API (per interviewer account) --------
+@app.get("/templates")
+async def list_templates(account: Optional[str] = None):
+    """List templates for an account (interviewer_name). If account missing, return empty list."""
+    if not account:
+        return []
+    return list(templates_by_account.get(account, {}).values())
+
+
+@app.post("/templates")
+async def create_template(tpl_in: TemplateCreate):
+    from time import time
+    account = tpl_in.account.strip()
+    if not account:
+        raise HTTPException(status_code=400, detail="account is required")
+    t = Template(
+        id=str(int(time() * 1000)),
+        account=account,
+        name=tpl_in.name or "Untitled Template",
+        criteria=tpl_in.criteria or [],
+        coding_questions=tpl_in.coding_questions or [],
+    )
+    templates_by_account.setdefault(account, {})[t.id] = t
+    return t
+
+
+@app.get("/templates/{template_id}")
+async def get_template(template_id: str, account: Optional[str] = None):
+    if not account:
+        raise HTTPException(status_code=400, detail="account is required")
+    t = templates_by_account.get(account, {}).get(template_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return t
+
+
+@app.put("/templates/{template_id}")
+async def update_template(template_id: str, tpl_upd: TemplateUpdate, account: Optional[str] = None):
+    if not account:
+        raise HTTPException(status_code=400, detail="account is required")
+    acct_map = templates_by_account.get(account, {})
+    t = acct_map.get(template_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="Template not found")
+    data = t.model_dump()
+    if tpl_upd.name is not None:
+        data["name"] = tpl_upd.name
+    if tpl_upd.criteria is not None:
+        data["criteria"] = tpl_upd.criteria
+    if tpl_upd.coding_questions is not None:
+        data["coding_questions"] = tpl_upd.coding_questions
+    updated = Template(**data)
+    acct_map[template_id] = updated
+    return updated
+
+
+@app.delete("/templates/{template_id}")
+async def delete_template(template_id: str, account: Optional[str] = None):
+    if not account:
+        raise HTTPException(status_code=400, detail="account is required")
+    acct_map = templates_by_account.get(account, {})
+    if template_id not in acct_map:
+        raise HTTPException(status_code=404, detail="Template not found")
+    deleted = acct_map.pop(template_id)
+    return {"deleted": True, "id": template_id, "name": deleted.name}
 
 @app.get("/api/verify-email/{meeting_code}/{email}")
 async def verify_email(meeting_code: str, email: str):

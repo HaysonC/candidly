@@ -52,6 +52,44 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     remoteGaze,
   } = props
 
+  // Function to convert comments between languages
+  const convertComments = (text: string, fromLang: EditorLanguage, toLang: EditorLanguage): string => {
+    const fromPrefix = getCommentPrefix(fromLang)
+    const toPrefix = getCommentPrefix(toLang)
+    
+    if (fromPrefix === toPrefix) return text
+    
+    const lines = text.split('\n')
+    const convertedLines = lines.map(line => {
+      const trimmed = line.trimStart()
+      const leadingSpaces = line.length - trimmed.length
+      const indent = line.substring(0, leadingSpaces)
+      
+      if (fromLang === 'python' && (toLang === 'cpp' || toLang === 'java')) {
+        // Convert # to //
+        if (trimmed.startsWith('#')) {
+          return indent + '//' + trimmed.substring(1)
+        }
+      } else if ((fromLang === 'cpp' || fromLang === 'java') && toLang === 'python') {
+        // Convert // to #
+        if (trimmed.startsWith('//')) {
+          return indent + '#' + trimmed.substring(2)
+        }
+      }
+      
+      return line
+    })
+    
+    return convertedLines.join('\n')
+  }
+
+  // Handler for language change with comment conversion
+  const handleLanguageChange = (newLang: EditorLanguage) => {
+    const convertedValue = convertComments(value, language, newLang)
+    onChange(convertedValue)
+    onLanguageChange(newLang)
+  }
+
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLCanvasElement>(null)
 
@@ -139,7 +177,7 @@ export function CodeEditorPanel(props: CodeEditorProps) {
         </div>
         <div className="flex items-center gap-3">
           <div className="text-sm font-medium">{docName}</div>
-          <Select value={language} onValueChange={(v) => onLanguageChange(v as EditorLanguage)}>
+          <Select value={language} onValueChange={(v) => handleLanguageChange(v as EditorLanguage)}>
             <SelectTrigger className="w-36">
               <SelectValue placeholder="Language" />
             </SelectTrigger>

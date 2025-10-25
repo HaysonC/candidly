@@ -931,7 +931,7 @@ export default function InterviewPage() {
       line(""),
       ...chosen.split("\n").map((l) => line(l)),
       "",
-      "// Write your solution below:",
+      line("Write your solution below:"),
       "",
     ].join("\n")
 
@@ -1293,21 +1293,21 @@ export default function InterviewPage() {
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <Select value={selectedQuestion} onValueChange={setSelectedQuestion}>
-                  <SelectTrigger className="w-full truncate">
-                    <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} className="truncate" />
+                  <SelectTrigger className="w-full min-h-[40px] h-auto whitespace-normal text-wrap">
+                    <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} className="text-wrap whitespace-normal" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-64 w-full max-w-none">
+                  <SelectContent className="max-h-64 w-[600px] max-w-[90vw]">
                     {Array.isArray(templateData?.coding_questions) && templateData.coding_questions.length > 0 ? (
                       templateData.coding_questions.map((q: string, i: number) => (
                         <SelectItem 
                           key={i} 
                           value={q}
-                          className="whitespace-normal text-wrap break-words py-2"
+                          className="whitespace-normal break-words py-3 px-3 min-h-fit h-auto"
                         >
-                          <div className="w-full">
-                            <span className="font-medium text-xs text-muted-foreground">#{i + 1}</span>
-                            <div className="text-sm mt-1">
-                              {q.length > 100 ? q.slice(0, 100) + "…" : q}
+                          <div className="w-full space-y-1">
+                            <span className="font-medium text-xs text-muted-foreground">Question #{i + 1}</span>
+                            <div className="text-sm leading-relaxed whitespace-normal break-words">
+                              {q}
                             </div>
                           </div>
                         </SelectItem>
@@ -1327,6 +1327,7 @@ export default function InterviewPage() {
               value={customQuestion}
               onChange={(e) => setCustomQuestion(e.target.value)}
               placeholder="Paste or type your own question prompt here..."
+              className="w-full resize-none"
             />
           </div>
 

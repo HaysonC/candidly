@@ -1093,6 +1093,11 @@ export default function InterviewPage() {
       setTaskCounter(prevCounter => prevCounter + 1)
       setQuestionAssigned(true)
       
+      // Update the interviewer's own editor content immediately
+      setEditorValue(content)
+      setEditorOpen(true)
+      setEditorMinimized(false)
+      
       // Ensure editor is open for both peers
       sendEditorUpdate({ kind: "toggle", open: true, minimized: false })
       // Send content and question assignment status

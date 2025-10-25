@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Copy, Mic, MicOff, Phone, Video, VideoOff, Monitor, Loader2, Eye, Code2 } from "lucide-react"
 import { CodeEditorPanel, type EditorLanguage } from "@/components/editor/CodeEditor"
@@ -55,6 +58,9 @@ export default function InterviewPage() {
   const [waitingForCalibration, setWaitingForCalibration] = useState(false)
   const [candidateReady, setCandidateReady] = useState(false)
   const [templateData, setTemplateData] = useState<any | null>(null)
+  const [showAssignDialog, setShowAssignDialog] = useState(false)
+  const [selectedQuestion, setSelectedQuestion] = useState<string>("")
+  const [customQuestion, setCustomQuestion] = useState<string>("")
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -839,37 +845,53 @@ export default function InterviewPage() {
   }
 
   // Prepare and send assignment payload to the peer
-  const assignTemplateToEditor = () => {
+  const openAssignDialog = () => {
+    setSelectedQuestion("")
+    setCustomQuestion("")
+    setShowAssignDialog(true)
+  }
+
+  const assignSelectedQuestion = () => {
     if (!templateData) return
+    const questions: string[] = Array.isArray(templateData?.coding_questions) ? templateData.coding_questions : []
+    const chosen = (customQuestion && customQuestion.trim().length > 0)
+      ? customQuestion.trim()
+      : (selectedQuestion ? selectedQuestion : "")
+
+    if (!chosen) {
+      toast({ title: "Select a question", description: "Pick from the template or paste a custom one.", variant: "destructive" })
+      return
+    }
+
     const line = (s: string) => `// ${s}`
-    const crit: string[] = Array.isArray(templateData?.criteria) ? templateData.criteria : []
-    const questions: string[] = Array.isArray(templateData?.coding_questions)
-      ? templateData.coding_questions
-      : []
-    const header = [
-      line("=== Interview Template ==="),
-      line(`Name: ${templateData?.name || "Untitled"}`),
-      line("") ,
-      line("Criteria:"),
-      ...crit.map((c) => line(`- ${c}`)),
-      line("") ,
-      line("Questions:"),
-      ...questions.map((q, i) => line(`${i + 1}. ${q}`)),
-      line("=========================="),
+    const content = [
+      line("=== Coding Question ==="),
+      line(`Template: ${templateData?.name || "Untitled"}`),
+      line(""),
+      ...chosen.split("\n").map((l) => line(l)),
+      "",
+      "// Write your solution below:",
       "",
     ].join("\n")
 
     try {
-      wsRef.current?.send(
-        JSON.stringify({
-          type: "editor",
-          payload: { kind: "update", value: header },
-        }),
-      )
-      toast({ title: "Assigned", description: "Questions sent to the candidate." })
+      // Ensure editor is open for both peers
+      sendEditorUpdate({ kind: "toggle", open: true, minimized: false })
+      // Send content
+      sendEditorUpdate({ kind: "update", value: content })
+      setShowAssignDialog(false)
+      toast({ title: "Question assigned", description: "Sent to the shared editor." })
     } catch (e) {
-      toast({ title: "Assignment failed", description: "Could not send questions to the candidate.", variant: "destructive" })
+      toast({ title: "Assignment failed", description: "Could not send to the candidate.", variant: "destructive" })
     }
+  }
+
+  const randomizeQuestion = () => {
+    if (!templateData) return
+    const questions: string[] = Array.isArray(templateData?.coding_questions) ? templateData.coding_questions : []
+    if (!questions.length) return
+    const idx = Math.floor(Math.random() * questions.length)
+    setSelectedQuestion(questions[idx])
   }
 
   const cleanup = () => {
@@ -966,7 +988,7 @@ export default function InterviewPage() {
               </Button>
             )}
             {role === "interviewer" && candidateReady && templateData && (
-              <Button size="sm" onClick={assignTemplateToEditor}>Assign Template Questions</Button>
+              <Button size="sm" onClick={openAssignDialog}>Assign Question</Button>
             )}
             <Button variant="outline" size="sm" onClick={copyCode}>
               <Copy className="w-4 h-4 mr-2" />
@@ -1180,6 +1202,53 @@ export default function InterviewPage() {
           }
         }}
       />
+
+      {/* Assign Question Dialog */}
+      <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign a question</DialogTitle>
+            <DialogDescription>
+              Select a question from the template or paste a custom one. You can also pick a random question.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1">
+                <Select value={selectedQuestion} onValueChange={setSelectedQuestion}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={templateData?.coding_questions?.length ? "Choose a question" : "No questions in template"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.isArray(templateData?.coding_questions) && templateData.coding_questions.length > 0 ? (
+                      templateData.coding_questions.map((q: string, i: number) => (
+                        <SelectItem key={i} value={q}>{`${i + 1}. ${q.length > 80 ? q.slice(0, 80) + "…" : q}`}</SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-2 py-1 text-sm text-muted-foreground">No questions available</div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" size="sm" onClick={randomizeQuestion} disabled={!templateData?.coding_questions?.length}>Random</Button>
+            </div>
+
+            <div className="text-xs text-muted-foreground">or paste a custom question</div>
+            <Textarea
+              rows={5}
+              value={customQuestion}
+              onChange={(e) => setCustomQuestion(e.target.value)}
+              placeholder="Paste or type your own question prompt here..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssignDialog(false)}>Cancel</Button>
+            <Button onClick={assignSelectedQuestion}>Assign</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

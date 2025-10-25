@@ -131,10 +131,17 @@ function drawGridToCanvas(
 	}
 	tctx.putImageData(img, 0, 0)
 
-	const ctx = canvas.getContext("2d")!
-	if (blurRadius > 0) {
-		ctx.filter = `blur(${blurRadius}px)`
-	}
+		const ctx = canvas.getContext("2d")!
+		// Background to ensure visibility on light UIs
+		ctx.save()
+		ctx.globalCompositeOperation = "source-over"
+		ctx.fillStyle = "#111" // dark background for contrast
+		ctx.fillRect(0, 0, renderW, renderH)
+		ctx.restore()
+
+		if (blurRadius > 0) {
+			ctx.filter = `blur(${blurRadius}px)`
+		}
 	ctx.imageSmoothingEnabled = true
 	// Scale the low-res heat grid up to render size proportionally
 	ctx.drawImage(tmp, 0, 0, renderW, renderH)
@@ -234,5 +241,43 @@ export function normalizeGridCopy(grid: Float32Array): Float32Array {
 	if (max <= 0) return out
 	for (let i = 0; i < grid.length; i++) out[i] = grid[i] / max
 	return out
+}
+
+// Debug helper: plot raw sample points to a canvas to verify data presence/mapping
+export function buildPointsPreviewFromSamples(
+	inputSamples: GazeSample[],
+	options: { renderWidth?: number; renderHeight?: number; baseWidth?: number; baseHeight?: number } = {},
+): { dataUrl: string; canvas: HTMLCanvasElement } {
+	const samples = (Array.isArray(inputSamples) ? inputSamples : [])
+		.filter((s) => Number.isFinite(s.x) && Number.isFinite(s.y) && Number.isFinite(s.timestamp))
+		.sort((a, b) => a.timestamp - b.timestamp)
+
+	const base = pickBaseViewport(samples, options.baseWidth, options.baseHeight)
+	const baseWidth = base.w
+	const baseHeight = base.h
+	const renderW = options.renderWidth ?? baseWidth
+	const renderH = options.renderHeight ?? baseHeight
+
+	const canvas = document.createElement("canvas")
+	canvas.width = renderW
+	canvas.height = renderH
+	const ctx = canvas.getContext("2d")!
+	ctx.fillStyle = "#111"
+	ctx.fillRect(0, 0, renderW, renderH)
+	ctx.fillStyle = "rgba(255,80,80,0.9)"
+
+	const radius = 2
+	for (const s of samples) {
+		const sw = s.pageW && s.pageW > 0 ? s.pageW : baseWidth
+		const sh = s.pageH && s.pageH > 0 ? s.pageH : baseHeight
+		const sx = (s.x / sw) * renderW
+		const sy = (s.y / sh) * renderH
+		if (!Number.isFinite(sx) || !Number.isFinite(sy)) continue
+		ctx.beginPath()
+		ctx.arc(sx, sy, radius, 0, Math.PI * 2)
+		ctx.fill()
+	}
+
+	return { dataUrl: canvas.toDataURL("image/png"), canvas }
 }
 

@@ -14,7 +14,8 @@ import { useToast } from "@/hooks/use-toast"
 import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
-import { buildHeatmapReportFromSamples, buildPointsPreviewFromSamples } from "@/lib/heatmap"
+import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
+import GazeHeatmap from "@/components/gaze-heatmap"
 
 interface GazeData {
   x: number
@@ -81,6 +82,7 @@ export default function InterviewPage() {
   } | null>(null)
   const [heatmapLoading, setHeatmapLoading] = useState(false)
   const [heatmapSamples, setHeatmapSamples] = useState<any[]>([])
+  const [heatmapPoints, setHeatmapPoints] = useState<Array<[number, number]>>([])
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -955,17 +957,7 @@ export default function InterviewPage() {
       const rW = Math.max(640, Math.round(rect?.width || 960))
       const rH = Math.max(360, Math.round(rect?.height || Math.round((rW * 9) / 16)))
 
-      // For debugging visibility: draw raw (x,y) points as red dots without any confidence or dwell filtering
-      const points = buildPointsPreviewFromSamples(samples, {
-        renderWidth: rW,
-        renderHeight: rH,
-      })
-      setHeatmapUrl(points.dataUrl)
-
-      // Compute basic stats for display
-      const sorted = [...samples].sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
-      const totalTimeSec = sorted.length > 1 ? Math.max(0, (sorted[sorted.length - 1].timestamp - sorted[0].timestamp) / 1000) : 0
-      // Infer base viewport from most frequent dims
+      // Infer base viewport from most frequent dims, then reproject samples to that base
       const counts = new Map<string, { w: number; h: number; c: number }>()
       for (const s of samples) {
         const w = Number.isFinite(s.pageW) && s.pageW > 0 ? Math.round(s.pageW) : undefined
@@ -982,6 +974,19 @@ export default function InterviewPage() {
         for (const e of counts.values()) if (!best || e.c > best.c) best = e
         if (best) { baseW = best.w; baseH = best.h }
       }
+      const pts: Array<[number, number]> = []
+      for (const s of samples) {
+        const sw = Number.isFinite(s.pageW) && s.pageW > 0 ? s.pageW : baseW
+        const sh = Number.isFinite(s.pageH) && s.pageH > 0 ? s.pageH : baseH
+        const sx = (s.x / sw) * baseW
+        const sy = (s.y / sh) * baseH
+        if (Number.isFinite(sx) && Number.isFinite(sy)) pts.push([sx, sy])
+      }
+      setHeatmapPoints(pts)
+
+      // Basic stats
+      const sorted = [...samples].sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
+      const totalTimeSec = sorted.length > 1 ? Math.max(0, (sorted[sorted.length - 1].timestamp - sorted[0].timestamp) / 1000) : 0
       setHeatmapStats({
         sampleCount: samples.length,
         totalTimeSec,
@@ -1538,12 +1543,12 @@ export default function InterviewPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {heatmapUrl ? (
-              <div className="w-full">
-                <img src={heatmapUrl} alt="Gaze Heatmap" className="w-full h-auto rounded" />
+            {heatmapPoints && heatmapPoints.length > 0 ? (
+              <div className="w-full overflow-auto">
+                <GazeHeatmap points={heatmapPoints} onImageReady={setHeatmapUrl} />
               </div>
             ) : (
-              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No image</div>
+              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No points</div>
             )}
 
             {heatmapStats && (

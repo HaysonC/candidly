@@ -64,3 +64,25 @@ except Exception:  # pragma: no cover
 
 RoomsType = Dict[str, Set[WebSocket]]
 WebsocketRolesType = Dict[WebSocket, str]
+
+
+# -------- Candidates per Account (Interviewer) --------
+class CreateCandidateRequest(BaseModel):
+    interviewer: str = Field(..., description="Account/interviewer name")
+    interviewee: str = Field(..., description="Candidate name")
+
+
+class CandidateListRequest(BaseModel):
+    interviewer: str = Field(..., description="Account/interviewer name")
+
+
+class CandidateTrackingRequest(BaseModel):
+    interviewer: str = Field(..., description="Account/interviewer name")
+    timestamp: Optional[str] = Field(None, description="Optional timestamp folder to read; defaults to latest")
+
+
+class CandidateFilePutRequest(BaseModel):
+    interviewer: str = Field(..., description="Account/interviewer name")
+    filename: str = Field(..., description="Filename to create or replace inside timestamp dir")
+    content: str = Field(..., description="Raw string content to write to the file (UTF-8)")
+    timestamp: Optional[str] = Field(None, description="Optional timestamp folder; defaults to latest or a new one if none exist")

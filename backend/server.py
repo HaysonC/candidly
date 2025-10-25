@@ -3,16 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import logging
 import secrets
-from typing import Dict, Set, Optional
+from typing import Dict, Set, Optional, List
 import threading
 import json as _json
 import os
 from pathlib import Path
+from datetime import datetime
+from time import time
 
 from dotenv import load_dotenv
 from app.models import InterviewSession
 from app.models import InterviewPrepRequest, InterviewPrepResponse
 from app.models import Template, TemplateCreate, TemplateUpdate
+from app.models import (
+    CreateCandidateRequest,
+    CandidateListRequest,
+    CandidateTrackingRequest,
+    CandidateFilePutRequest,
+)
 from app.ai.interview_prep import analyze_interview_prep
 
 # Configure logging
@@ -59,6 +67,68 @@ def _account_templates_dir(account: str) -> Path:
     dir_path = base / safe / "templates"
     dir_path.mkdir(parents=True, exist_ok=True)
     return dir_path
+
+def _account_candidates_dir(account: str) -> Path:
+    base = _accounts_base_dir()
+    safe = _safe_account_dirname(account)
+    dir_path = base / safe / "candidates"
+    dir_path.mkdir(parents=True, exist_ok=True)
+    return dir_path
+
+def _safe_candidate_dirname(name: str) -> str:
+    return name.strip().replace("/", "_").replace("\\", "_")
+
+def _is_safe_filename(name: str) -> bool:
+    if "/" in name or "\\" in name:
+        return False
+    if name in ("", ".", ".."):
+        return False
+    return True
+
+def _candidate_base_dir(account: str, candidate: str) -> Path:
+    cands = _account_candidates_dir(account)
+    safe = _safe_candidate_dirname(candidate)
+    dir_path = cands / safe
+    dir_path.mkdir(parents=True, exist_ok=True)
+    return dir_path
+
+def _candidate_timestamp_dir(account: str, candidate: str, timestamp: Optional[str] = None, create: bool = True) -> Path:
+    base = _candidate_base_dir(account, candidate)
+    ts = timestamp or str(int(time() * 1000))
+    dir_path = base / ts
+    if create:
+        dir_path.mkdir(parents=True, exist_ok=True)
+    return dir_path
+
+def _latest_timestamp_dir(account: str, candidate: str) -> Optional[Path]:
+    base = _candidate_base_dir(account, candidate)
+    if not base.exists():
+        return None
+    subdirs: List[Path] = [p for p in base.iterdir() if p.is_dir()]
+    if not subdirs:
+        return None
+    # pick lexicographically max since timestamps are numeric strings
+    latest = max(subdirs, key=lambda p: p.name)
+    return latest
+
+def _tracking_path(ts_dir: Path) -> Path:
+    return ts_dir / "tracking.json"
+
+def _read_tracking(ts_dir: Path) -> dict:
+    fp = _tracking_path(ts_dir)
+    if not fp.exists():
+        return {"files": {}}
+    try:
+        return _json.loads(fp.read_text(encoding="utf-8"))
+    except Exception:
+        return {"files": {}}
+
+def _write_tracking(ts_dir: Path, data: dict) -> None:
+    fp = _tracking_path(ts_dir)
+    try:
+        fp.write_text(_json.dumps(data, indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"Failed writing tracking.json in {ts_dir}: {e}")
 
 def _load_templates_from_disk() -> None:
     """Load templates_by_account from per-account directories (best-effort)."""
@@ -257,6 +327,132 @@ async def delete_template(template_id: str, account: Optional[str] = None):
         templates_by_account[account] = acct_map
         _delete_template_from_disk(account, template_id)
     return {"deleted": True, "id": template_id, "name": deleted.name}
+
+
+# -------- Candidates API (per interviewer account) --------
+@app.post("/create_candidate")
+async def create_candidate(req: CreateCandidateRequest):
+    """Create candidate timestamp directory and empty tracking.json.
+
+    Structure: data/accounts/{interviewer}/candidates/{candidate}/{timestamp}/tracking.json
+    """
+    interviewer = req.interviewer.strip()
+    candidate = req.interviewee.strip()
+    if not interviewer or not candidate:
+        raise HTTPException(status_code=400, detail="interviewer and interviewee are required")
+
+    ts_dir = _candidate_timestamp_dir(interviewer, candidate, create=True)
+    # initialize empty tracking
+    if not _tracking_path(ts_dir).exists():
+        _write_tracking(ts_dir, {"files": {}, "created_at": datetime.utcnow().isoformat() + "Z"})
+    return {
+        "interviewer": interviewer,
+        "candidate": _safe_candidate_dirname(candidate),
+        "timestamp": ts_dir.name,
+        "path": str(ts_dir.relative_to(Path(__file__).parent))
+    }
+
+
+@app.post("/candidate_interviewed")
+async def candidate_interviewed(req: CandidateListRequest):
+    """Return list of candidate names for interviewer."""
+    interviewer = req.interviewer.strip()
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+    cdir = _account_candidates_dir(interviewer)
+    names: List[str] = []
+    try:
+        for p in cdir.iterdir():
+            if p.is_dir():
+                names.append(p.name)
+    except FileNotFoundError:
+        pass
+    return sorted(names)
+
+
+@app.delete("/candidate_interviewed/{name}")
+async def delete_candidate(name: str, interviewer: Optional[str] = None):
+    """Delete a candidate and all their timestamp folders for an interviewer."""
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+    base = _candidate_base_dir(interviewer, name)
+    if not base.exists():
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    # Danger: recursive delete
+    try:
+        for root, dirs, files in os.walk(base, topdown=False):
+            for f in files:
+                try:
+                    Path(root, f).unlink()
+                except Exception:
+                    pass
+            for d in dirs:
+                try:
+                    Path(root, d).rmdir()
+                except Exception:
+                    pass
+        base.rmdir()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete: {e}")
+    return {"deleted": True, "candidate": name}
+
+
+@app.post("/candidate_interviewed/{name}")
+async def get_candidate_tracking(name: str, req: CandidateTrackingRequest):
+    """Get tracking.json for a candidate.
+
+    If timestamp not provided, return the latest timestamp's tracking.
+    """
+    interviewer = req.interviewer.strip()
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+    ts_dir: Optional[Path]
+    if req.timestamp:
+        ts_dir = _candidate_timestamp_dir(interviewer, name, req.timestamp, create=False)
+    else:
+        ts_dir = _latest_timestamp_dir(interviewer, name)
+    if ts_dir is None or not ts_dir.exists():
+        raise HTTPException(status_code=404, detail="No candidate timestamp found")
+    return _read_tracking(ts_dir)
+
+
+@app.put("/candidate_interviewed/{name}")
+async def put_candidate_file(name: str, req: CandidateFilePutRequest):
+    """Create or replace a file in the candidate's timestamp folder and update tracking.json.
+
+    If timestamp is omitted, operate on latest; create a new timestamp if none exist.
+    """
+    interviewer = req.interviewer.strip()
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+    if not _is_safe_filename(req.filename):
+        raise HTTPException(status_code=400, detail="invalid filename")
+
+    ts_dir = None
+    if req.timestamp:
+        ts_dir = _candidate_timestamp_dir(interviewer, name, req.timestamp, create=True)
+    else:
+        ts_dir = _latest_timestamp_dir(interviewer, name)
+        if ts_dir is None:
+            ts_dir = _candidate_timestamp_dir(interviewer, name, create=True)
+
+    # write file
+    fpath = ts_dir / req.filename
+    try:
+        fpath.write_text(req.content, encoding="utf-8")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to write file: {e}")
+
+    # update tracking
+    tracking = _read_tracking(ts_dir)
+    files = tracking.get("files", {})
+    files[req.filename] = {
+        "size": fpath.stat().st_size,
+        "updated_at": datetime.utcnow().isoformat() + "Z",
+    }
+    tracking["files"] = files
+    _write_tracking(ts_dir, tracking)
+    return {"ok": True, "timestamp": ts_dir.name, "file": req.filename}
 
 @app.get("/api/verify-email/{meeting_code}/{email}")
 async def verify_email(meeting_code: str, email: str):

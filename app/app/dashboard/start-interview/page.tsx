@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Video, Loader2, Copy, Check, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getSignalingHttpBase } from "@/lib/signaling"
+import { fetchTemplatesForAccount } from "@/lib/templates"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 
 export default function StartInterviewPage() {
@@ -36,9 +37,7 @@ export default function StartInterviewPage() {
     }
     setUsername(name)
     // load templates for selection (backend)
-  const base = getSignalingHttpBase()
-    fetch(`${base}/templates?account=${encodeURIComponent(name)}`)
-      .then(r=>r.json())
+    fetchTemplatesForAccount(name)
       .then((arr)=>{
         const opts = Array.isArray(arr) ? arr.map((t:any)=>({id:String(t.id), name: t.name||'Untitled'})) : []
         setTemplates(opts)

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { getSignalingHttpBase } from '@/lib/signaling'
+import { fetchTemplatesForAccount } from '@/lib/templates'
 
 interface Template {
   id: string
@@ -22,9 +23,7 @@ export default function InterviewTemplatePage() {
     const name = sessionStorage.getItem('interviewer_name') || ''
     setUsername(name)
     if (!name) return
-    const base = getSignalingHttpBase()
-    fetch(`${base}/templates?account=${encodeURIComponent(name)}`)
-      .then((res) => res.json())
+    fetchTemplatesForAccount(name)
       .then((data) => setTemplates(Array.isArray(data) ? data : []))
       .catch(() => setTemplates([]))
   }, [])

@@ -265,14 +265,21 @@ function EditTemplatePage() {
     const [aiContext, setAiContext] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [aiBusy, setAiBusy] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
+    const [username, setUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        if (!isNew) {
-            fetch(`/api/templates/${id}`).then((res)=>res.json()).then((data)=>setTemplate(data || {
-                    name: '',
-                    criteria: [],
-                    coding_questions: []
-                })).finally(()=>setLoading(false));
+        const name = sessionStorage.getItem('interviewer_name') || '';
+        setUsername(name);
+        if (isNew) return;
+        if (!name) {
+            setLoading(false);
+            return;
         }
+        const base = (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$lib$2f$signaling$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getSignalingHttpBase"])();
+        fetch(`${base}/templates/${id}?account=${encodeURIComponent(name)}`).then((res)=>res.json()).then((data)=>setTemplate(data || {
+                name: '',
+                criteria: [],
+                coding_questions: []
+            })).finally(()=>setLoading(false));
     }, [
         id,
         isNew
@@ -311,17 +318,43 @@ function EditTemplatePage() {
         });
     };
     const saveTemplate = async ()=>{
+        const base = (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$lib$2f$signaling$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getSignalingHttpBase"])();
+        if (!username) {
+            toast({
+                title: 'Missing account',
+                description: 'Interviewer name not found.',
+                variant: 'destructive'
+            });
+            return;
+        }
         const method = isNew ? 'POST' : 'PUT';
-        const url = isNew ? '/api/templates' : `/api/templates/${id}`;
+        const url = isNew ? `${base}/templates` : `${base}/templates/${id}?account=${encodeURIComponent(username)}`;
+        const body = isNew ? JSON.stringify({
+            account: username,
+            name: template.name,
+            criteria: template.criteria,
+            coding_questions: template.coding_questions
+        }) : JSON.stringify({
+            name: template.name,
+            criteria: template.criteria,
+            coding_questions: template.coding_questions
+        });
         const res = await fetch(url, {
             method,
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(template)
+            body
         });
         if (res.ok) {
             router.push('/interview-template');
+        } else {
+            const txt = await res.text();
+            toast({
+                title: 'Save failed',
+                description: txt || 'Could not save template',
+                variant: 'destructive'
+            });
         }
     };
     const generateWithAI = async ()=>{
@@ -375,7 +408,7 @@ function EditTemplatePage() {
         children: "Loading…"
     }, void 0, false, {
         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-        lineNumber: 111,
+        lineNumber: 128,
         columnNumber: 23
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -390,7 +423,7 @@ function EditTemplatePage() {
                         children: "Back"
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 116,
+                        lineNumber: 133,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -398,13 +431,13 @@ function EditTemplatePage() {
                         children: isNew ? 'New Template' : 'Edit Template'
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 117,
+                        lineNumber: 134,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                lineNumber: 115,
+                lineNumber: 132,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -422,14 +455,14 @@ function EditTemplatePage() {
                                                 className: "w-5 h-5 text-primary"
                                             }, void 0, false, {
                                                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                                lineNumber: 124,
+                                                lineNumber: 141,
                                                 columnNumber: 15
                                             }, this),
                                             " AI Assistance"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                        lineNumber: 123,
+                                        lineNumber: 140,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -437,13 +470,13 @@ function EditTemplatePage() {
                                         children: "Provide context and let AI suggest criteria and questions."
                                     }, void 0, false, {
                                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                        lineNumber: 126,
+                                        lineNumber: 143,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                lineNumber: 122,
+                                lineNumber: 139,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -455,26 +488,26 @@ function EditTemplatePage() {
                                         className: "w-4 h-4 mr-2 animate-spin"
                                     }, void 0, false, {
                                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                        lineNumber: 129,
+                                        lineNumber: 146,
                                         columnNumber: 23
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__["Sparkles"], {
                                         className: "w-4 h-4 mr-2"
                                     }, void 0, false, {
                                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                        lineNumber: 129,
+                                        lineNumber: 146,
                                         columnNumber: 75
                                     }, this),
                                     "Generate with AI"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                lineNumber: 128,
+                                lineNumber: 145,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 121,
+                        lineNumber: 138,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Textarea"], {
@@ -484,13 +517,13 @@ function EditTemplatePage() {
                         rows: 4
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 133,
+                        lineNumber: 150,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                lineNumber: 120,
+                lineNumber: 137,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -502,7 +535,7 @@ function EditTemplatePage() {
                     })
             }, void 0, false, {
                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                lineNumber: 141,
+                lineNumber: 158,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -513,7 +546,7 @@ function EditTemplatePage() {
                         children: "Criteria"
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 148,
+                        lineNumber: 165,
                         columnNumber: 9
                     }, this),
                     template.criteria.map((c, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -524,7 +557,7 @@ function EditTemplatePage() {
                                     onChange: (e)=>updateField('criteria', i, e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                    lineNumber: 151,
+                                    lineNumber: 168,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -533,13 +566,13 @@ function EditTemplatePage() {
                                     children: "Remove"
                                 }, void 0, false, {
                                     fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                    lineNumber: 152,
+                                    lineNumber: 169,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, i, true, {
                             fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                            lineNumber: 150,
+                            lineNumber: 167,
                             columnNumber: 11
                         }, this)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -547,13 +580,13 @@ function EditTemplatePage() {
                         children: "+ Add Criterion"
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 155,
+                        lineNumber: 172,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                lineNumber: 147,
+                lineNumber: 164,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -564,7 +597,7 @@ function EditTemplatePage() {
                         children: "Coding Questions"
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 159,
+                        lineNumber: 176,
                         columnNumber: 9
                     }, this),
                     template.coding_questions.map((q, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -575,7 +608,7 @@ function EditTemplatePage() {
                                     onChange: (e)=>updateField('coding_questions', i, e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                    lineNumber: 162,
+                                    lineNumber: 179,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -584,13 +617,13 @@ function EditTemplatePage() {
                                     children: "Remove"
                                 }, void 0, false, {
                                     fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                                    lineNumber: 163,
+                                    lineNumber: 180,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, i, true, {
                             fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                            lineNumber: 161,
+                            lineNumber: 178,
                             columnNumber: 11
                         }, this)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -598,13 +631,13 @@ function EditTemplatePage() {
                         children: "+ Add Question"
                     }, void 0, false, {
                         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                        lineNumber: 166,
+                        lineNumber: 183,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                lineNumber: 158,
+                lineNumber: 175,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$programs$2f$ANTICLUELY$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -613,13 +646,13 @@ function EditTemplatePage() {
                 children: "Save Template"
             }, void 0, false, {
                 fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-                lineNumber: 169,
+                lineNumber: 186,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page.tsx",
-        lineNumber: 114,
+        lineNumber: 131,
         columnNumber: 5
     }, this);
 }

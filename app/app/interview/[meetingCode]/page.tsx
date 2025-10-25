@@ -87,6 +87,7 @@ export default function InterviewPage() {
   const [docName] = useState("coding-task-1")
   const [editorValue, setEditorValue] = useState("")
   const [showGazeOnEditor, setShowGazeOnEditor] = useState(true)
+  const [assignedQuestion, setAssignedQuestion] = useState<string>("")
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -339,7 +340,7 @@ export default function InterviewPage() {
             const gazePoint: GazeData = {
               x: Math.round(prediction.x),
               y: Math.round(prediction.y),
-              confidence: prediction.confidence ?? 0,
+              confidence: prediction.confidence ?? 1,
               timestamp: Date.now(),
               pageW: window.innerWidth,
               pageH: window.innerHeight,
@@ -353,7 +354,8 @@ export default function InterviewPage() {
             const avgX = gazeDataBufferRef.current.reduce((sum, p) => sum + p.x, 0) / gazeDataBufferRef.current.length
             const avgY = gazeDataBufferRef.current.reduce((sum, p) => sum + p.y, 0) / gazeDataBufferRef.current.length
             const avgConfidence =
-              gazeDataBufferRef.current.reduce((sum, p) => sum + p.confidence, 0) / gazeDataBufferRef.current.length
+              gazeDataBufferRef.current.reduce((sum, p) => sum + (Number.isFinite(p.confidence) ? p.confidence : 1), 0) /
+              gazeDataBufferRef.current.length
 
             const smoothedGaze: GazeData = {
               x: Math.round(avgX),

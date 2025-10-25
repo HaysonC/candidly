@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Copy, Mic, MicOff, Phone, Video, VideoOff, Monitor, Loader2, Eye } from "lucide-react"
+import { Copy, Mic, MicOff, Phone, Video, VideoOff, Monitor, Loader2, Eye, Code2 } from "lucide-react"
+import { CodeEditorPanel, type EditorLanguage } from "@/components/editor/CodeEditor"
 import { useToast } from "@/hooks/use-toast"
 import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
@@ -52,6 +53,16 @@ export default function InterviewPage() {
   const [gazeData, setGazeData] = useState<GazeData | null>(null)
   const [remoteVideoBlurred, setRemoteVideoBlurred] = useState(false)
   const [waitingForCalibration, setWaitingForCalibration] = useState(false)
+  const [candidateReady, setCandidateReady] = useState(false)
+  const [templateData, setTemplateData] = useState<any | null>(null)
+
+  // Editor state
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editorMinimized, setEditorMinimized] = useState(false)
+  const [editorLang, setEditorLang] = useState<EditorLanguage>("python")
+  const [docName] = useState("coding-task-1")
+  const [editorValue, setEditorValue] = useState("")
+  const [showGazeOnEditor, setShowGazeOnEditor] = useState(true)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -61,6 +72,32 @@ export default function InterviewPage() {
   const screenStreamRef = useRef<MediaStream | null>(null)
   const gazeDataBufferRef = useRef<GazeData[]>([])
   const isEyeTrackingActiveRef = useRef(false)
+
+  // Load template by query param (?template=ID)
+  useEffect(() => {
+    const tid = searchParams.get("template")
+    if (!tid) return
+    const load = async () => {
+      try {
+        let res = await fetch(`/api/templates/${tid}`)
+        if (!res.ok) {
+          res = await fetch(`/app/api/templates/${tid}`)
+        }
+        if (res.ok) {
+          const data = await res.json()
+          setTemplateData(data)
+        } else {
+          setTemplateData(null)
+          toast({ title: "Template not found", description: `Could not load template ${tid}`, variant: "destructive" })
+        }
+      } catch (e) {
+        setTemplateData(null)
+        toast({ title: "Template error", description: "Failed to fetch template data", variant: "destructive" })
+      }
+    }
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   useEffect(() => {
     if (hasConsented) {
@@ -462,6 +499,7 @@ export default function InterviewPage() {
               setRemoteVideoBlurred(false)
               setWaitingForCalibration(false)
               setIsEyeTrackingActive(true)
+              setCandidateReady(true)
               toast({
                 title: "Calibration Complete",
                 description: "Eye tracking is now active",
@@ -486,6 +524,26 @@ export default function InterviewPage() {
           case "gaze-data":
             if (role === "interviewer") {
               setGazeData(data.gaze)
+              if (!candidateReady) {
+                setCandidateReady(true)
+                console.log("[debug] Gaze data received — unlocking assign button")
+              }
+            }
+            break
+          case "editor":
+            // Receive remote editor events
+            if (data.payload) {
+              const p = data.payload
+              if (p.kind === "update" && typeof p.value === "string") {
+                setEditorValue(p.value)
+              }
+              if (p.kind === "meta" && p.lang) {
+                setEditorLang(p.lang as EditorLanguage)
+              }
+              if (p.kind === "toggle") {
+                if (typeof p.open === "boolean") setEditorOpen(p.open)
+                if (typeof p.minimized === "boolean") setEditorMinimized(p.minimized)
+              }
             }
             break
 
@@ -749,6 +807,71 @@ export default function InterviewPage() {
     router.push("/")
   }
 
+  // --- Shared editor helpers ---
+  const sendEditorUpdate = (payload: any) => {
+    try {
+      wsRef.current?.send(JSON.stringify({ type: "editor", payload }))
+    } catch {}
+  }
+
+  const handleEditorChange = (val: string) => {
+    setEditorValue(val)
+    sendEditorUpdate({ kind: "update", value: val })
+  }
+
+  const handleLanguageChange = (lang: EditorLanguage) => {
+    setEditorLang(lang)
+    sendEditorUpdate({ kind: "meta", lang })
+  }
+
+  const toggleEditorOpen = () => {
+    const next = !editorOpen
+    setEditorOpen(next)
+    setEditorMinimized(false)
+    sendEditorUpdate({ kind: "toggle", open: next, minimized: false })
+  }
+
+  const toggleEditorMin = () => {
+    const next = !editorMinimized
+    setEditorMinimized(next)
+    setEditorOpen(true)
+    sendEditorUpdate({ kind: "toggle", open: true, minimized: next })
+  }
+
+  // Prepare and send assignment payload to the peer
+  const assignTemplateToEditor = () => {
+    if (!templateData) return
+    const line = (s: string) => `// ${s}`
+    const crit: string[] = Array.isArray(templateData?.criteria) ? templateData.criteria : []
+    const questions: string[] = Array.isArray(templateData?.coding_questions)
+      ? templateData.coding_questions
+      : []
+    const header = [
+      line("=== Interview Template ==="),
+      line(`Name: ${templateData?.name || "Untitled"}`),
+      line("") ,
+      line("Criteria:"),
+      ...crit.map((c) => line(`- ${c}`)),
+      line("") ,
+      line("Questions:"),
+      ...questions.map((q, i) => line(`${i + 1}. ${q}`)),
+      line("=========================="),
+      "",
+    ].join("\n")
+
+    try {
+      wsRef.current?.send(
+        JSON.stringify({
+          type: "editor",
+          payload: { kind: "update", value: header },
+        }),
+      )
+      toast({ title: "Assigned", description: "Questions sent to the candidate." })
+    } catch (e) {
+      toast({ title: "Assignment failed", description: "Could not send questions to the candidate.", variant: "destructive" })
+    }
+  }
+
   const cleanup = () => {
     isEyeTrackingActiveRef.current = false
 
@@ -827,11 +950,23 @@ export default function InterviewPage() {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={toggleEditorOpen}>
+              <Code2 className="w-4 h-4 mr-2" />
+              {editorOpen ? 'Close Editor' : 'Open Editor'}
+            </Button>
+            {role === 'interviewer' && (
+              <Button variant="outline" size="sm" onClick={() => setShowGazeOnEditor((v) => !v)}>
+                {showGazeOnEditor ? 'Gaze Overlay: On' : 'Gaze Overlay: Off'}
+              </Button>
+            )}
             {role === "interviewer" && isConnected && !isEyeTrackingActive && (
               <Button variant="outline" size="sm" onClick={handleCalibrationRequest}>
                 <Eye className="w-4 h-4 mr-2" />
                 Start Calibration
               </Button>
+            )}
+            {role === "interviewer" && candidateReady && templateData && (
+              <Button size="sm" onClick={assignTemplateToEditor}>Assign Template Questions</Button>
             )}
             <Button variant="outline" size="sm" onClick={copyCode}>
               <Copy className="w-4 h-4 mr-2" />
@@ -989,6 +1124,22 @@ export default function InterviewPage() {
           <Button variant="destructive" size="lg" onClick={endCall} className="rounded-full w-14 h-14">
             <Phone className="w-5 h-5 rotate-[135deg]" />
           </Button>
+        </div>
+        {/* Editor Panel */}
+        <div className="mt-4">
+          <CodeEditorPanel
+            open={editorOpen}
+            minimized={editorMinimized}
+            onToggleOpen={toggleEditorOpen}
+            onToggleMinimize={toggleEditorMin}
+            language={editorLang}
+            onLanguageChange={handleLanguageChange}
+            docName={docName}
+            value={editorValue}
+            onChange={handleEditorChange}
+            showGazeOverlay={role === 'interviewer' && showGazeOnEditor}
+            remoteGaze={role === 'interviewer' ? gazeData : null}
+          />
         </div>
       </div>
 

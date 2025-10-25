@@ -6,7 +6,8 @@ import Editor from '@monaco-editor/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ChevronDown, Maximize2, Minimize2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ChevronDown, Maximize2, Minimize2, Save } from 'lucide-react'
 import { uploadCandidateInterviewed } from '@/lib/upload'
 
 export type EditorLanguage = 'python' | 'cpp' | 'java'
@@ -38,6 +39,7 @@ export interface CodeEditorProps {
   candidateName?: string
   originalQuestion?: string
   interviewerName?: string
+  onNewQuestion?: () => void // Callback to reset submission state when new question assigned
 }
 
 export function CodeEditorPanel(props: CodeEditorProps) {
@@ -56,10 +58,93 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     candidateName,
     originalQuestion,
     interviewerName,
+    onNewQuestion,
   } = props
 
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+
+  // Reset submission state when new question is assigned
+  useEffect(() => {
+    if (onNewQuestion) {
+      setIsSubmitted(false)
+      setSubmitSuccess(false)
+      setSaveSuccess(false)
+    }
+  }, [originalQuestion, onNewQuestion])
+
+  const handleSave = async () => {
+    try {
+      // Show save success message (code is automatically synced)
+      setSaveSuccess(true);
+      // Hide save success message after 2 seconds
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (error) {
+      console.error('Error saving code:', error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!candidateName) {
+        console.error('No candidate name provided');
+        return;
+      }
+      
+      if (!interviewerName) {
+        console.error('No interviewer name provided');
+        return;
+      }
+      
+      // Separate question from candidate response
+      const lines = value.split('\n');
+      let questionEndIndex = 0;
+      let question = '';
+      let candidateResponse = '';
+      
+      // Find where the question ends (look for "Write your solution below:")
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.includes('Write your solution below:')) {
+          questionEndIndex = i;
+          question = lines.slice(0, i + 1).join('\n');
+          candidateResponse = lines.slice(i + 1).join('\n').trim();
+          break;
+        }
+      }
+      
+      // Fallback: use originalQuestion if available
+      if (!question && originalQuestion) {
+        question = originalQuestion;
+        candidateResponse = value;
+      } else if (!question) {
+        // If no clear separation, treat first part as question
+        const halfPoint = Math.floor(lines.length / 2);
+        question = lines.slice(0, halfPoint).join('\n');
+        candidateResponse = lines.slice(halfPoint).join('\n');
+      }
+      
+      const codeData = {
+        filename: docName,
+        question: question,
+        candidate_response: candidateResponse,
+        language: language
+      };
+      
+      const success = await uploadCandidateInterviewed(candidateName, codeData, interviewerName);
+      
+      if (success) {
+        setIsSubmitted(true);
+        setSubmitSuccess(true);
+      } else {
+        console.error('Failed to submit code');
+      }
+    } catch (error) {
+      console.error('Error submitting code:', error);
+    }
+  };
 
   // Function to convert comments between languages
   const convertComments = (text: string, fromLang: EditorLanguage, toLang: EditorLanguage): string => {
@@ -244,72 +329,62 @@ export function CodeEditorPanel(props: CodeEditorProps) {
             <span className="font-medium">Code successfully submitted</span>
           </div>
         ) : (
-          <Button 
-            onClick={async () => {
-              try {
-                if (!candidateName) {
-                  console.error('No candidate name provided');
-                  return;
-                }
-                
-                if (!interviewerName) {
-                  console.error('No interviewer name provided');
-                  return;
-                }
-                
-                // Separate question from candidate response
-                const lines = value.split('\n');
-                let questionEndIndex = 0;
-                let question = '';
-                let candidateResponse = '';
-                
-                // Find where the question ends (look for "Write your solution below:")
-                for (let i = 0; i < lines.length; i++) {
-                  const line = lines[i].trim();
-                  if (line.includes('Write your solution below:')) {
-                    questionEndIndex = i;
-                    question = lines.slice(0, i + 1).join('\n');
-                    candidateResponse = lines.slice(i + 1).join('\n').trim();
-                    break;
-                  }
-                }
-                
-                // Fallback: use originalQuestion if available
-                if (!question && originalQuestion) {
-                  question = originalQuestion;
-                  candidateResponse = value;
-                } else if (!question) {
-                  // If no clear separation, treat first part as question
-                  const halfPoint = Math.floor(lines.length / 2);
-                  question = lines.slice(0, halfPoint).join('\n');
-                  candidateResponse = lines.slice(halfPoint).join('\n');
-                }
-                
-                const codeData = {
-                  filename: docName,
-                  question: question,
-                  candidate_response: candidateResponse,
-                  language: language
-                };
-                
-                const success = await uploadCandidateInterviewed(candidateName, codeData, interviewerName);
-                
-                if (success) {
-                  setIsSubmitted(true);
-                  setSubmitSuccess(true);
-                } else {
-                  console.error('Failed to submit code');
-                }
-              } catch (error) {
-                console.error('Error submitting code:', error);
-              }
-            }}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
-          >
-            Submit Code
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSave}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Save
+            </Button>
+            
+            <Button 
+              onClick={() => setShowConfirmDialog(true)}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1"
+            >
+              Submit Code
+            </Button>
+          </div>
+        )}
+
+        {/* Save success message */}
+        {saveSuccess && (
+          <div className="flex items-center justify-center gap-2 text-blue-600 py-1 mt-2">
+            <Save className="w-4 h-4" />
+            <span className="text-sm">Code saved successfully</span>
+          </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Submission</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to submit your code? You won't be able to edit it after submission.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowConfirmDialog(false);
+                handleSubmit();
+              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Yes, Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

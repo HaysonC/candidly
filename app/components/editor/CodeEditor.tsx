@@ -332,18 +332,25 @@ export function CodeEditorPanel(props: CodeEditorProps) {
         <div className="flex items-center gap-3">
           <div className="text-sm font-medium">{docName}</div>
           
-          {role === 'interviewer' && (
+          {questionAssigned && (
             <div className="flex items-center gap-2">
               <div className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
                 {formatTime(timerSeconds)}
               </div>
-              <Button 
-                size="sm" 
-                variant={timerActive ? "destructive" : "default"}
-                onClick={() => onTimerToggle && onTimerToggle(!timerActive)}
-              >
-                {timerActive ? "Stop" : "Start"} Timer
-              </Button>
+              {role === 'interviewer' && (
+                <Button 
+                  size="sm" 
+                  variant={timerActive ? "destructive" : "default"}
+                  onClick={() => onTimerToggle && onTimerToggle(!timerActive)}
+                >
+                  {timerActive ? "Stop" : "Start"} Timer
+                </Button>
+              )}
+              {role === 'interviewee' && (
+                <div className="text-xs text-muted-foreground">
+                  {timerActive ? "Timer Running" : "Timer Stopped"}
+                </div>
+              )}
             </div>
           )}
           

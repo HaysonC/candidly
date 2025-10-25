@@ -94,7 +94,8 @@ def _candidate_base_dir(account: str, candidate: str) -> Path:
 
 def _candidate_timestamp_dir(account: str, candidate: str, timestamp: Optional[str] = None, create: bool = True) -> Path:
     base = _candidate_base_dir(account, candidate)
-    ts = timestamp or str(int(time() * 1000))
+    # Use candidate name instead of numeric timestamp
+    ts = timestamp or _safe_candidate_dirname(candidate)
     dir_path = base / ts
     if create:
         dir_path.mkdir(parents=True, exist_ok=True)
@@ -107,9 +108,9 @@ def _latest_timestamp_dir(account: str, candidate: str) -> Optional[Path]:
     subdirs: List[Path] = [p for p in base.iterdir() if p.is_dir()]
     if not subdirs:
         return None
-    # pick lexicographically max since timestamps are numeric strings
-    latest = max(subdirs, key=lambda p: p.name)
-    return latest
+    # Since we're now using candidate names instead of timestamps,
+    # just return the first directory (or you could modify this logic as needed)
+    return subdirs[0] if subdirs else None
 
 def _tracking_path(ts_dir: Path) -> Path:
     return ts_dir / "tracking.json"

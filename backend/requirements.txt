@@ -4,5 +4,5 @@ websockets==13.1
 python-multipart==0.0.12
 langchain==0.3.3
 langchain-google-genai==2.0.3
-google-generativeai==0.7.2
+google-generativeai>=0.8.0
 python-dotenv==1.0.1

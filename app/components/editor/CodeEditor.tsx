@@ -156,6 +156,14 @@ export function CodeEditorPanel(props: CodeEditorProps) {
           <canvas ref={overlayRef} className="pointer-events-none absolute inset-0" />
         )}
       </div>
+      <div className="px-3 py-2 border-t">
+        <Button 
+          onClick={() => console.log('Code submitted:', value)}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Submit Code
+        </Button>
+      </div>
     </Card>
   )
 }

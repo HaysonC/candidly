@@ -1,34 +1,30 @@
 {
   "app": {
-    "[project]/programs/ANTICLUELY/app/app/dashboard/page": [
+    "[project]/app/_not-found/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ],
-    "[project]/programs/ANTICLUELY/app/app/dashboard/start-interview/page": [
+    "[project]/app/dashboard/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ],
-    "[project]/programs/ANTICLUELY/app/app/interview-template/[id]/page": [
+    "[project]/app/dashboard/start-interview/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ],
-    "[project]/programs/ANTICLUELY/app/app/interview-template/page": [
+    "[project]/app/interview/[meetingCode]/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ],
-    "[project]/programs/ANTICLUELY/app/app/interview/[meetingCode]/page": [
+    "[project]/app/join/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ],
-    "[project]/programs/ANTICLUELY/app/app/join/page": [
+    "[project]/app/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ],
-    "[project]/programs/ANTICLUELY/app/app/page": [
-      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
-      "static/media/797e433ab948586e-s.p.dbea232f.woff2"
-    ],
-    "[project]/programs/ANTICLUELY/app/app/start/page": [
+    "[project]/app/start/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
       "static/media/797e433ab948586e-s.p.dbea232f.woff2"
     ]

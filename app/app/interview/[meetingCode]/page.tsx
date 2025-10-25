@@ -86,7 +86,8 @@ export default function InterviewPage() {
   const [editorOpen, setEditorOpen] = useState(false)
   const [editorMinimized, setEditorMinimized] = useState(false)
   const [editorLang, setEditorLang] = useState<EditorLanguage>("python")
-  const [docName] = useState("coding-task-1")
+  const [taskCounter, setTaskCounter] = useState(1)
+  const [docName, setDocName] = useState("coding-task-1")
   const [editorValue, setEditorValue] = useState("")
   const [showGazeOnEditor, setShowGazeOnEditor] = useState(true)
 
@@ -1024,12 +1025,16 @@ export default function InterviewPage() {
     try {
       // Store the assigned question for later use
       setAssignedQuestion(chosen)
+      // Update task counter and docName for new assignment
+      const newDocName = `coding-task-${taskCounter}`
+      setDocName(newDocName)
+      setTaskCounter(prevCounter => prevCounter + 1)
       // Ensure editor is open for both peers
       sendEditorUpdate({ kind: "toggle", open: true, minimized: false })
       // Send content
       sendEditorUpdate({ kind: "update", value: content })
       setShowAssignDialog(false)
-      toast({ title: "Question assigned", description: "Sent to the shared editor." })
+      toast({ title: "Question assigned", description: `Sent to the shared editor as ${newDocName}.` })
     } catch (e) {
       toast({ title: "Assignment failed", description: "Could not send to the candidate.", variant: "destructive" })
     }

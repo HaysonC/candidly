@@ -59,6 +59,7 @@ export function CodeEditorPanel(props: CodeEditorProps) {
   } = props
 
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   // Function to convert comments between languages
   const convertComments = (text: string, fromLang: EditorLanguage, toLang: EditorLanguage): string => {
@@ -174,6 +175,25 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     )
   }
 
+  // If code has been submitted, show success message instead of editor
+  if (isSubmitted) {
+    return (
+      <Card className="relative overflow-hidden">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-green-800">Code Successfully Submitted!</h3>
+            <p className="text-gray-600">Your solution has been saved and is ready for review.</p>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <Card className="relative overflow-hidden">
       <div className="flex items-center justify-between px-3 py-2 border-b">
@@ -275,8 +295,8 @@ export function CodeEditorPanel(props: CodeEditorProps) {
                 const success = await uploadCandidateInterviewed(candidateName, codeData, interviewerName);
                 
                 if (success) {
+                  setIsSubmitted(true);
                   setSubmitSuccess(true);
-                  setTimeout(() => setSubmitSuccess(false), 3000); // Hide after 3 seconds
                 } else {
                   console.error('Failed to submit code');
                 }

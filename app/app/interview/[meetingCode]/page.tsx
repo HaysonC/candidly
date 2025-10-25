@@ -1,0 +1,1034 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Copy, Mic, MicOff, Phone, Video, VideoOff, Monitor, Loader2, Eye } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { ConsentDialog } from "@/components/consent-dialog"
+import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
+import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
+
+interface GazeData {
+  x: number
+  y: number
+  confidence: number
+  timestamp: number
+  pageW?: number
+  pageH?: number
+}
+
+declare global {
+  interface Window {
+    webgazer: any
+  }
+}
+
+export default function InterviewPage() {
+  const params = useParams()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const meetingCode = params.meetingCode as string
+  const role = searchParams.get("role") as "interviewer" | "interviewee"
+
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true)
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true)
+  const [isConnected, setIsConnected] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isScreenSharing, setIsScreenSharing] = useState(false)
+  const [sessionInfo, setSessionInfo] = useState<any>(null)
+  const [localVideoReady, setLocalVideoReady] = useState(false)
+  const [remoteVideoReady, setRemoteVideoReady] = useState(false)
+  const [showConsentDialog, setShowConsentDialog] = useState(role === "interviewee")
+  const [hasConsented, setHasConsented] = useState(role === "interviewer")
+
+  const [showCalibrationDialog, setShowCalibrationDialog] = useState(false)
+  const [showCalibrationRequest, setShowCalibrationRequest] = useState(false)
+  const [isCalibrating, setIsCalibrating] = useState(false)
+  const [isEyeTrackingActive, setIsEyeTrackingActive] = useState(false)
+  const [gazeData, setGazeData] = useState<GazeData | null>(null)
+  const [remoteVideoBlurred, setRemoteVideoBlurred] = useState(false)
+  const [waitingForCalibration, setWaitingForCalibration] = useState(false)
+
+  const localVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  const wsRef = useRef<WebSocket | null>(null)
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
+  const localStreamRef = useRef<MediaStream | null>(null)
+  const screenStreamRef = useRef<MediaStream | null>(null)
+  const gazeDataBufferRef = useRef<GazeData[]>([])
+  const isEyeTrackingActiveRef = useRef(false)
+
+  useEffect(() => {
+    if (hasConsented) {
+      initializeCall()
+    }
+
+    return () => {
+      cleanup()
+    }
+  }, [meetingCode, role, hasConsented])
+
+  useEffect(() => {
+    const attachLocalStream = async () => {
+      if (localStreamRef.current && localVideoRef.current && !localVideoRef.current.srcObject) {
+        console.log("[debug] ===== ATTACHING LOCAL STREAM TO VIDEO ELEMENT =====")
+        const localVideo = localVideoRef.current
+        localVideo.srcObject = localStreamRef.current
+
+        try {
+          await localVideo.play()
+          console.log("[debug] ===== LOCAL VIDEO PLAYING =====")
+          setLocalVideoReady(true)
+        } catch (error) {
+          console.error("[debug] Error playing local video:", error)
+          // Retry after a short delay
+          setTimeout(async () => {
+            try {
+              await localVideo.play()
+              setLocalVideoReady(true)
+            } catch (e) {
+              console.error("[debug] Retry failed:", e)
+            }
+          }, 500)
+        }
+      }
+    }
+
+    attachLocalStream()
+  }, [localStreamRef.current, localVideoRef.current])
+
+  useEffect(() => {
+    if (role === "interviewee" && hasConsented && !isLoading) {
+      console.log("[debug] Attempting to load WebGazer...")
+      loadWebGazer()
+    }
+
+    return () => {
+      if (window.webgazer) {
+        console.log("[debug] Cleaning up WebGazer")
+        window.webgazer.end()
+      }
+    }
+  }, [role, hasConsented, isLoading])
+
+  const loadWebGazer = () => {
+    if (window.webgazer) {
+      console.log("[debug] WebGazer already loaded")
+      return
+    }
+
+    console.log("[debug] Creating script element for WebGazer")
+    const script = document.createElement("script")
+    script.src = "/webgazer.js"
+    script.async = true
+    script.onload = () => {
+      console.log("[debug] WebGazer script loaded successfully")
+      if (window.webgazer) {
+        console.log("[debug] WebGazer object is available")
+      } else {
+        console.error("[debug] WebGazer script loaded but object not available")
+      }
+    }
+    script.onerror = (error) => {
+      console.error("[debug] Failed to load WebGazer script:", error)
+      console.error("[debug] Script src was:", script.src)
+      toast({
+        title: "Eye Tracking Error",
+        description: "Failed to load eye tracking library. Please refresh the page.",
+        variant: "destructive",
+      })
+    }
+    document.body.appendChild(script)
+    console.log("[debug] WebGazer script element appended to body")
+  }
+
+  const handleCalibrationRequest = () => {
+    if (role === "interviewer") {
+      console.log("[debug] Sending calibration request")
+      const message = {
+        type: "calibration-request",
+      }
+      console.log("[debug] Message to send:", message)
+      wsRef.current?.send(JSON.stringify(message))
+      setWaitingForCalibration(true)
+      toast({
+        title: "Calibration Request Sent",
+        description: "Waiting for candidate to accept",
+      })
+    }
+  }
+
+  const handleCalibrationAccept = async () => {
+    console.log("[debug] Calibration accepted")
+    setShowCalibrationRequest(false)
+    setShowCalibrationDialog(true)
+    setIsCalibrating(true)
+
+    console.log("[debug] Sending calibration-started message")
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "calibration-started",
+      }),
+    )
+
+    if (window.webgazer) {
+      console.log("[debug] Initializing WebGazer for calibration")
+      try {
+        await window.webgazer.setRegression("ridge").setTracker("TFFacemesh").begin()
+        window.webgazer.showVideoPreview(false).showPredictionPoints(false)
+        console.log("[debug] WebGazer initialized successfully")
+      } catch (error) {
+        console.error("[debug] WebGazer initialization error:", error)
+        toast({
+          title: "Eye Tracking Error",
+          description: "Failed to initialize eye tracking",
+          variant: "destructive",
+        })
+      }
+    } else {
+      console.error("[debug] WebGazer not available when trying to initialize")
+      toast({
+        title: "Eye Tracking Error",
+        description: "Eye tracking library not loaded. Please refresh the page.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCalibrationComplete = () => {
+    setShowCalibrationDialog(false)
+    setIsCalibrating(false)
+    setIsEyeTrackingActive(true)
+    isEyeTrackingActiveRef.current = true
+
+    console.log("[debug] Calibration complete, sending message to interviewer")
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "calibration-complete",
+      }),
+    )
+
+    toast({
+      title: "Calibration Complete",
+      description: "Eye tracking is now active",
+    })
+
+    console.log("[debug] Starting gaze tracking loop")
+    startGazeTracking()
+  }
+
+  const handleCalibrationDecline = () => {
+    console.log("[debug] Calibration declined, sending cancellation message")
+    setShowCalibrationRequest(false)
+
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "calibration-cancelled",
+      }),
+    )
+
+    toast({
+      title: "Calibration Declined",
+      description: "Eye tracking will not be enabled",
+    })
+  }
+
+  const startGazeTracking = () => {
+    if (!window.webgazer) {
+      console.error("[debug] WebGazer not available for tracking")
+      return
+    }
+
+    console.log("[debug] Starting gaze tracking loop")
+    let frameCount = 0
+    const BUFFER_SIZE = 5 // Moving average window
+
+    const trackGaze = () => {
+      if (!isEyeTrackingActiveRef.current) {
+        console.log("[debug] Eye tracking stopped")
+        return
+      }
+
+      window.webgazer
+        .getCurrentPrediction()
+        .then((prediction: any) => {
+          if (prediction && Number.isFinite(prediction.x) && Number.isFinite(prediction.y)) {
+            const gazePoint: GazeData = {
+              x: Math.round(prediction.x),
+              y: Math.round(prediction.y),
+              confidence: prediction.confidence ?? 0,
+              timestamp: Date.now(),
+              pageW: window.innerWidth,
+              pageH: window.innerHeight,
+            }
+
+            gazeDataBufferRef.current.push(gazePoint)
+            if (gazeDataBufferRef.current.length > BUFFER_SIZE) {
+              gazeDataBufferRef.current.shift()
+            }
+
+            const avgX = gazeDataBufferRef.current.reduce((sum, p) => sum + p.x, 0) / gazeDataBufferRef.current.length
+            const avgY = gazeDataBufferRef.current.reduce((sum, p) => sum + p.y, 0) / gazeDataBufferRef.current.length
+            const avgConfidence =
+              gazeDataBufferRef.current.reduce((sum, p) => sum + p.confidence, 0) / gazeDataBufferRef.current.length
+
+            const smoothedGaze: GazeData = {
+              x: Math.round(avgX),
+              y: Math.round(avgY),
+              confidence: avgConfidence,
+              timestamp: Date.now(),
+              pageW: window.innerWidth,
+              pageH: window.innerHeight,
+            }
+
+            if (frameCount % 30 === 0) {
+              console.log(
+                `[debug] Sending gaze data: (${smoothedGaze.x}, ${smoothedGaze.y}) conf: ${smoothedGaze.confidence.toFixed(2)} viewport: ${smoothedGaze.pageW}x${smoothedGaze.pageH}`,
+              )
+            }
+
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+              wsRef.current.send(
+                JSON.stringify({
+                  type: "gaze-data",
+                  gaze: smoothedGaze,
+                }),
+              )
+            } else {
+              console.warn("[debug] WebSocket not ready, skipping gaze data send")
+            }
+
+            frameCount++
+            if (frameCount % 10 === 0) {
+              fetch("/api/gaze-data", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  meetingCode,
+                  ...smoothedGaze,
+                }),
+              }).catch((error) => {
+                console.error("[debug] Error sending gaze data to backend:", error)
+              })
+            }
+          }
+
+          requestAnimationFrame(trackGaze)
+        })
+        .catch((error: any) => {
+          console.error("[debug] Error getting gaze prediction:", error)
+          requestAnimationFrame(trackGaze)
+        })
+    }
+
+    trackGaze()
+  }
+
+  const handleConsentAccept = () => {
+    setHasConsented(true)
+    setShowConsentDialog(false)
+    toast({
+      title: "Consent Accepted",
+      description: "Setting up your interview...",
+    })
+  }
+
+  const handleConsentDecline = () => {
+    toast({
+      title: "Consent Required",
+      description: "You must accept the terms to join the interview",
+      variant: "destructive",
+    })
+    setTimeout(() => {
+      router.push("/")
+    }, 2000)
+  }
+
+  const initializeCall = async () => {
+    try {
+      console.log("[debug] ===== STARTING INITIALIZE CALL =====")
+      console.log("[debug] Initializing call as", role)
+
+      console.log("[debug] Requesting user media...")
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+        audio: true,
+      })
+
+      console.log("[debug] ===== GOT USER MEDIA STREAM =====")
+      localStreamRef.current = stream
+      console.log("[debug] Got local stream with", stream.getTracks().length, "tracks")
+
+      console.log("[debug] Setting isLoading to false")
+      setIsLoading(false)
+
+      const signalingServer = process.env.NEXT_PUBLIC_SIGNALING_SERVER || "ws://localhost:8000"
+      const wsUrl = `${signalingServer}/ws/${meetingCode}/${role}`
+
+      console.log("[debug] Connecting to:", wsUrl)
+      const ws = new WebSocket(wsUrl)
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        console.log("[debug] WebSocket connected")
+        toast({
+          title: "Connected",
+          description: "Connected to interview room",
+        })
+      }
+
+      ws.onmessage = async (event) => {
+        const data = JSON.parse(event.data)
+        console.log("[debug] Received:", data.type)
+
+        switch (data.type) {
+          case "session-info":
+            setSessionInfo(data)
+            console.log("[debug] Session info:", data)
+            break
+
+          case "room-joined":
+            console.log("[debug] Joined room with", data.participants, "participants")
+            break
+
+          case "user-joined":
+            console.log("[debug] User joined, creating offer")
+            await createOffer()
+            setIsConnected(true)
+            toast({
+              title: `${data.role === "interviewer" ? "Interviewer" : "Candidate"} joined`,
+              description: "Starting video connection...",
+            })
+            break
+
+          case "offer":
+            console.log("[debug] Received offer")
+            await handleOffer(data.offer)
+            setIsConnected(true)
+            break
+
+          case "answer":
+            console.log("[debug] Received answer")
+            await handleAnswer(data.answer)
+            break
+
+          case "ice-candidate":
+            console.log("[debug] Received ICE candidate")
+            await handleIceCandidate(data.candidate)
+            break
+
+          case "user-left":
+            console.log("[debug] User left")
+            handleUserLeft()
+            toast({
+              title: "User left",
+              description: "The other participant has left",
+            })
+            break
+
+          case "calibration-request":
+            console.log("[debug] Received calibration request, role:", role)
+            if (role === "interviewee") {
+              console.log("[debug] Showing calibration request dialog")
+              setShowCalibrationRequest(true)
+            }
+            break
+
+          case "calibration-started":
+            console.log("[debug] Received calibration started, role:", role)
+            if (role === "interviewer") {
+              console.log("[debug] Blurring remote video")
+              setRemoteVideoBlurred(true)
+              setWaitingForCalibration(false)
+              toast({
+                title: "Calibration Started",
+                description: "Candidate is calibrating eye tracking",
+              })
+            }
+            break
+
+          case "calibration-complete":
+            console.log("[debug] Received calibration complete, role:", role)
+            if (role === "interviewer") {
+              console.log("[debug] Unblurring remote video and activating eye tracking display")
+              setRemoteVideoBlurred(false)
+              setWaitingForCalibration(false)
+              setIsEyeTrackingActive(true)
+              toast({
+                title: "Calibration Complete",
+                description: "Eye tracking is now active",
+              })
+            }
+            break
+
+          case "calibration-cancelled":
+            console.log("[debug] Received calibration cancelled, role:", role)
+            if (role === "interviewer") {
+              setRemoteVideoBlurred(false)
+              setWaitingForCalibration(false)
+              setIsEyeTrackingActive(false)
+              toast({
+                title: "Calibration Cancelled",
+                description: "The candidate declined eye tracking calibration",
+                variant: "destructive",
+              })
+            }
+            break
+
+          case "gaze-data":
+            if (role === "interviewer") {
+              setGazeData(data.gaze)
+            }
+            break
+
+          case "error":
+            console.error("[debug] Server error:", data.message)
+            toast({
+              title: "Error",
+              description: data.message,
+              variant: "destructive",
+            })
+            break
+
+          default:
+            console.log("[debug] Unknown message type:", data.type)
+        }
+      }
+
+      ws.onerror = (error) => {
+        console.error("[debug] WebSocket error:", error)
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to server",
+          variant: "destructive",
+        })
+      }
+
+      ws.onclose = () => {
+        console.log("[debug] WebSocket closed")
+      }
+    } catch (error) {
+      console.error("[debug] Error initializing:", error)
+      setIsLoading(false)
+      toast({
+        title: "Media Error",
+        description: "Failed to access camera/microphone. Please check permissions.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const createPeerConnection = () => {
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
+    })
+
+    localStreamRef.current?.getTracks().forEach((track) => {
+      console.log("[debug] Adding track to peer connection:", track.kind)
+      pc.addTrack(track, localStreamRef.current!)
+    })
+
+    pc.ontrack = (event) => {
+      console.log("[debug] Received remote track:", event.track.kind, "readyState:", event.track.readyState)
+      if (remoteVideoRef.current && event.streams[0]) {
+        const remoteVideo = remoteVideoRef.current
+        const newStream = event.streams[0]
+
+        console.log("[debug] Remote stream has", newStream.getTracks().length, "tracks")
+
+        if (!document.body.contains(remoteVideo)) {
+          console.error("[debug] Remote video element not in DOM yet!")
+        }
+
+        if (remoteVideo.srcObject !== newStream) {
+          console.log("[debug] Setting remote video srcObject")
+          remoteVideo.srcObject = newStream
+
+          const attemptRemotePlay = async (attemptNumber: number, maxAttempts: number) => {
+            console.log(`[debug] Remote play attempt ${attemptNumber}/${maxAttempts}`)
+            console.log(`[debug] Remote video readyState: ${remoteVideo.readyState}, paused: ${remoteVideo.paused}`)
+
+            try {
+              await remoteVideo.play()
+              console.log("[debug] Remote video playing successfully - SETTING STATE TO TRUE")
+              setRemoteVideoReady(true)
+              // Force a second state update
+              setTimeout(() => {
+                console.log("[debug] Double-checking remote video state")
+                if (remoteVideo.readyState >= 2 && !remoteVideo.paused) {
+                  setRemoteVideoReady(true)
+                }
+              }, 100)
+              return true
+            } catch (e) {
+              console.error(`[debug] Remote play attempt ${attemptNumber} failed:`, e)
+
+              if (attemptNumber < maxAttempts) {
+                const delay = 300
+                console.log(`[debug] Retrying remote play in ${delay}ms...`)
+                await new Promise((resolve) => setTimeout(resolve, delay))
+                return attemptRemotePlay(attemptNumber + 1, maxAttempts)
+              }
+              return false
+            }
+          }
+
+          attemptRemotePlay(1, 5)
+
+          remoteVideo.onloadedmetadata = () => {
+            console.log("[debug] Remote video metadata loaded")
+            console.log("[debug] Remote video dimensions:", remoteVideo.videoWidth, "x", remoteVideo.videoHeight)
+            if (remoteVideo.paused) {
+              attemptRemotePlay(1, 3)
+            }
+          }
+
+          const checkInterval = setInterval(() => {
+            if (remoteVideo.readyState >= 2 && !remoteVideo.paused) {
+              console.log("[debug] Remote video is actually playing, forcing state update")
+              setRemoteVideoReady(true)
+              clearInterval(checkInterval)
+            }
+          }, 500)
+
+          setTimeout(() => clearInterval(checkInterval), 5000)
+        } else {
+          console.log("[debug] Remote video srcObject already set, skipping")
+        }
+      }
+    }
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && wsRef.current) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "ice-candidate",
+            candidate: event.candidate,
+          }),
+        )
+      }
+    }
+
+    pc.onconnectionstatechange = () => {
+      console.log("[debug] Connection state:", pc.connectionState)
+    }
+
+    peerConnectionRef.current = pc
+    return pc
+  }
+
+  const createOffer = async () => {
+    const pc = createPeerConnection()
+    const offer = await pc.createOffer()
+    await pc.setLocalDescription(offer)
+
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "offer",
+        offer,
+      }),
+    )
+  }
+
+  const handleOffer = async (offer: RTCSessionDescriptionInit) => {
+    const pc = createPeerConnection()
+    await pc.setRemoteDescription(new RTCSessionDescription(offer))
+
+    const answer = await pc.createAnswer()
+    await pc.setLocalDescription(answer)
+
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "answer",
+        answer,
+      }),
+    )
+  }
+
+  const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
+    await peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(answer))
+  }
+
+  const handleIceCandidate = async (candidate: RTCIceCandidateInit) => {
+    await peerConnectionRef.current?.addIceCandidate(new RTCIceCandidate(candidate))
+  }
+
+  const handleUserLeft = () => {
+    setIsConnected(false)
+    setRemoteVideoReady(false)
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null
+    }
+    peerConnectionRef.current?.close()
+    peerConnectionRef.current = null
+  }
+
+  const toggleAudio = () => {
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0]
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled
+        setIsAudioEnabled(audioTrack.enabled)
+      }
+    }
+  }
+
+  const toggleVideo = () => {
+    if (localStreamRef.current) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0]
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled
+        setIsVideoEnabled(videoTrack.enabled)
+      }
+    }
+  }
+
+  const toggleScreenShare = async () => {
+    if (isScreenSharing) {
+      screenStreamRef.current?.getTracks().forEach((track) => track.stop())
+      screenStreamRef.current = null
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current
+        await localVideoRef.current.play()
+      }
+
+      if (peerConnectionRef.current && localStreamRef.current) {
+        const videoTrack = localStreamRef.current.getVideoTracks()[0]
+        const sender = peerConnectionRef.current.getSenders().find((s) => s.track?.kind === "video")
+        if (sender && videoTrack) {
+          await sender.replaceTrack(videoTrack)
+        }
+      }
+
+      setIsScreenSharing(false)
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true })
+        screenStreamRef.current = screenStream
+
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = screenStream
+          await localVideoRef.current.play()
+        }
+
+        if (peerConnectionRef.current) {
+          const screenTrack = screenStream.getVideoTracks()[0]
+          const sender = peerConnectionRef.current.getSenders().find((s) => s.track?.kind === "video")
+          if (sender && screenTrack) {
+            await sender.replaceTrack(screenTrack)
+          }
+
+          screenTrack.onended = () => {
+            toggleScreenShare()
+          }
+        }
+
+        setIsScreenSharing(true)
+      } catch (error) {
+        console.error("[debug] Screen share error:", error)
+        toast({
+          title: "Screen Share Error",
+          description: "Failed to start screen sharing",
+          variant: "destructive",
+        })
+      }
+    }
+  }
+
+  const endCall = () => {
+    cleanup()
+    router.push("/")
+  }
+
+  const cleanup = () => {
+    isEyeTrackingActiveRef.current = false
+
+    localStreamRef.current?.getTracks().forEach((track) => track.stop())
+    screenStreamRef.current?.getTracks().forEach((track) => track.stop())
+    peerConnectionRef.current?.close()
+    wsRef.current?.close()
+    if (window.webgazer) {
+      console.log("[debug] Stopping WebGazer")
+      window.webgazer.end()
+    }
+    setIsEyeTrackingActive(false)
+  }
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(meetingCode)
+    toast({
+      title: "Copied!",
+      description: "Meeting code copied to clipboard",
+    })
+  }
+
+  if (showConsentDialog) {
+    return (
+      <>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center space-y-4 max-w-md">
+            <h2 className="text-2xl font-bold">Welcome to Your Interview</h2>
+            <p className="text-muted-foreground">
+              Before we begin, please review and accept our recording and consent terms.
+            </p>
+          </div>
+        </div>
+        <ConsentDialog open={showConsentDialog} onAccept={handleConsentAccept} onDecline={handleConsentDecline} />
+      </>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" />
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Setting up interview...</h2>
+            <p className="text-muted-foreground text-sm">Please allow camera and microphone access</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">{role === "interviewer" ? "Interview Room" : "Interview"}</h1>
+            {isConnected ? (
+              <span className="flex items-center gap-1.5 px-3 py-1 text-xs bg-green-500/10 text-green-600 dark:text-green-400 rounded-full">
+                <span className="w-1.5 h-1.5 bg-green-600 dark:bg-green-400 rounded-full animate-pulse" />
+                Connected
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 px-3 py-1 text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-full">
+                <span className="w-1.5 h-1.5 bg-yellow-600 dark:bg-yellow-400 rounded-full animate-pulse" />
+                Waiting...
+              </span>
+            )}
+            {isEyeTrackingActive && role === "interviewee" && (
+              <span className="flex items-center gap-1.5 px-3 py-1 text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full">
+                <Eye className="w-3 h-3" />
+                Eye Tracking Active
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {role === "interviewer" && isConnected && !isEyeTrackingActive && (
+              <Button variant="outline" size="sm" onClick={handleCalibrationRequest}>
+                <Eye className="w-4 h-4 mr-2" />
+                Start Calibration
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={copyCode}>
+              <Copy className="w-4 h-4 mr-2" />
+              {meetingCode}
+            </Button>
+          </div>
+        </div>
+
+        {sessionInfo && (
+          <div className="text-sm text-muted-foreground">
+            {role === "interviewer" ? (
+              <p>
+                Interviewing: {sessionInfo.candidate_name} ({sessionInfo.candidate_email})
+              </p>
+            ) : (
+              <p>Interviewer: {sessionInfo.interviewer_name}</p>
+            )}
+          </div>
+        )}
+
+        {/* Video Grid */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Remote Video */}
+          <Card className="relative aspect-video bg-muted overflow-hidden">
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className={`w-full h-full object-cover transition-all ${remoteVideoBlurred ? "blur-xl" : ""}`}
+            />
+            {(!isConnected || (isConnected && !remoteVideoReady)) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    {isConnected ? (
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    ) : (
+                      <Video className="w-8 h-8 text-primary" />
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {isConnected
+                        ? "Loading video..."
+                        : `Waiting for ${role === "interviewer" ? "candidate" : "interviewer"}`}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {isConnected
+                        ? "Video stream connecting..."
+                        : role === "interviewer"
+                          ? "Share the meeting code"
+                          : "They will join shortly"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {isConnected && remoteVideoReady && (
+              <div className="absolute top-4 left-4">
+                <span className="px-2 py-1 text-xs bg-black/70 text-white rounded backdrop-blur-sm">
+                  {role === "interviewer" ? "Candidate" : "Interviewer"}
+                </span>
+              </div>
+            )}
+
+            {remoteVideoBlurred && waitingForCalibration && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center space-y-2 bg-black/70 p-4 rounded-lg">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-white" />
+                  <p className="text-white text-sm">Waiting for calibration response...</p>
+                </div>
+              </div>
+            )}
+            {remoteVideoBlurred && !waitingForCalibration && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center space-y-2 bg-black/70 p-4 rounded-lg">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-white" />
+                  <p className="text-white text-sm">Calibrating eye tracking...</p>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Local Video */}
+          <Card className="relative aspect-video bg-muted overflow-hidden">
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover scale-x-[-1]"
+              style={{ display: "block" }}
+            />
+            <div className="absolute top-4 left-4">
+              <span className="px-2 py-1 text-xs bg-black/70 text-white rounded backdrop-blur-sm">
+                You {isScreenSharing && "(Sharing)"}
+              </span>
+            </div>
+            <div className="absolute bottom-4 left-4 flex items-center gap-2">
+              {!isAudioEnabled && (
+                <span className="px-2 py-1 text-xs bg-red-500/90 text-white rounded backdrop-blur-sm flex items-center gap-1">
+                  <MicOff className="w-3 h-3" />
+                  Muted
+                </span>
+              )}
+              {!isVideoEnabled && (
+                <span className="px-2 py-1 text-xs bg-red-500/90 text-white rounded backdrop-blur-sm flex items-center gap-1">
+                  <VideoOff className="w-3 h-3" />
+                  Off
+                </span>
+              )}
+            </div>
+            {!localVideoReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                <div className="text-center space-y-2">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+                  <p className="text-sm text-muted-foreground">Loading camera...</p>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Controls */}
+        <div className="flex justify-center gap-3">
+          <Button
+            variant={isAudioEnabled ? "secondary" : "destructive"}
+            size="lg"
+            onClick={toggleAudio}
+            className="rounded-full w-14 h-14"
+          >
+            {isAudioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+          </Button>
+
+          <Button
+            variant={isVideoEnabled ? "secondary" : "destructive"}
+            size="lg"
+            onClick={toggleVideo}
+            className="rounded-full w-14 h-14"
+          >
+            {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+          </Button>
+
+          {role === "interviewer" && (
+            <Button
+              variant={isScreenSharing ? "default" : "secondary"}
+              size="lg"
+              onClick={toggleScreenShare}
+              className="rounded-full w-14 h-14"
+            >
+              <Monitor className="w-5 h-5" />
+            </Button>
+          )}
+
+          <Button variant="destructive" size="lg" onClick={endCall} className="rounded-full w-14 h-14">
+            <Phone className="w-5 h-5 rotate-[135deg]" />
+          </Button>
+        </div>
+      </div>
+
+      {role === "interviewer" && isEyeTrackingActive && gazeData && remoteVideoRef.current && (
+        <GazeTrackingCanvas gazeData={gazeData} showMetrics={true} remoteVideoElement={remoteVideoRef.current} />
+      )}
+
+      {showCalibrationRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="p-6 max-w-md space-y-4">
+            <h3 className="text-lg font-semibold">Eye Tracking Calibration Request</h3>
+            <p className="text-sm text-muted-foreground">
+              The interviewer has requested to enable eye tracking. This helps ensure interview integrity. Would you
+              like to proceed with calibration?
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={handleCalibrationDecline}>
+                Decline
+              </Button>
+              <Button onClick={handleCalibrationAccept}>Accept</Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      <CalibrationFullscreen
+        open={showCalibrationDialog}
+        onComplete={handleCalibrationComplete}
+        onCancel={() => {
+          setShowCalibrationDialog(false)
+          setIsCalibrating(false)
+          if (role === "interviewee") {
+            wsRef.current?.send(
+              JSON.stringify({
+                type: "calibration-cancelled",
+              }),
+            )
+          }
+        }}
+      />
+    </div>
+  )
+}

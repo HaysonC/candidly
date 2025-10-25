@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interview Prep Endpoint Tester</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+    h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+    .hint { opacity: 0.8; font-size: 0.9rem; margin-bottom: 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    textarea, input[type="text"] { width: 100%; box-sizing: border-box; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    textarea { min-height: 160px; }
+    .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    button { padding: 0.5rem 0.9rem; font-weight: 600; cursor: pointer; }
+    pre { background: rgba(127,127,127,0.1); padding: 1rem; border-radius: 8px; overflow: auto; max-height: 50vh; }
+    .two-col { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 960px) { .two-col { grid-template-columns: 1fr 1fr; } }
+    .status { margin-top: 0.5rem; min-height: 1.25rem; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>Interview Prep Endpoint Tester</h1>
+  <div class="hint">
+    Backend must be running at <code>http://localhost:8000</code> with <code>GOOGLE_API_KEY</code> set in <code>backend/.env</code>.<br/>
+    If you open this file directly (file://), some browsers treat the origin as <code>null</code>. If requests fail due to CORS, serve it locally (e.g., a simple static server) and open via http.
+  </div>
+
+  <label for="baseUrl">Backend Base URL</label>
+  <input id="baseUrl" type="text" value="http://localhost:8000" />
+
+  <label for="model">Model (optional)</label>
+  <input id="model" type="text" value="gemini-2.0-flash" />
+
+  <label for="text">Input Text</label>
+  <textarea id="text">Role: Frontend engineer
+Focus: React, performance, accessibility.
+Interview goals: practical coding, problem solving, communication.
+Company prefers tasks around component design and state management.
+  </textarea>
+
+  <div class="row">
+    <button id="runBtn">Generate Interview Prep</button>
+    <button id="schemaBtn" title="Fetch JSON schema for the response">Load Schema</button>
+    <button id="clearBtn">Clear Output</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="two-col" style="margin-top:1rem;">
+    <div>
+      <h2>Result</h2>
+      <pre id="result" aria-live="polite"></pre>
+    </div>
+    <div>
+      <h2>Schema</h2>
+      <pre id="schema"></pre>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const setStatus = (msg, ok=true) => { const s = $('status'); s.textContent = msg || ''; s.style.color = ok ? 'inherit' : 'crimson'; };
+    const pretty = (obj) => typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+
+    async function fetchJSON(url, options) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { raw: text } }
+      if (!res.ok) {
+        const detail = (data && (data.detail || data.error)) || res.statusText;
+        throw new Error(`HTTP ${res.status}: ${detail}`);
+      }
+      return data;
+    }
+
+    async function run() {
+      const base = $('baseUrl').value.replace(/\/$/, '');
+      const url = `${base}/interview-prep`;
+      const model = $('model').value.trim();
+      const text = $('text').value;
+      setStatus('Requesting…');
+      $('result').textContent = '';
+      try {
+        const body = model ? { text, model } : { text };
+        const data = await fetchJSON(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        $('result').textContent = pretty(data);
+        setStatus('Success');
+      } catch (err) {
+        $('result').textContent = String(err);
+        setStatus(err.message || 'Request failed', false);
+      }
+    }
+
+    async function loadSchema() {
+      const base = $('baseUrl').value.replace(/\/$/, '');
+      const url = `${base}/interview-prep/schema`;
+      setStatus('Loading schema…');
+      $('schema').textContent = '';
+      try {
+        const data = await fetchJSON(url, { method: 'GET' });
+        $('schema').textContent = pretty(data);
+        setStatus('Schema loaded');
+      } catch (err) {
+        $('schema').textContent = String(err);
+        setStatus(err.message || 'Schema failed', false);
+      }
+    }
+
+    function clearOut() {
+      $('result').textContent = '';
+      $('schema').textContent = '';
+      setStatus('Cleared');
+    }
+
+    $('runBtn').addEventListener('click', run);
+    $('schemaBtn').addEventListener('click', loadSchema);
+    $('clearBtn').addEventListener('click', clearOut);
+  </script>
+</body>
+</html>

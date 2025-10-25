@@ -98,7 +98,9 @@ function drawGridToCanvas(
 	alpha: number,
 	blurRadius: number,
 ): HTMLCanvasElement {
-	const max = grid.length ? Math.max(...grid as any) : 0
+	// Robust max computation (avoid spread which can fail or return NaN)
+	let max = 0
+	for (let i = 0; i < grid.length; i++) if (grid[i] > max) max = grid[i]
 	const canvas = document.createElement("canvas")
 	canvas.width = renderW
 	canvas.height = renderH
@@ -110,13 +112,16 @@ function drawGridToCanvas(
 	const img = tctx.createImageData(cols, rows)
 	const data = img.data
 
-	for (let y = 0; y < rows; y++) {
+		// Ensure visibility: apply a small minimum alpha per populated cell
+		const minAlpha = 0.18 // floor to keep faint cells visible
+		for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
 			const idx = y * cols + x
 			const v = grid[idx]
 			const n = max > 0 ? v / max : 0
 			const [r, g, b] = palette === "classic" ? classicPalette(n) : redPalette(n)
-			const a = Math.max(0, Math.min(255, Math.floor((alpha * n) * 255)))
+				const perPixelAlpha = n > 0 ? Math.max(minAlpha, alpha * n) : 0
+				const a = Math.max(0, Math.min(255, Math.floor(perPixelAlpha * 255)))
 			const di = idx * 4
 			data[di + 0] = r
 			data[di + 1] = g

@@ -8,25 +8,28 @@ interface CandidateCodeData {
     language: string;
 }
 
-export async function uploadCandidateInterviewed(name: string, codeData?: CandidateCodeData): Promise<boolean> {
-    if (!name) return false
+export async function uploadCandidateInterviewed(candidateName: string, codeData: CandidateCodeData, interviewerName: string): Promise<boolean> {
+    if (!candidateName || !interviewerName || !codeData) return false
     const base = getSignalingHttpBase()
+    
+    // Format the content according to backend expectations
+    const content = `Language: ${codeData.language}\n\nQuestion:\n${codeData.question}\n\nCandidate Response:\n${codeData.candidate_response}`;
+    
+    const requestPayload = {
+        interviewer: interviewerName,
+        filename: codeData.filename,
+        content: content
+    };
     
     const requestOptions: RequestInit = {
         method: 'PUT',
         headers: {
             'ngrok-skip-browser-warning': 'true',
+            'Content-Type': 'application/json',
         },
+        body: JSON.stringify(requestPayload)
     };
 
-    if (codeData) {
-        requestOptions.headers = {
-            ...requestOptions.headers,
-            'Content-Type': 'application/json',
-        };
-        requestOptions.body = JSON.stringify(codeData);
-    }
-
-    const res = await fetch(`${base}/candidate_interviewed/${encodeURIComponent(name)}`, requestOptions);
+    const res = await fetch(`${base}/candidate_interviewed/${encodeURIComponent(candidateName)}`, requestOptions);
     return res.ok
 }

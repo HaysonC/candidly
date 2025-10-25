@@ -37,6 +37,7 @@ export interface CodeEditorProps {
   remoteGaze?: { x: number; y: number; pageW?: number; pageH?: number } | null
   candidateName?: string
   originalQuestion?: string
+  interviewerName?: string
 }
 
 export function CodeEditorPanel(props: CodeEditorProps) {
@@ -54,6 +55,7 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     remoteGaze,
     candidateName,
     originalQuestion,
+    interviewerName,
   } = props
 
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -230,6 +232,11 @@ export function CodeEditorPanel(props: CodeEditorProps) {
                   return;
                 }
                 
+                if (!interviewerName) {
+                  console.error('No interviewer name provided');
+                  return;
+                }
+                
                 // Separate question from candidate response
                 const lines = value.split('\n');
                 let questionEndIndex = 0;
@@ -265,7 +272,7 @@ export function CodeEditorPanel(props: CodeEditorProps) {
                   language: language
                 };
                 
-                const success = await uploadCandidateInterviewed(candidateName, codeData);
+                const success = await uploadCandidateInterviewed(candidateName, codeData, interviewerName);
                 
                 if (success) {
                   setSubmitSuccess(true);

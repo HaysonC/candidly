@@ -64,6 +64,7 @@ export default function InterviewPage() {
   const [showAssignDialog, setShowAssignDialog] = useState(false)
   const [selectedQuestion, setSelectedQuestion] = useState<string>("")
   const [customQuestion, setCustomQuestion] = useState<string>("")
+  const [assignedQuestion, setAssignedQuestion] = useState<string>("")
   const [templatesList, setTemplatesList] = useState<Array<{id:string; name:string}>>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   // Heatmap report UI state
@@ -87,7 +88,6 @@ export default function InterviewPage() {
   const [docName] = useState("coding-task-1")
   const [editorValue, setEditorValue] = useState("")
   const [showGazeOnEditor, setShowGazeOnEditor] = useState(true)
-  const [assignedQuestion, setAssignedQuestion] = useState<string>("")
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -1301,6 +1301,7 @@ export default function InterviewPage() {
             onChange={handleEditorChange}
             candidateName={sessionInfo?.candidate_name}
             originalQuestion={assignedQuestion}
+            interviewerName={sessionInfo?.interviewer_name}
             showGazeOverlay={role === 'interviewer' && showGazeOnEditor}
             remoteGaze={role === 'interviewer' ? gazeData : null}
           />

@@ -133,3 +133,4 @@
 [00:08:27.980] Browser LOG     [debug] Remote video readyState: 0, paused: true
 [00:22:18.139] Browser LOG     [debug] WebSocket closed
 [01:08:10.944] Server  LOG      ✓ Compiled in 102ms
+[02:21:39.756] Server  LOG      ✓ Compiled in 521ms

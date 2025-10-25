@@ -35,6 +35,8 @@ export interface CodeEditorProps {
   onChange: (val: string) => void
   showGazeOverlay?: boolean
   remoteGaze?: { x: number; y: number; pageW?: number; pageH?: number } | null
+  candidateName?: string
+  originalQuestion?: string
 }
 
 export function CodeEditorPanel(props: CodeEditorProps) {
@@ -50,7 +52,11 @@ export function CodeEditorPanel(props: CodeEditorProps) {
     onChange,
     showGazeOverlay,
     remoteGaze,
+    candidateName,
+    originalQuestion,
   } = props
+
+  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   // Function to convert comments between languages
   const convertComments = (text: string, fromLang: EditorLanguage, toLang: EditorLanguage): string => {
@@ -208,36 +214,74 @@ export function CodeEditorPanel(props: CodeEditorProps) {
         )}
       </div>
       <div className="px-3 py-2 border-t">
-        <Button 
-          onClick={async () => {
-            try {
-              // TODO: Replace with actual candidate name logic
-              const candidateName = 'candidate'; // This should come from props or context
-              
-              const codeData = {
-                filename: docName,
-                content: value,
-                language: language
-              };
-              
-              const success = await uploadCandidateInterviewed(candidateName, codeData);
-              
-              if (success) {
-                console.log('Code submitted successfully');
-                // TODO: Add success notification
-              } else {
-                console.error('Failed to submit code');
-                // TODO: Add error notification
+        {submitSuccess ? (
+          <div className="flex items-center justify-center gap-2 text-green-600 py-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="font-medium">Code successfully submitted</span>
+          </div>
+        ) : (
+          <Button 
+            onClick={async () => {
+              try {
+                if (!candidateName) {
+                  console.error('No candidate name provided');
+                  return;
+                }
+                
+                // Separate question from candidate response
+                const lines = value.split('\n');
+                let questionEndIndex = 0;
+                let question = '';
+                let candidateResponse = '';
+                
+                // Find where the question ends (look for "Write your solution below:")
+                for (let i = 0; i < lines.length; i++) {
+                  const line = lines[i].trim();
+                  if (line.includes('Write your solution below:')) {
+                    questionEndIndex = i;
+                    question = lines.slice(0, i + 1).join('\n');
+                    candidateResponse = lines.slice(i + 1).join('\n').trim();
+                    break;
+                  }
+                }
+                
+                // Fallback: use originalQuestion if available
+                if (!question && originalQuestion) {
+                  question = originalQuestion;
+                  candidateResponse = value;
+                } else if (!question) {
+                  // If no clear separation, treat first part as question
+                  const halfPoint = Math.floor(lines.length / 2);
+                  question = lines.slice(0, halfPoint).join('\n');
+                  candidateResponse = lines.slice(halfPoint).join('\n');
+                }
+                
+                const codeData = {
+                  filename: docName,
+                  question: question,
+                  candidate_response: candidateResponse,
+                  language: language
+                };
+                
+                const success = await uploadCandidateInterviewed(candidateName, codeData);
+                
+                if (success) {
+                  setSubmitSuccess(true);
+                  setTimeout(() => setSubmitSuccess(false), 3000); // Hide after 3 seconds
+                } else {
+                  console.error('Failed to submit code');
+                }
+              } catch (error) {
+                console.error('Error submitting code:', error);
               }
-            } catch (error) {
-              console.error('Error submitting code:', error);
-              // TODO: Add error notification
-            }
-          }}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          Submit Code
-        </Button>
+            }}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+          >
+            Submit Code
+          </Button>
+        )}
       </div>
     </Card>
   )

@@ -65,6 +65,7 @@ export default function InterviewPage() {
   const [customQuestion, setCustomQuestion] = useState<string>("")
   const [templatesList, setTemplatesList] = useState<Array<{id:string; name:string}>>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [assignedQuestion, setAssignedQuestion] = useState<string>("")
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -936,6 +937,8 @@ export default function InterviewPage() {
     ].join("\n")
 
     try {
+      // Store the assigned question for later use
+      setAssignedQuestion(chosen)
       // Ensure editor is open for both peers
       sendEditorUpdate({ kind: "toggle", open: true, minimized: false })
       // Send content
@@ -1220,6 +1223,8 @@ export default function InterviewPage() {
             docName={docName}
             value={editorValue}
             onChange={handleEditorChange}
+            candidateName={sessionInfo?.candidate_name}
+            originalQuestion={assignedQuestion}
             showGazeOverlay={role === 'interviewer' && showGazeOnEditor}
             remoteGaze={role === 'interviewer' ? gazeData : null}
           />

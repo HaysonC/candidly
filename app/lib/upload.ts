@@ -3,7 +3,8 @@ import { getSignalingHttpBase } from './signaling'
 
 interface CandidateCodeData {
     filename: string;
-    content: string;
+    question: string;
+    candidate_response: string;
     language: string;
 }
 

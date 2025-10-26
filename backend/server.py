@@ -21,8 +21,22 @@ from app.models import (
     CandidateListRequest,
     CandidateTrackingRequest,
     CandidateFilePutRequest,
+    InterviewReportRequest,
+    CandidateAssessmentReport,
+    InterviewerAssessmentReport,
+    OverallInterviewSummary,
 )
 from app.ai.interview_prep import analyze_interview_prep
+from app.ai.interview_reports import (
+    generate_candidate_assessment,
+    generate_interviewer_assessment,
+    generate_overall_summary,
+)
+from app.utils.pdf_generator import (
+    create_candidate_assessment_pdf,
+    create_interviewer_assessment_pdf,
+    create_overall_summary_pdf,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -614,6 +628,195 @@ async def verify_email(meeting_code: str, email: str):
         "valid": is_valid,
         "candidate_name": session.candidate_name if is_valid else None
     }
+
+
+# -------- PDF Report Generation Endpoints --------
+@app.post("/generate-candidate-assessment")
+async def generate_candidate_assessment_report(req: InterviewReportRequest):
+    """Generate candidate assessment PDF report and upload to candidate folder."""
+    try:
+        logger.info(f"Generating candidate assessment for {req.candidate_name}")
+        
+        # Generate the assessment using AI
+        assessment = generate_candidate_assessment(req)
+        
+        # Create PDF
+        pdf_bytes = create_candidate_assessment_pdf(
+            assessment.model_dump(), 
+            req.candidate_name
+        )
+        
+        # Upload PDF to candidate folder
+        candidate_dir = _candidate_base_dir(req.interviewer, req.candidate_name)
+        filename = f"candidate_assessment_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+        pdf_path = candidate_dir / filename
+        
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_bytes)
+        
+        # Update tracking
+        tracking = _read_tracking(candidate_dir)
+        files = tracking.get("files", {})
+        files[filename] = {
+            "size": len(pdf_bytes),
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "content_type": "application/pdf",
+            "report_type": "candidate_assessment"
+        }
+        tracking["files"] = files
+        _write_tracking(candidate_dir, tracking)
+        
+        logger.info(f"Candidate assessment PDF saved: {filename}")
+        return {
+            "success": True,
+            "filename": filename,
+            "assessment": assessment.model_dump()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating candidate assessment: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate assessment: {str(e)}")
+
+
+@app.post("/generate-interviewer-assessment")
+async def generate_interviewer_assessment_report(req: InterviewReportRequest):
+    """Generate interviewer assessment PDF report and upload to candidate folder."""
+    try:
+        logger.info(f"Generating interviewer assessment for {req.interviewer}")
+        
+        # Generate the assessment using AI
+        assessment = generate_interviewer_assessment(req)
+        
+        # Create PDF
+        pdf_bytes = create_interviewer_assessment_pdf(
+            assessment.model_dump(), 
+            req.interviewer
+        )
+        
+        # Upload PDF to candidate folder
+        candidate_dir = _candidate_base_dir(req.interviewer, req.candidate_name)
+        filename = f"interviewer_assessment_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+        pdf_path = candidate_dir / filename
+        
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_bytes)
+        
+        # Update tracking
+        tracking = _read_tracking(candidate_dir)
+        files = tracking.get("files", {})
+        files[filename] = {
+            "size": len(pdf_bytes),
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "content_type": "application/pdf",
+            "report_type": "interviewer_assessment"
+        }
+        tracking["files"] = files
+        _write_tracking(candidate_dir, tracking)
+        
+        logger.info(f"Interviewer assessment PDF saved: {filename}")
+        return {
+            "success": True,
+            "filename": filename,
+            "assessment": assessment.model_dump()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating interviewer assessment: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate assessment: {str(e)}")
+
+
+@app.post("/generate-overall-summary")
+async def generate_overall_summary_report(req: InterviewReportRequest):
+    """Generate overall interview summary PDF report and upload to candidate folder."""
+    try:
+        logger.info(f"Generating overall summary for interview: {req.candidate_name} by {req.interviewer}")
+        
+        # Generate the summary using AI
+        summary = generate_overall_summary(req)
+        
+        # Create PDF
+        pdf_bytes = create_overall_summary_pdf(
+            summary.model_dump(), 
+            req.candidate_name,
+            req.interviewer
+        )
+        
+        # Upload PDF to candidate folder
+        candidate_dir = _candidate_base_dir(req.interviewer, req.candidate_name)
+        filename = f"interview_summary_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+        pdf_path = candidate_dir / filename
+        
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_bytes)
+        
+        # Update tracking
+        tracking = _read_tracking(candidate_dir)
+        files = tracking.get("files", {})
+        files[filename] = {
+            "size": len(pdf_bytes),
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "content_type": "application/pdf",
+            "report_type": "interview_summary"
+        }
+        tracking["files"] = files
+        _write_tracking(candidate_dir, tracking)
+        
+        logger.info(f"Overall summary PDF saved: {filename}")
+        return {
+            "success": True,
+            "filename": filename,
+            "summary": summary.model_dump()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating overall summary: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate summary: {str(e)}")
+
+
+@app.post("/generate-all-reports")
+async def generate_all_reports(req: InterviewReportRequest):
+    """Generate all three PDF reports (candidate assessment, interviewer assessment, overall summary)."""
+    try:
+        logger.info(f"Generating all reports for interview: {req.candidate_name} by {req.interviewer}")
+        
+        results = {}
+        
+        # Generate candidate assessment
+        try:
+            candidate_result = await generate_candidate_assessment_report(req)
+            results["candidate_assessment"] = candidate_result
+        except Exception as e:
+            logger.error(f"Failed to generate candidate assessment: {e}")
+            results["candidate_assessment"] = {"success": False, "error": str(e)}
+        
+        # Generate interviewer assessment
+        try:
+            interviewer_result = await generate_interviewer_assessment_report(req)
+            results["interviewer_assessment"] = interviewer_result
+        except Exception as e:
+            logger.error(f"Failed to generate interviewer assessment: {e}")
+            results["interviewer_assessment"] = {"success": False, "error": str(e)}
+        
+        # Generate overall summary
+        try:
+            summary_result = await generate_overall_summary_report(req)
+            results["overall_summary"] = summary_result
+        except Exception as e:
+            logger.error(f"Failed to generate overall summary: {e}")
+            results["overall_summary"] = {"success": False, "error": str(e)}
+        
+        success_count = sum(1 for r in results.values() if r.get("success", False))
+        
+        return {
+            "success": success_count > 0,
+            "reports_generated": success_count,
+            "total_reports": 3,
+            "results": results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating reports: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate reports: {str(e)}")
 
 @app.websocket("/ws/{meeting_code}/{role}")
 async def websocket_endpoint(websocket: WebSocket, meeting_code: str, role: str):

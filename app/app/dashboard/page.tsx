@@ -7,14 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Video, Users, Calendar, CreditCard, Settings, BarChart3, Clock, CheckCircle2, FileText, ChevronRight, Download } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getCandidateList, getCandidateTracking, getCandidateFile, type CandidateTrackingData } from "@/lib/candidateQuery"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function DashboardPage() {
   const router = useRouter()
   const [username, setUsername] = useState("")
   const [candidates, setCandidates] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const [candidateFiles, setCandidateFiles] = useState<CandidateTrackingData | null>(null)
   const [loadingFiles, setLoadingFiles] = useState(false)
@@ -34,7 +34,9 @@ export default function DashboardPage() {
   const loadCandidates = async (interviewer: string) => {
     try {
       setLoading(true)
+      console.log('Loading candidates for interviewer:', interviewer)
       const candidateList = await getCandidateList(interviewer)
+      console.log('Received candidates:', candidateList)
       setCandidates(candidateList)
     } catch (error) {
       console.error("Failed to load candidates:", error)
@@ -48,8 +50,11 @@ export default function DashboardPage() {
     setLoadingFiles(true)
     setCandidateFiles(null)
     setSelectedFile(null)
+    console.log('Fetching files for candidate:', candidateName)
+    console.log('Using interviewer:', username)
     try {
       const tracking = await getCandidateTracking(username, candidateName)
+      console.log('Received tracking data:', tracking)
       setCandidateFiles(tracking)
     } catch (error) {
       console.error("Failed to load candidate files:", error)
@@ -215,48 +220,31 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Account & Subscription */}
+          {/* Team & Role */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Account & Subscription
+                <Users className="w-5 h-5" />
+                Team & Role
               </CardTitle>
-              <CardDescription>Manage your plan and billing</CardDescription>
+              <CardDescription>Your current team and organization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="font-semibold">Pro Plan</p>
-                    <p className="text-sm text-muted-foreground">Unlimited interviews</p>
-                  </div>
-                  <Badge className="bg-primary text-primary-foreground">Active</Badge>
-                </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Billing cycle</span>
-                    <span className="font-medium">Monthly</span>
+                    <span className="text-muted-foreground">Company</span>
+                    <span className="font-medium">Salmon Solutions Inc</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Next billing date</span>
-                    <span className="font-medium">Jan 15, 2025</span>
+                    <span className="text-muted-foreground">Team</span>
+                    <span className="font-medium">Vibe Coders Subteam</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Amount</span>
-                    <span className="font-medium">$49/month</span>
+                    <span className="text-muted-foreground">Role</span>
+                    <span className="font-medium">Senior Prompt Engineer</span>
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 bg-transparent">
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Billing
-                </Button>
-                <Button variant="outline" className="flex-1 bg-transparent">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Usage
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -276,75 +264,84 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Candidate Files Dialog */}
-      <Dialog open={!!selectedCandidate} onOpenChange={(open) => {
-        if (!open) {
-          setSelectedCandidate(null)
-          setSelectedFile(null)
-        }
-      }}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Interview Files - {selectedCandidate}</DialogTitle>
-            <DialogDescription>
-              Click on a file to view its content
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
-            {/* File List */}
-            <div className="space-y-2 overflow-y-auto pr-2">
-              <h3 className="font-semibold text-sm text-muted-foreground mb-2">Files</h3>
-              {loadingFiles ? (
-                <div className="text-center py-8 text-muted-foreground">Loading files...</div>
-              ) : candidateFiles && Object.keys(candidateFiles.files).length > 0 ? (
-                Object.entries(candidateFiles.files).map(([filename, fileInfo]) => (
-                  <Card 
-                    key={filename}
-                    className={`cursor-pointer transition-colors hover:bg-accent ${
-                      selectedFile?.name === filename ? 'border-primary bg-accent' : ''
-                    }`}
-                    onClick={() => handleFileClick(filename)}
-                  >
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        {filename}
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        {fileInfo.size} bytes • {new Date(fileInfo.updated_at).toLocaleString()}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No files found for this candidate
+            {/* Candidate Files Sheet */}
+      <Sheet
+        open={!!selectedCandidate}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedCandidate(null)
+            setSelectedFile(null)
+          }
+        }}
+      >
+        <SheetContent side="bottom" className="w-[100vw] h-[90vh] p-0">
+          <div className="flex flex-col h-full bg-white/80 dark:bg-background/80 backdrop-blur-lg">
+            <SheetHeader className="px-8 pt-8 pb-2 border-b border-border/30">
+              <SheetTitle className="text-2xl font-bold">Interview Files - {selectedCandidate}</SheetTitle>
+              <SheetDescription className="text-base text-muted-foreground">
+                Click on a file to view its content
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row gap-0 md:gap-4 px-4 pb-6 pt-4">
+              {/* File List */}
+              <div className="md:w-1/4 w-full border-r border-border/30 pr-4 flex flex-col">
+                <h3 className="font-semibold text-sm text-muted-foreground mb-2 mt-2">Files</h3>
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                  {loadingFiles ? (
+                    <div className="text-center py-8 text-muted-foreground">Loading files...</div>
+                  ) : candidateFiles && Object.keys(candidateFiles.files).length > 0 ? (
+                    Object.entries(candidateFiles.files).map(([filename, fileInfo]) => (
+                      <Card
+                        key={filename}
+                        className={`cursor-pointer transition-colors hover:bg-accent/60 ${
+                          selectedFile?.name === filename ? 'border-primary bg-accent/40' : ''
+                        } mb-2 shadow-sm`}
+                        onClick={() => handleFileClick(filename)}
+                      >
+                        <CardHeader className="p-4">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            {filename}
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            {fileInfo.size} bytes • {new Date(fileInfo.updated_at).toLocaleString()}
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No files found for this candidate
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
 
-            {/* File Content */}
-            <div className="border rounded-lg p-4 overflow-hidden flex flex-col">
-              <h3 className="font-semibold text-sm text-muted-foreground mb-2">
-                {selectedFile ? selectedFile.name : 'Select a file'}
-              </h3>
-              <ScrollArea className="flex-1">
-                {loadingFileContent ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading content...</div>
-                ) : selectedFile ? (
-                  <pre className="text-xs whitespace-pre-wrap break-words font-mono">
-                    {selectedFile.content}
-                  </pre>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Click a file to view its content
-                  </div>
-                )}
-              </ScrollArea>
+              {/* File Content */}
+              <div className="md:w-3/4 w-full flex flex-col pl-0 md:pl-4 mt-6 md:mt-0">
+                <div className="border rounded-lg p-4 bg-background/80 shadow-inner flex-1 flex flex-col min-h-[300px]">
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                    {selectedFile ? selectedFile.name : 'Select a file'}
+                  </h3>
+                  <ScrollArea className="flex-1">
+                    {loadingFileContent ? (
+                      <div className="text-center py-8 text-muted-foreground">Loading content...</div>
+                    ) : selectedFile ? (
+                      <pre className="text-xs whitespace-pre-wrap break-words font-mono">
+                        {selectedFile.content}
+                      </pre>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Click a file to view its content
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

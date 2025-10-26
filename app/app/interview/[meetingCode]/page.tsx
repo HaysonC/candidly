@@ -920,9 +920,13 @@ export default function InterviewPage() {
     }
   }
 
-  const endCall = async () => {
-    await cleanup()
-    router.push("/")
+  const endCall = () => {
+    cleanup()
+    if (role === "interviewer") {
+      router.push("/dashboard")
+    } else {
+      router.push("/")
+    }
   }
 
   // --- Shared editor helpers ---

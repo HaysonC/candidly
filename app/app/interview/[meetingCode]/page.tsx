@@ -1136,13 +1136,15 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
         description: "Creating AI-powered assessment reports. This may take a moment...",
       })
 
-      console.log("[debug] Making API call to /generate-all-reports...")
+    const apiUrl = `${getBackendHttpBase()}/generate-all-reports`
+    console.log("[debug] Making API call to", apiUrl)
       
-      // Call the backend to generate all reports
-      const response = await fetch('/generate-all-reports', {
+    // Call the backend to generate all reports (use backend base to avoid Vercel 405)
+    const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': '1',
         },
         body: JSON.stringify(reportRequest),
       })
@@ -1171,21 +1173,20 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
           console.log("[debug] Failed results:", result.results)
         }
       } else {
-        let errorDetails = "Unknown error"
-        try {
-          const errorData = await response.json()
-          errorDetails = JSON.stringify(errorData, null, 2)
-          console.log("[debug] ❌ API Error Response:", errorData)
-        } catch (e) {
-          const errorText = await response.text()
-          errorDetails = errorText
-          console.log("[debug] ❌ API Error Text:", errorText)
+        // Read body ONCE as text to avoid "body stream already read" issues
+        const bodyText = await response.text().catch(() => '')
+        let errorJson: any = null
+        try { errorJson = bodyText ? JSON.parse(bodyText) : null } catch { /* ignore */ }
+        if (errorJson) {
+          console.log("[debug] ❌ API Error JSON:", errorJson)
+        } else {
+          console.log("[debug] ❌ API Error Text:", bodyText?.slice(0, 500))
         }
-        
-        console.error("[debug] Failed to generate reports:", response.status, errorDetails)
+
+        console.error("[debug] Failed to generate reports:", response.status, response.statusText)
         toast({
           title: "Report Generation Failed",
-          description: `API Error ${response.status}: ${response.statusText}`,
+          description: `API ${response.status}: ${response.statusText || 'Error'}`,
           variant: "destructive"
         })
       }

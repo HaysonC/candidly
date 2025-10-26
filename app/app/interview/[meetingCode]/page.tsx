@@ -1201,9 +1201,32 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
   }
 
   const endCall = async () => {
-    cleanup()
-    // If interviewer, attempt to generate and upload final heatmap before redirect
-    if (role === "interviewer") {
+    console.log("[debug] ===== END CALL BUTTON PRESSED =====")
+    console.log("[debug] Current role:", role)
+    console.log("[debug] Is recording interview:", isRecordingInterview)
+    console.log("[debug] Session info:", sessionInfo)
+    console.log("[debug] Account name:", accountName)
+    
+    try {
+      // Stop interview recording if active BEFORE cleanup
+      if (isRecordingInterview) {
+        console.log("[debug] Stopping interview recording...")
+        const result = await stopInterviewRecording();
+        console.log("[debug] Stop recording result:", result)
+        
+        if (result.success) {
+          toast({
+            title: "Interview Recording Saved",
+            description: "Complete transcript has been saved",
+          });
+        }
+        setIsRecordingInterview(false);
+      } else {
+        console.log("[debug] No interview recording to stop")
+      }
+
+      // If interviewer, attempt to generate and upload final heatmap before redirect
+      if (role === "interviewer") {
       try {
         const res = await fetch(`/api/gaze-data?meetingCode=${encodeURIComponent(meetingCode)}`)
         if (res.ok) {
@@ -1317,31 +1340,60 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
             )
 
             // Generate AI-powered PDF reports
-            console.log("[debug] Starting PDF report generation...")
+            console.log("[debug] ===== CALLING GENERATE INTERVIEW REPORTS =====")
+            console.log("[debug] Candidate name:", sessionInfo.candidate_name)
+            console.log("[debug] Interviewer name:", sessionInfo.interviewer_name)
+            console.log("[debug] Meeting code:", meetingCode)
+            console.log("[debug] Summary length:", summary?.length || 0)
+            
             await generateInterviewReports(
               sessionInfo.candidate_name,
               sessionInfo.interviewer_name,
               meetingCode,
               summary // Pass gaze analysis summary
             )
+            
+            console.log("[debug] ===== GENERATE INTERVIEW REPORTS COMPLETED =====")
+            
+            // Additional logging for confirmation
+            toast({
+              title: "✅ LLM Reports Called",
+              description: "Report generation function has been invoked successfully",
+            })
           }
         }
       } catch (e) {
         console.warn("[debug] Skipping heatmap upload due to error", e)
       }
       
-      // Show loading state while generating reports
+        // Show loading state while generating reports
+        toast({
+          title: "Generating Reports",
+          description: "Creating interview assessment reports...",
+        })
+
+        // Call cleanup AFTER all processing is done
+        await cleanup()
+        router.push("/dashboard")
+        return
+      }
+
+      // Non-interviewer - still cleanup and redirect
+      await cleanup()
+      router.push("/")
+      
+    } catch (error) {
+      console.error("[debug] Error in endCall:", error)
       toast({
-        title: "Generating Reports",
-        description: "Creating interview assessment reports...",
+        title: "Error Ending Call",
+        description: "There was an error ending the interview",
+        variant: "destructive",
       })
-
-      router.push("/dashboard")
-      return
+      
+      // Still try to cleanup and redirect even if something failed
+      await cleanup()
+      router.push('/dashboard')
     }
-
-    // Non-interviewer
-    router.push("/")
   }
 
   // --- Shared editor helpers ---

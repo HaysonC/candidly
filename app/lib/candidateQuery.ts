@@ -136,7 +136,7 @@ export async function getCandidateFile(
   interviewer: string,
   candidateName: string,
   filename: string
-): Promise<{ filename: string; content: string; size: number }> {
+): Promise<{ filename: string; content?: string; contentBase64?: string; contentType?: string; size: number }> {
   const url = `${API_BASE_URL}/candidate_interviewed/${encodeURIComponent(candidateName)}/file/${encodeURIComponent(filename)}?interviewer=${encodeURIComponent(interviewer)}`;
   console.log('Fetching file from:', url);
   console.log('Interviewer:', interviewer);

@@ -15,7 +15,7 @@ import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
 import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
-import { uploadCandidateInterviewed, uploadCandidateFileBinary } from "@/lib/upload"
+import { uploadCandidateInterviewed, uploadCandidateFileBinary, uploadCandidateFileBlob } from "@/lib/upload"
 import GazeHeatmap from "@/components/gaze-heatmap"
 import { startInterviewRecording, stopInterviewRecording, isInterviewRecordingActive, getCurrentTranscript } from "@/lib/audio-manager"
 
@@ -1020,27 +1020,90 @@ export default function InterviewPage() {
           const json = await res.json()
           const samples = Array.isArray(json?.data) ? json.data : []
           if (samples.length > 0 && sessionInfo?.candidate_name && sessionInfo?.interviewer_name) {
-            // Build a heatmap image (client-side canvas) at a reasonable size
-            const report = buildHeatmapReportFromSamples(samples, {
-              cellSize: 16,
-              dwellCapMs: 200,
-              renderWidth: 1280,
-              renderHeight: 720,
-              blurRadius: 20,
-              palette: "classic",
-              alpha: 0.9,
-            })
-            // Upload a real PNG file using base64 (strip data URL prefix)
-            const dataUrl = report.dataUrl || ""
-            const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
-            if (base64) {
-              const okPng = await uploadCandidateFileBinary(
-                sessionInfo.candidate_name,
-                `heatmap-${meetingCode}.png`,
-                base64,
-                sessionInfo.interviewer_name,
-              )
-              if (!okPng) console.warn("[debug] Upload heatmap PNG failed")
+            // Build a heatmap image using heatmap.js (same as overlay rendering)
+            // 1) Determine render size
+            const rect = remoteVideoRef.current?.getBoundingClientRect()
+            const rW = Math.max(640, Math.round(rect?.width || 1280))
+            const rH = Math.max(360, Math.round(rect?.height || Math.round((rW * 9) / 16)))
+
+            // 2) Pick a base viewport from samples
+            const counts = new Map<string, { w: number; h: number; c: number }>()
+            for (const s of samples) {
+              const w = s.pageW && s.pageW > 0 ? Math.round(s.pageW) : undefined
+              const h = s.pageH && s.pageH > 0 ? Math.round(s.pageH) : undefined
+              if (!w || !h) continue
+              const key = `${w}x${h}`
+              const e = counts.get(key)
+              if (e) e.c += 1
+              else counts.set(key, { w, h, c: 1 })
+            }
+            let baseW = rW, baseH = rH
+            if (counts.size > 0) {
+              let best: { w: number; h: number; c: number } | null = null
+              for (const v of counts.values()) if (!best || v.c > best.c) best = v
+              if (best) { baseW = best.w; baseH = best.h }
+            }
+
+            // 3) Reproject samples to render size as simple points
+            const pts: Array<{ x: number; y: number }> = []
+            for (const s of samples) {
+              const sw = s.pageW && s.pageW > 0 ? s.pageW : baseW
+              const sh = s.pageH && s.pageH > 0 ? s.pageH : baseH
+              const sx = (s.x / sw) * rW
+              const sy = (s.y / sh) * rH
+              if (Number.isFinite(sx) && Number.isFinite(sy) && sx >= 0 && sy >= 0) {
+                pts.push({ x: Math.round(sx), y: Math.round(sy) })
+              }
+            }
+
+            if (pts.length) {
+              try {
+                const mod: any = await import("heatmap.js")
+                const h337: any = mod?.default ?? mod
+                // Create an offscreen container
+                const container = document.createElement("div")
+                container.style.position = "fixed"
+                container.style.top = "-9999px"
+                container.style.left = "-9999px"
+                container.style.width = `${rW}px`
+                container.style.height = `${rH}px`
+                document.body.appendChild(container)
+
+                const radius = Math.max(16, Math.round(40 * Math.min(rW / baseW, rH / baseH)))
+                const instance = h337.create({ container, radius, maxOpacity: 0.6, blur: 0.85 })
+                instance.setData({ max: 5, data: pts.map((p) => ({ x: p.x, y: p.y, value: 1 })) })
+
+                // Extract PNG
+                const canvas = container.querySelector("canvas") as HTMLCanvasElement | null
+                let dataUrl = ""
+                if (canvas) dataUrl = canvas.toDataURL("image/png")
+                // Cleanup container
+                container.remove()
+
+                if (dataUrl) {
+                  // Prefer Blob upload
+                  const blob = await (await fetch(dataUrl)).blob()
+                  const okBlob = await uploadCandidateFileBlob(
+                    sessionInfo.candidate_name,
+                    `heatmap-${meetingCode}.png`,
+                    blob,
+                    sessionInfo.interviewer_name,
+                  )
+                  if (!okBlob) {
+                    const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
+                    if (base64) {
+                      await uploadCandidateFileBinary(
+                        sessionInfo.candidate_name,
+                        `heatmap-${meetingCode}.png`,
+                        base64,
+                        sessionInfo.interviewer_name,
+                      )
+                    }
+                  }
+                }
+              } catch (e) {
+                console.warn("[debug] heatmap.js export failed, skipping image upload", e)
+              }
             }
 
             // Also upload a small text summary for reference
@@ -1048,10 +1111,9 @@ export default function InterviewPage() {
               `Meeting: ${meetingCode}`,
               `Candidate: ${sessionInfo.candidate_name}`,
               `Interviewer: ${sessionInfo.interviewer_name}`,
-              `Samples: ${report.stats.sampleCount}`,
-              `Total time: ${report.stats.totalTimeSec.toFixed(1)}s`,
-              `Viewport changes: ${report.stats.viewportChanges}`,
-              `Base viewport: ${report.baseWidth}x${report.baseHeight}`,
+              `Samples: ${samples.length}`,
+              // We don't compute exact total time/viewport changes here to keep logic simple
+              `Render size: ${rW}x${rH}`,
             ].join("\n")
             await uploadCandidateInterviewed(
               sessionInfo.candidate_name,

@@ -23,6 +23,7 @@ export default function StartInterviewPage() {
   const [candidateName, setCandidateName] = useState("")
   const [candidateEmail, setCandidateEmail] = useState("")
   const [notes, setNotes] = useState("")
+  const [scheduledAt, setScheduledAt] = useState("")
   const [templates, setTemplates] = useState<{id:string;name:string}[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>(undefined)
   const [isCreating, setIsCreating] = useState(false)
@@ -151,6 +152,7 @@ export default function StartInterviewPage() {
           candidate_email: trimmedEmail,
           notes: notes,
           interviewer_name: username,
+          scheduled_at: scheduledAt || null,
         }),
       })
 
@@ -161,8 +163,8 @@ export default function StartInterviewPage() {
       const data = await response.json()
       setMeetingCode(data.meeting_code)
 
-  const tmplParam = selectedTemplate ? `&template=${encodeURIComponent(selectedTemplate)}` : ""
-  const fullJoinLink = `${window.location.origin}/join?code=${data.meeting_code}${tmplParam}`
+      const tmplParam = selectedTemplate ? `&template=${encodeURIComponent(selectedTemplate)}` : ""
+      const fullJoinLink = `${window.location.origin}/join?code=${data.meeting_code}${tmplParam}`
       setJoinLink(fullJoinLink)
 
       toast({
@@ -244,6 +246,16 @@ export default function StartInterviewPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="scheduledAt">Scheduled Time (Optional)</Label>
+              <Input
+                id="scheduledAt"
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
               />
             </div>
 

@@ -4,22 +4,37 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Video, Users, Calendar, CreditCard, Settings, BarChart3, Clock, CheckCircle2, FileText, ChevronRight, Download } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Video, Users, Calendar, Settings, BarChart3, Clock, CheckCircle2, FileText, ChevronRight, Download, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getCandidateList, getCandidateTracking, getCandidateFile, type CandidateTrackingData } from "@/lib/candidateQuery"
+import { createSession, listScheduledSessions, type SessionSummary } from "@/lib/sessions"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useToast } from "@/hooks/use-toast"
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [username, setUsername] = useState("")
   const [candidates, setCandidates] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const [candidateFiles, setCandidateFiles] = useState<CandidateTrackingData | null>(null)
   const [loadingFiles, setLoadingFiles] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<{ name: string; content: string } | null>(null)
+  const [selectedFile, setSelectedFile] = useState<{ name: string; content?: string; contentBase64?: string; contentType?: string } | null>(null)
   const [loadingFileContent, setLoadingFileContent] = useState(false)
+  const [scheduled, setScheduled] = useState<SessionSummary[]>([])
+  const [loadingScheduled, setLoadingScheduled] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [formCandidateName, setFormCandidateName] = useState("")
+  const [formCandidateEmail, setFormCandidateEmail] = useState("")
+  const [formNotes, setFormNotes] = useState("")
+  const [formScheduledAt, setFormScheduledAt] = useState("")
+  const [formSubmitting, setFormSubmitting] = useState(false)
 
   useEffect(() => {
     const name = sessionStorage.getItem("interviewer_name")
@@ -29,6 +44,7 @@ export default function DashboardPage() {
     }
     setUsername(name)
     loadCandidates(name)
+    loadScheduled(name)
   }, [router])
 
   const loadCandidates = async (interviewer: string) => {
@@ -42,6 +58,19 @@ export default function DashboardPage() {
       console.error("Failed to load candidates:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadScheduled = async (interviewer: string) => {
+    try {
+      setLoadingScheduled(true)
+      const sessions = await listScheduledSessions(interviewer)
+      setScheduled(sessions)
+    } catch (error) {
+      console.error("Failed to load scheduled sessions:", error)
+      setScheduled([])
+    } finally {
+      setLoadingScheduled(false)
     }
   }
 
@@ -68,11 +97,59 @@ export default function DashboardPage() {
     setLoadingFileContent(true)
     try {
       const fileData = await getCandidateFile(username, selectedCandidate, filename)
-      setSelectedFile({ name: filename, content: fileData.content })
+      setSelectedFile({ name: filename, content: fileData.content, contentBase64: (fileData as any).contentBase64, contentType: (fileData as any).contentType })
     } catch (error) {
       console.error("Failed to load file content:", error)
     } finally {
       setLoadingFileContent(false)
+    }
+  }
+
+  const scheduledCount = scheduled.length
+  const completedCount = candidates.length
+  const totalInterviews = scheduledCount + completedCount
+
+  const resetCreateForm = () => {
+    setFormCandidateName("")
+    setFormCandidateEmail("")
+    setFormNotes("")
+    setFormScheduledAt("")
+  }
+
+  const handleCreateScheduled = async () => {
+    if (!username) {
+      toast({ title: "Missing interviewer", description: "Please log in again before scheduling.", variant: "destructive" })
+      return
+    }
+
+    const trimmedName = formCandidateName.trim()
+    const trimmedEmail = formCandidateEmail.trim()
+
+    if (!trimmedName || !trimmedEmail) {
+      toast({ title: "Missing information", description: "Candidate name and email are required.", variant: "destructive" })
+      return
+    }
+
+    setFormSubmitting(true)
+
+    try {
+      await createSession({
+        candidate_name: trimmedName,
+        candidate_email: trimmedEmail,
+        interviewer_name: username,
+        notes: formNotes.trim() || undefined,
+        scheduled_at: formScheduledAt || null,
+      })
+
+      toast({ title: "Interview scheduled", description: `${trimmedName} has been added to your schedule.` })
+      setCreateOpen(false)
+      resetCreateForm()
+      await loadScheduled(username)
+    } catch (error) {
+      console.error("Failed to schedule interview:", error)
+      toast({ title: "Scheduling failed", description: "Could not create the session. Try again.", variant: "destructive" })
+    } finally {
+      setFormSubmitting(false)
     }
   }
 
@@ -151,8 +228,8 @@ export default function DashboardPage() {
               <Users className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground">+3 from last month</p>
+              <div className="text-2xl font-bold">{totalInterviews}</div>
+              <p className="text-xs text-muted-foreground">Includes scheduled and completed</p>
             </CardContent>
           </Card>
 
@@ -173,11 +250,144 @@ export default function DashboardPage() {
               <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">22</div>
-              <p className="text-xs text-muted-foreground">2 scheduled</p>
+              <div className="text-2xl font-bold">{completedCount}</div>
+              <p className="text-xs text-muted-foreground">{scheduledCount} scheduled</p>
             </CardContent>
           </Card>
         </div>
+
+        <Dialog
+          open={createOpen}
+          onOpenChange={(open) => {
+            setCreateOpen(open)
+            if (!open) {
+              resetCreateForm()
+            }
+          }}
+        >
+          <Card>
+            <CardHeader className="flex items-center justify-between">
+              <div>
+                <CardTitle>Scheduled Interviews</CardTitle>
+                <CardDescription>Upcoming sessions for {username}</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {scheduledCount} upcoming
+                </Badge>
+                <DialogTrigger asChild>
+                  <Button size="sm">Schedule interview</Button>
+                </DialogTrigger>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {loadingScheduled ? (
+                <div className="text-sm text-muted-foreground">Loading scheduled interviews...</div>
+              ) : scheduledCount === 0 ? (
+                <div className="text-sm text-muted-foreground">No scheduled interviews yet.</div>
+              ) : (
+                scheduled.map((session) => {
+                  const dateValue = session.scheduled_at ? new Date(session.scheduled_at) : null
+                  const scheduledTime = dateValue && !Number.isNaN(dateValue.getTime()) ? dateValue.toLocaleString() : "TBD"
+                  return (
+                    <div
+                      key={session.meeting_code}
+                      className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/30 p-3"
+                    >
+                      <div>
+                        <p className="font-medium">{session.candidate_name}</p>
+                        <p className="text-xs text-muted-foreground">{session.candidate_email}</p>
+                      </div>
+                      <div className="text-sm text-muted-foreground text-right">
+                        <div>{scheduledTime}</div>
+                        <div className="text-xs font-mono text-primary">{session.meeting_code}</div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Schedule a new interview</DialogTitle>
+              <DialogDescription>Capture candidate details and optionally pick a time.</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="schedule-candidate-name">Candidate name</Label>
+                <Input
+                  id="schedule-candidate-name"
+                  placeholder="Jane Smith"
+                  value={formCandidateName}
+                  onChange={(event) => setFormCandidateName(event.target.value)}
+                  disabled={formSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="schedule-candidate-email">Candidate email</Label>
+                <Input
+                  id="schedule-candidate-email"
+                  type="email"
+                  placeholder="jane@example.com"
+                  value={formCandidateEmail}
+                  onChange={(event) => setFormCandidateEmail(event.target.value)}
+                  disabled={formSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="schedule-notes">Notes</Label>
+                <Textarea
+                  id="schedule-notes"
+                  placeholder="Role, focus areas, prep notes"
+                  value={formNotes}
+                  onChange={(event) => setFormNotes(event.target.value)}
+                  rows={3}
+                  disabled={formSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="schedule-time">Scheduled time (optional)</Label>
+                <Input
+                  id="schedule-time"
+                  type="datetime-local"
+                  value={formScheduledAt}
+                  onChange={(event) => setFormScheduledAt(event.target.value)}
+                  disabled={formSubmitting}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setCreateOpen(false)
+                  resetCreateForm()
+                }}
+                disabled={formSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="button" onClick={handleCreateScheduled} disabled={formSubmitting}>
+                {formSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Scheduling...
+                  </>
+                ) : (
+                  "Schedule"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -327,15 +537,62 @@ export default function DashboardPage() {
                     {loadingFileContent ? (
                       <div className="text-center py-8 text-muted-foreground">Loading content...</div>
                     ) : selectedFile ? (
-                      <pre className="text-xs whitespace-pre-wrap break-words font-mono">
-                        {selectedFile.content}
-                      </pre>
+                      selectedFile.contentBase64 && selectedFile.contentType && selectedFile.contentType.startsWith('image/') ? (
+                        <div className="w-full h-full flex items-center justify-center p-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={selectedFile.name}
+                            src={`data:${selectedFile.contentType};base64,${selectedFile.contentBase64}`}
+                            className="max-w-full max-h-[60vh] rounded border"
+                          />
+                        </div>
+                      ) : selectedFile.content ? (
+                        <pre className="text-xs whitespace-pre-wrap break-words font-mono">
+                          {selectedFile.content}
+                        </pre>
+                      ) : selectedFile.contentBase64 ? (
+                        <div className="text-sm text-muted-foreground">Binary file ({selectedFile.contentType || 'application/octet-stream'})</div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">No preview available.</div>
+                      )
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         Click a file to view its content
                       </div>
                     )}
                   </ScrollArea>
+                  {selectedFile && (
+                    <div className="pt-3 flex justify-end">
+                      {selectedFile.contentBase64 && selectedFile.contentType ? (
+                        <a
+                          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded border"
+                          download={selectedFile.name}
+                          href={`data:${selectedFile.contentType};base64,${selectedFile.contentBase64}`}
+                        >
+                          <Download className="w-4 h-4" /> Download
+                        </a>
+                      ) : selectedFile.content ? (
+                        <button
+                          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded border"
+                          onClick={() => {
+                            try {
+                              const blob = new Blob([selectedFile.content as string], { type: 'text/plain;charset=utf-8' })
+                              const url = URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = selectedFile.name
+                              document.body.appendChild(a)
+                              a.click()
+                              document.body.removeChild(a)
+                              setTimeout(() => URL.revokeObjectURL(url), 1000)
+                            } catch {}
+                          }}
+                        >
+                          <Download className="w-4 h-4" /> Download
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

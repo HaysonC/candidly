@@ -19,6 +19,7 @@ export default function StartPage() {
   const [candidateName, setCandidateName] = useState("")
   const [candidateEmail, setCandidateEmail] = useState("")
   const [notes, setNotes] = useState("")
+  const [scheduledAt, setScheduledAt] = useState("")
   const [isCreating, setIsCreating] = useState(false)
   const [meetingCode, setMeetingCode] = useState("")
   const [joinLink, setJoinLink] = useState("")
@@ -76,6 +77,7 @@ export default function StartPage() {
           candidate_email: trimmedEmail,
           notes: notes,
           interviewer_name: username,
+          scheduled_at: scheduledAt || null,
         }),
       })
 
@@ -212,6 +214,16 @@ export default function StartPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="scheduledAt">Scheduled Time (Optional)</Label>
+              <Input
+                id="scheduledAt"
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
               />
             </div>
 

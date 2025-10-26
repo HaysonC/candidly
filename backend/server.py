@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import logging
@@ -463,29 +463,133 @@ async def put_candidate_file(name: str, req: CandidateFilePutRequest):
 
 @app.get("/candidate_interviewed/{name}/file/{filename}")
 async def get_candidate_file(name: str, filename: str, interviewer: Optional[str] = None):
-    """Get the content of a specific file for a candidate."""
+    """Get the content of a specific file for a candidate.
+
+    Returns JSON. For text-like files, returns:
+    { filename, content, size }
+    For binary/image files, returns base64 with contentType:
+    { filename, contentBase64, contentType, size }
+    """
     if not interviewer:
         raise HTTPException(status_code=400, detail="interviewer is required")
     if not _is_safe_filename(filename):
         raise HTTPException(status_code=400, detail="invalid filename")
-    
+
     candidate_dir = _candidate_base_dir(interviewer, name)
     if not candidate_dir.exists():
         raise HTTPException(status_code=404, detail="Candidate not found")
-    
+
     fpath = candidate_dir / filename
     if not fpath.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
+
+    # Decide response format based on file type/extension
+    ext = fpath.suffix.lower()
+    image_exts = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+    text_exts = {".txt", ".md", ".json", ".log", ".py", ".java", ".cpp", ".c", ".ts", ".tsx", ".js", ".css", ".html"}
+    mime_by_ext = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+    }
+
     try:
-        content = fpath.read_text(encoding="utf-8")
-        return {
-            "filename": filename,
-            "content": content,
-            "size": fpath.stat().st_size,
-        }
+        if ext in text_exts:
+            content = fpath.read_text(encoding="utf-8")
+            return {
+                "filename": filename,
+                "content": content,
+                "size": fpath.stat().st_size,
+            }
+        elif ext in image_exts:
+            with open(fpath, "rb") as fh:
+                b = fh.read()
+            b64 = base64.b64encode(b).decode("ascii")
+            return {
+                "filename": filename,
+                "contentBase64": b64,
+                "contentType": mime_by_ext.get(ext, "application/octet-stream"),
+                "size": len(b),
+            }
+        else:
+            # Try text first, fallback to base64
+            try:
+                content = fpath.read_text(encoding="utf-8")
+                return {
+                    "filename": filename,
+                    "content": content,
+                    "size": fpath.stat().st_size,
+                }
+            except Exception:
+                with open(fpath, "rb") as fh:
+                    b = fh.read()
+                b64 = base64.b64encode(b).decode("ascii")
+                return {
+                    "filename": filename,
+                    "contentBase64": b64,
+                    "contentType": "application/octet-stream",
+                    "size": len(b),
+                }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read file: {e}")
+
+
+@app.post("/candidate_interviewed/{name}/upload")
+async def upload_candidate_file(
+    name: str,
+    interviewer: str = Form(...),
+    file: UploadFile = File(...),
+    filename: Optional[str] = Form(None),
+):
+    """Upload a binary file (e.g., image) as multipart/form-data and update tracking.json.
+
+    Form fields:
+    - interviewer: Account/interviewer name
+    - filename: Optional explicit filename override; falls back to the uploaded file's original name
+    - file: The uploaded file blob
+    """
+    interviewer = interviewer.strip()
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+
+    use_name = filename or (file.filename or "")
+    if not use_name:
+        raise HTTPException(status_code=400, detail="filename is required")
+    if not _is_safe_filename(use_name):
+        raise HTTPException(status_code=400, detail="invalid filename")
+
+    candidate_dir = _candidate_base_dir(interviewer, name)
+    fpath = candidate_dir / use_name
+
+    try:
+        # Stream to disk to handle large files efficiently
+        with open(fpath, "wb") as out:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to write uploaded file: {e}")
+
+    # update tracking
+    tracking = _read_tracking(candidate_dir)
+    files = tracking.get("files", {})
+    try:
+        size = fpath.stat().st_size
+    except Exception:
+        size = 0
+    files[use_name] = {
+        "size": size,
+        "updated_at": datetime.utcnow().isoformat() + "Z",
+        "content_type": getattr(file, "content_type", None) or "application/octet-stream",
+    }
+    tracking["files"] = files
+    _write_tracking(candidate_dir, tracking)
+
+    return {"ok": True, "candidate": name, "file": use_name}
 
 
 @app.get("/api/verify-email/{meeting_code}/{email}")

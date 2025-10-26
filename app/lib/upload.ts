@@ -62,3 +62,30 @@ export async function uploadCandidateFileBinary(
     const res = await fetch(`${base}/candidate_interviewed/${encodeURIComponent(candidateName)}`, requestOptions)
     return res.ok
 }
+
+// Upload a binary file using multipart/form-data (Blob)
+export async function uploadCandidateFileBlob(
+    candidateName: string,
+    filename: string,
+    blob: Blob,
+    interviewerName: string,
+): Promise<boolean> {
+    if (!candidateName || !interviewerName || !filename || !blob) return false
+    const base = getSignalingHttpBase()
+
+    const form = new FormData()
+    form.append('interviewer', interviewerName)
+    form.append('filename', filename)
+    form.append('file', blob, filename)
+
+    const res = await fetch(`${base}/candidate_interviewed/${encodeURIComponent(candidateName)}/upload`, {
+        method: 'POST',
+        headers: {
+            'ngrok-skip-browser-warning': 'true',
+            // Note: do NOT set Content-Type; browser will set proper multipart boundary
+        } as any,
+        body: form,
+    })
+
+    return res.ok
+}

@@ -9,7 +9,6 @@ cache/
 pychache__/
 .venv/
 
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -31,7 +30,7 @@ yarn-error.log*
 .env*
 
 # vercel
-.vercel
+.vercelxw
 
 # typescript
 *.tsbuildinfo
@@ -40,3 +39,7 @@ next-env.d.ts
 data/
 
 .next/
+
+data/
+
+.github/

@@ -23,7 +23,6 @@ export default function StartInterviewPage() {
   const [candidateName, setCandidateName] = useState("")
   const [candidateEmail, setCandidateEmail] = useState("")
   const [notes, setNotes] = useState("")
-  const [scheduledAt, setScheduledAt] = useState("")
   const [templates, setTemplates] = useState<{id:string;name:string}[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>(undefined)
   const [isCreating, setIsCreating] = useState(false)
@@ -152,7 +151,6 @@ export default function StartInterviewPage() {
           candidate_email: trimmedEmail,
           notes: notes,
           interviewer_name: username,
-          scheduled_at: scheduledAt || null,
         }),
       })
 
@@ -250,13 +248,6 @@ export default function StartInterviewPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="scheduledAt">Scheduled Time (Optional)</Label>
-              <Input
-                id="scheduledAt"
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-              />
             </div>
 
             <div className="space-y-2">

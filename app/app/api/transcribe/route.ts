@@ -10,33 +10,78 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
     }
 
+    if (audioFile.size === 0) {
+      console.error('❌ Audio file is empty');
+      return NextResponse.json({ error: 'Audio file is empty' }, { status: 400 });
+    }
+
+    if (audioFile.size > 50 * 1024 * 1024) { // 50MB limit
+      console.error('❌ Audio file too large:', audioFile.size);
+      return NextResponse.json({ error: 'Audio file too large (max 50MB)' }, { status: 400 });
+    }
+
     // Get Deepgram API key from environment
     const DG_API_KEY = process.env.DG_API_KEY;
     if (!DG_API_KEY) {
       return NextResponse.json({ error: 'Deepgram API key not configured' }, { status: 500 });
     }
 
-    console.log(`🎧 Transcribing ${audioFile.name} as ${role} using Deepgram...`);
+    console.log(`🎧 Transcribing ${audioFile.name} (${audioFile.type}, ${audioFile.size} bytes) as ${role} using Deepgram...`);
 
     // Convert audio file to array buffer for Deepgram
     const audioBuffer = await audioFile.arrayBuffer();
+    console.log(`📦 Audio buffer size: ${audioBuffer.byteLength} bytes`);
+
+    // Determine content type based on file type (following Python implementation)
+    let contentType = 'application/octet-stream'; // default fallback
+    if (audioFile.type) {
+      contentType = audioFile.type;
+    } else if (audioFile.name.endsWith('.webm')) {
+      contentType = 'audio/webm';
+    } else if (audioFile.name.endsWith('.wav')) {
+      contentType = 'audio/wav';
+    } else if (audioFile.name.endsWith('.mp4')) {
+      contentType = 'video/mp4';
+    } else if (audioFile.name.endsWith('.m4a')) {
+      contentType = 'audio/m4a';
+    }
+    
+    console.log(`📝 Using content type: ${contentType}`);
 
     // Call Deepgram API with nova-3 model (matching Python implementation exactly)
     const url = `https://api.deepgram.com/v1/listen?model=nova-3&language=en-US&smart_format=true&punctuate=true&utterances=true&paragraphs=true&diarize=true`;
+    
+    console.log('📤 Sending request to Deepgram:', {
+      url,
+      contentType,
+      audioSize: audioBuffer.byteLength,
+      hasApiKey: !!DG_API_KEY
+    });
     
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': `Token ${DG_API_KEY}`,
-        'Content-Type': 'audio/webm',
+        'Content-Type': contentType,
       },
       body: audioBuffer,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Deepgram API error:', response.status, errorText);
-      return NextResponse.json({ error: 'Transcription service error' }, { status: response.status });
+      console.error('❌ Deepgram API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        contentType: contentType,
+        audioSize: audioBuffer.byteLength,
+        fileName: audioFile.name,
+        fileType: audioFile.type
+      });
+      return NextResponse.json({ 
+        error: 'Transcription service error', 
+        details: `Deepgram API returned ${response.status}: ${errorText}` 
+      }, { status: response.status });
     }
 
     const result = await response.json();

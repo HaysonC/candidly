@@ -26,11 +26,12 @@ class AudioBufferManager {
   private previousChunkCount: number = 0;
 
   private onDataAvailable = (event: BlobEvent) => {
+    const timestamp = new Date().toISOString().split('T')[1].slice(0, 8); // HH:MM:SS
     if (event.data.size > 0) {
       this.state.audioChunks.push(event.data);
-      console.log(`📦 Audio chunk received: ${event.data.size} bytes (total chunks: ${this.state.audioChunks.length})`);
+      console.log(`📦 [${timestamp}] Audio chunk received: ${event.data.size} bytes (total chunks: ${this.state.audioChunks.length})`);
     } else {
-      console.warn('⚠️ Empty audio chunk received - this might indicate an issue with recording');
+      console.warn(`⚠️ [${timestamp}] Empty audio chunk received - this might indicate an issue with recording`);
     }
   };
 
@@ -136,39 +137,59 @@ class AudioBufferManager {
    */
   resetRecording(): Blob | null {
     console.log('🔄 Resetting audio buffer (keeping recording active)...');
+    console.log(`📊 Pre-reset state: chunks=${this.state.audioChunks.length}, mediaRecorder=${this.state.mediaRecorder?.state}, isRecording=${this.state.isRecording}`);
     
     // Get current audio chunks before clearing
     let audioBlob: Blob | null = null;
     if (this.state.audioChunks.length > 0) {
       audioBlob = new Blob(this.state.audioChunks, { type: 'audio/webm' });
       console.log(`📊 Reset buffer contains ${this.state.audioChunks.length} chunks, total size: ${audioBlob.size} bytes`);
+      
+      // Validate the audio blob
+      if (audioBlob.size === 0) {
+        console.warn('⚠️ Audio blob is empty despite having chunks - chunks might be invalid');
+        audioBlob = null;
+      } else if (audioBlob.size < 1000) { // Less than 1KB is likely just header data
+        console.warn(`⚠️ Audio blob seems very small (${audioBlob.size} bytes) - might be empty audio`);
+      }
     } else {
       console.warn('⚠️ No audio chunks available during reset - this might indicate recording stopped unexpectedly');
     }
     
+    // Store the current MediaRecorder state before clearing chunks
+    const wasRecording = this.state.mediaRecorder?.state === 'recording';
+    
     // Clear the audio chunks buffer but keep recording
     this.state.audioChunks = [];
+    console.log('🧹 Audio chunks buffer cleared');
     
-    // Verify recording is still active
-    const mediaRecorderState = this.state.mediaRecorder?.state;
-    console.log(`🔍 Checking MediaRecorder state: ${mediaRecorderState}`);
-    
-    if (!this.state.mediaRecorder || mediaRecorderState !== 'recording') {
-      console.error(`❌ MediaRecorder issue! State: ${mediaRecorderState}, recorder exists: ${!!this.state.mediaRecorder}`);
-      // Try to restart recording asynchronously to avoid blocking
-      setTimeout(() => this.restartRecording(), 100);
+    // If MediaRecorder was recording, ensure it continues
+    if (wasRecording && this.state.mediaRecorder) {
+      console.log('✅ MediaRecorder was recording, continuing...');
+      // Force a small recording cycle to ensure it's still working
+      try {
+        // Request additional data to verify recording is still active
+        this.state.mediaRecorder.requestData();
+        console.log('📋 Requested data from MediaRecorder to verify it\'s active');
+      } catch (e) {
+        console.warn('⚠️ Could not request data from MediaRecorder:', e);
+        this.restartRecording();
+      }
     } else {
-      console.log('✅ MediaRecorder still active, state:', mediaRecorderState);
-      
-      // Double-check that we're actually receiving data
-      const initialChunkCount = this.state.audioChunks.length;
-      setTimeout(() => {
-        if (this.state.audioChunks.length === initialChunkCount) {
-          console.warn('⚠️ No new chunks received after reset - MediaRecorder might be stalled');
-          this.restartRecording();
-        }
-      }, 5000); // Check after 5 seconds
+      console.error(`❌ MediaRecorder was not recording during reset! State: ${this.state.mediaRecorder?.state}`);
+      this.restartRecording();
     }
+    
+    // Set up a check to verify chunks are still coming in
+    const checkTime = Date.now();
+    setTimeout(() => {
+      const newChunks = this.state.audioChunks.length;
+      console.log(`🔍 Post-reset check: ${newChunks} new chunks in 5 seconds`);
+      if (newChunks === 0 && this.state.mediaRecorder?.state === 'recording') {
+        console.warn('⚠️ No chunks received after reset despite MediaRecorder being active - forcing restart');
+        this.restartRecording();
+      }
+    }, 5000);
     
     return audioBlob;
   }
@@ -179,10 +200,12 @@ class AudioBufferManager {
   private async restartRecording(): Promise<void> {
     try {
       console.log('🔄 Attempting to restart recording...');
+      console.log(`🔍 Current state before restart: mediaRecorder=${this.state.mediaRecorder?.state}, isRecording=${this.state.isRecording}, chunks=${this.state.audioChunks.length}`);
       
       // Stop existing MediaRecorder if it exists
       if (this.state.mediaRecorder) {
         try {
+          console.log(`🛑 Stopping existing MediaRecorder (state: ${this.state.mediaRecorder.state})`);
           if (this.state.mediaRecorder.state !== 'inactive') {
             this.state.mediaRecorder.stop();
           }
@@ -235,6 +258,7 @@ class AudioBufferManager {
       mediaRecorder.start(1000);
       
       console.log('✅ Recording restarted successfully');
+      console.log(`🔍 New state after restart: mediaRecorder=${mediaRecorder.state}, isRecording=${this.state.isRecording}`);
     } catch (error) {
       console.error('❌ Failed to restart recording:', error);
       this.state.isRecording = false;
@@ -298,19 +322,38 @@ class AudioBufferManager {
   async transcribeAudio(audioBlob: Blob, role: string = 'unknown'): Promise<string> {
     try {
       console.log(`🎧 Starting transcription for role: ${role}`);
+      console.log(`📊 Audio blob details: size=${audioBlob.size} bytes, type=${audioBlob.type}`);
+
+      // Validate audio blob
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error('Audio blob is empty or invalid');
+      }
+
+      if (audioBlob.size < 100) { // Very small files are likely empty
+        console.warn('⚠️ Audio blob seems very small, might be empty audio');
+      }
 
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
       formData.append('role', role);
 
+      console.log('📤 Sending transcription request...');
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: formData,
       });
 
+      console.log(`📥 Transcription response: ${response.status} ${response.statusText}`);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Transcription failed: ${errorData.error || response.statusText}`);
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          const errorText = await response.text();
+          throw new Error(`Transcription failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+        throw new Error(`Transcription failed: ${errorData.error || response.statusText}${errorData.details ? ` - ${errorData.details}` : ''}`);
       }
 
       const result = await response.json();
@@ -427,12 +470,23 @@ class AudioBufferManager {
         return;
       }
 
+      if (audioBlob.size === 0) {
+        console.log('⚠️ Audio blob is empty - skipping this interval');
+        return;
+      }
+
       if (!this.currentInterviewData) {
         console.log('⚠️ No interview data available - skipping this interval');
         return;
       }
 
       console.log(`📦 Processing audio blob of size: ${audioBlob.size} bytes`);
+
+      // Only process if we have substantial audio data
+      if (audioBlob.size < 1000) {
+        console.log('⚠️ Audio blob too small, likely empty audio - skipping transcription');
+        return;
+      }
 
       // Process transcription and upload asynchronously
       this.processTranscriptAsync(audioBlob);
@@ -448,6 +502,8 @@ class AudioBufferManager {
   private async processTranscriptAsync(audioBlob: Blob): Promise<void> {
     try {
       if (!this.currentInterviewData) return;
+
+      console.log(`🔄 Processing transcript for ${audioBlob.size} bytes of audio...`);
 
       // Transcribe audio
       const transcript = await this.transcribeAudio(audioBlob, 'interview');

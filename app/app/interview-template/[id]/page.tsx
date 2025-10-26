@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { getSignalingHttpBase } from '@/lib/signaling'
+import { fetchTemplateById, createTemplate, updateTemplate } from '@/lib/templates'
 
 interface Template {
   id?: string
@@ -24,6 +25,7 @@ export default function EditTemplatePage() {
 
   const [template, setTemplate] = useState<Template>({ name: '', criteria: [], coding_questions: [] })
   const [loading, setLoading] = useState(!isNew)
+  const [error, setError] = useState<string | null>(null)
   const [aiContext, setAiContext] = useState('')
   const [aiBusy, setAiBusy] = useState(false)
   const { toast } = useToast()
@@ -33,12 +35,22 @@ export default function EditTemplatePage() {
     const name = sessionStorage.getItem('interviewer_name') || ''
     setUsername(name)
     if (isNew) return
-    if (!name) { setLoading(false); return }
-    const base = getSignalingHttpBase()
-    fetch(`${base}/templates/${id}?account=${encodeURIComponent(name)}`)
-      .then((res) => res.json())
-      .then((data) => setTemplate(data || { name: '', criteria: [], coding_questions: [] }))
-      .finally(() => setLoading(false))
+    if (!name) { setError('Missing account'); setLoading(false); return }
+    ;(async () => {
+      try {
+        const data = await fetchTemplateById(name, id)
+        if (!data) {
+          setError('Template not found')
+          return
+        }
+        setTemplate({ name: data.name, criteria: data.criteria, coding_questions: data.coding_questions })
+        setError(null)
+      } catch (_e) {
+        setError('Failed to load template')
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [id, isNew])
 
   const updateField = (section: 'criteria' | 'coding_questions', index: number, value: string) => {
@@ -63,28 +75,27 @@ export default function EditTemplatePage() {
   }
 
   const saveTemplate = async () => {
-    const base = getSignalingHttpBase()
     if (!username) {
       toast({ title: 'Missing account', description: 'Interviewer name not found.', variant: 'destructive' })
       return
     }
-    const method = isNew ? 'POST' : 'PUT'
-    const url = isNew
-      ? `${base}/templates`
-      : `${base}/templates/${id}?account=${encodeURIComponent(username)}`
-    const body = isNew
-      ? JSON.stringify({ account: username, name: template.name, criteria: template.criteria, coding_questions: template.coding_questions })
-      : JSON.stringify({ name: template.name, criteria: template.criteria, coding_questions: template.coding_questions })
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body,
-    })
-    if (res.ok) {
+    try {
+      if (isNew) {
+        await createTemplate(username, {
+          name: template.name,
+          criteria: template.criteria,
+          coding_questions: template.coding_questions,
+        })
+      } else {
+        await updateTemplate(username, id, {
+          name: template.name,
+          criteria: template.criteria,
+          coding_questions: template.coding_questions,
+        })
+      }
       router.push('/interview-template')
-    } else {
-      const txt = await res.text()
-      toast({ title: 'Save failed', description: txt || 'Could not save template', variant: 'destructive' })
+    } catch (e: any) {
+      toast({ title: 'Save failed', description: e?.message || 'Could not save template', variant: 'destructive' })
     }
   }
 
@@ -128,62 +139,76 @@ export default function EditTemplatePage() {
   if (loading) return <div className="p-8">Loading…</div>
 
   return (
-    <div className="p-8 space-y-6 max-w-3xl">
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={() => router.push('/interview-template')}>Back</Button>
-        <h1 className="text-2xl font-bold">{isNew ? 'New Template' : 'Edit Template'}</h1>
+        <h1 className="text-2xl font-bold">{isNew ? 'New Template' : (error ? 'Template' : 'Edit Template')}</h1>
       </div>
 
-      <Card className="p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold text-lg flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" /> AI Assistance
-            </h2>
-            <p className="text-sm text-muted-foreground">Provide context and let AI suggest criteria and questions.</p>
+      {error ? (
+        <Card className="p-4">
+          <div className="text-sm text-muted-foreground mb-3">{error}</div>
+          <div className="flex gap-2">
+            <Button onClick={() => router.push('/interview-template')}>Go to Templates</Button>
+            <Button variant="outline" onClick={() => router.push('/interview-template/new')}>Create New</Button>
           </div>
-          <Button onClick={generateWithAI} disabled={aiBusy} className="bg-primary text-primary-foreground">
-            {aiBusy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            Generate with AI
-          </Button>
-        </div>
-        <Textarea
-          placeholder="Role, seniority, focus areas, technologies, interview goals…"
-          value={aiContext}
-          onChange={(e) => setAiContext(e.target.value)}
-          rows={4}
-        />
-      </Card>
+        </Card>
+      ) : (
+        <>
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-semibold text-lg flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" /> AI Assistance
+                </h2>
+                <p className="text-sm text-muted-foreground">Provide context and let AI suggest criteria and questions.</p>
+              </div>
+              <Button onClick={generateWithAI} disabled={aiBusy} className="bg-primary text-primary-foreground">
+                {aiBusy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                Generate with AI
+              </Button>
+            </div>
+            <Textarea
+              placeholder="Role, seniority, focus areas, technologies, interview goals…"
+              value={aiContext}
+              onChange={(e) => setAiContext(e.target.value)}
+              rows={4}
+            />
+          </Card>
 
-      <Input
-        placeholder="Template name"
-        value={template.name}
-        onChange={(e) => setTemplate({ ...template, name: e.target.value })}
-      />
+          <Input
+            placeholder="Template name"
+            value={template.name}
+            onChange={(e) => setTemplate({ ...template, name: e.target.value })}
+          />
 
-      <Card className="p-4 space-y-3">
-        <h2 className="font-semibold text-lg">Criteria</h2>
-        {template.criteria.map((c, i) => (
-          <div key={i} className="flex gap-2">
-            <Textarea value={c} onChange={(e) => updateField('criteria', i, e.target.value)} />
-            <Button variant="destructive" onClick={() => removeField('criteria', i)}>Remove</Button>
-          </div>
-        ))}
-        <Button onClick={() => addField('criteria')}>+ Add Criterion</Button>
-      </Card>
+          <Card className="p-4 space-y-3">
+            <h2 className="font-semibold text-lg">Criteria</h2>
+            {template.criteria.map((c, i) => (
+              <div key={i} className="flex gap-2">
+                <Textarea value={c} onChange={(e) => updateField('criteria', i, e.target.value)} />
+                <Button variant="destructive" onClick={() => removeField('criteria', i)}>Remove</Button>
+              </div>
+            ))}
+            <Button onClick={() => addField('criteria')}>+ Add Criterion</Button>
+          </Card>
 
-      <Card className="p-4 space-y-3">
-        <h2 className="font-semibold text-lg">Coding Questions</h2>
-        {template.coding_questions.map((q, i) => (
-          <div key={i} className="flex gap-2">
-            <Textarea value={q} onChange={(e) => updateField('coding_questions', i, e.target.value)} />
-            <Button variant="destructive" onClick={() => removeField('coding_questions', i)}>Remove</Button>
-          </div>
-        ))}
-        <Button onClick={() => addField('coding_questions')}>+ Add Question</Button>
-      </Card>
+          <Card className="p-4 space-y-3">
+            <h2 className="font-semibold text-lg">Coding Questions</h2>
+            {template.coding_questions.map((q, i) => (
+              <div key={i} className="flex gap-2">
+                <Textarea value={q} onChange={(e) => updateField('coding_questions', i, e.target.value)} />
+                <Button variant="destructive" onClick={() => removeField('coding_questions', i)}>Remove</Button>
+              </div>
+            ))}
+            <Button onClick={() => addField('coding_questions')}>+ Add Question</Button>
+          </Card>
 
-      <Button onClick={saveTemplate} className="bg-blue-600 text-white">Save Template</Button>
+          <Button onClick={saveTemplate} className="bg-blue-600 text-white">Save Template</Button>
+        </>
+      )}
+      </div>
     </div>
   )
 }

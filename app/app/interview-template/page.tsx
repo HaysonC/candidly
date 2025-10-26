@@ -3,10 +3,22 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { ArrowLeft, RefreshCcw } from 'lucide-react'
+import { ArrowLeft, RefreshCcw, Trash } from 'lucide-react'
 import { getSignalingHttpBase } from '@/lib/signaling'
-import { fetchTemplatesForAccount } from '@/lib/templates'
+import { fetchTemplatesForAccount, deleteTemplate } from '@/lib/templates'
 import { Spinner } from '@/components/ui/spinner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface Template {
   id: string
@@ -20,6 +32,8 @@ export default function InterviewTemplatePage() {
   const [templates, setTemplates] = useState<Template[]>([])
   const [username, setUsername] = useState<string>("")
   const [loading, setLoading] = useState<boolean>(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     const name = sessionStorage.getItem('interviewer_name') || ''
@@ -76,11 +90,63 @@ export default function InterviewTemplatePage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((t) => (
-            <Card key={t.id} className="p-4 cursor-pointer" onClick={() => router.push(`/interview-template/${t.id}`)}>
-              <CardTitle className="mb-1">{t.name}</CardTitle>
-              <CardDescription>
-                {t.criteria.length} criteria • {t.coding_questions.length} coding questions
-              </CardDescription>
+            <Card
+              key={t.id}
+              className="p-4 cursor-pointer hover:bg-accent/30"
+              onClick={() => router.push(`/interview-template/${t.id}`)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="mb-1 break-words">{t.name || 'Untitled template'}</CardTitle>
+                  <CardDescription>
+                    {t.criteria.length} criteria • {t.coding_questions.length} coding questions
+                  </CardDescription>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={deletingId === t.id}
+                      aria-label="Delete template"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this template?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete “{t.name || 'Untitled template'}”.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          if (!username) return
+                          try {
+                            setDeletingId(t.id)
+                            await deleteTemplate(username, t.id)
+                            setTemplates((prev) => prev.filter((x) => x.id !== t.id))
+                            toast({ title: 'Template deleted' })
+                          } catch (err: any) {
+                            toast({ title: 'Delete failed', description: err?.message || 'Could not delete template', variant: 'destructive' })
+                          } finally {
+                            setDeletingId(null)
+                          }
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </Card>
           ))}
         </div>

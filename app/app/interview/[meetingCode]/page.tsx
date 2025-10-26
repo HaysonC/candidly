@@ -130,6 +130,81 @@ export default function InterviewPage() {
     sendEditorUpdate({ kind: "timer-sync", active, reset: active && timerSeconds === 0 })
   }
 
+  // Recording controls
+  const handleStartRecording = async () => {
+    if (isRecordingInterview || !sessionInfo) return;
+    
+    console.log("[debug] Starting interview recording manually...");
+    try {
+      const recordingStarted = await startInterviewRecording(
+        sessionInfo.candidate_name,
+        sessionInfo.interviewer_name,
+        meetingCode
+      );
+      
+      if (recordingStarted) {
+        setIsRecordingInterview(true);
+        
+        // Notify the other participant about recording status
+        wsRef.current?.send(JSON.stringify({
+          type: "recording-started",
+          message: "Interview recording has started"
+        }));
+        
+        toast({
+          title: "Recording Started",
+          description: "Interview transcription is now active",
+        });
+      } else {
+        throw new Error("Failed to start recording");
+      }
+    } catch (error) {
+      console.error("[debug] Error starting recording:", error);
+      toast({
+        title: "Recording Error",
+        description: "Failed to start interview recording",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStopRecording = async () => {
+    if (!isRecordingInterview) return;
+    
+    console.log("[debug] Stopping interview recording manually...");
+    try {
+      const result = await stopInterviewRecording();
+      setIsRecordingInterview(false);
+      
+      // Notify the other participant about recording status
+      wsRef.current?.send(JSON.stringify({
+        type: "recording-stopped",
+        message: "Interview recording has stopped"
+      }));
+      
+      if (result.success) {
+        toast({
+          title: "Recording Stopped",
+          description: "Interview transcript has been saved",
+        });
+      } else {
+        toast({
+          title: "Recording Stopped",
+          description: "Recording stopped but there may have been issues saving the transcript",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("[debug] Error stopping recording:", error);
+      setIsRecordingInterview(false);
+      toast({
+        title: "Recording Error",
+        description: "Error stopping recording, but recording has been disabled",
+        variant: "destructive",
+      });
+    }
+  };
+
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
@@ -527,23 +602,6 @@ export default function InterviewPage() {
             await createOffer()
             setIsConnected(true)
             
-            // Start automatic interview recording when both users are connected
-            if (sessionInfo && !isRecordingInterview) {
-              console.log("[debug] Starting automatic interview recording...")
-              const recordingStarted = await startInterviewRecording(
-                sessionInfo.candidate_name,
-                sessionInfo.interviewer_name,
-                meetingCode
-              );
-              if (recordingStarted) {
-                setIsRecordingInterview(true);
-                toast({
-                  title: "Interview Recording Started",
-                  description: "Audio transcription is now active",
-                });
-              }
-            }
-            
             toast({
               title: `${data.role === "interviewer" ? "Interviewer" : "Candidate"} joined`,
               description: "Starting video connection...",
@@ -632,6 +690,28 @@ export default function InterviewPage() {
                 setCandidateReady(true)
                 console.log("[debug] Gaze data received — unlocking assign button")
               }
+            }
+            break
+
+          case "recording-started":
+            console.log("[debug] Recording started by interviewer")
+            setIsRecordingInterview(true)
+            if (role === "interviewee") {
+              toast({
+                title: "Recording Started",
+                description: data.message || "Interview recording has started",
+              })
+            }
+            break
+
+          case "recording-stopped":
+            console.log("[debug] Recording stopped by interviewer")
+            setIsRecordingInterview(false)
+            if (role === "interviewee") {
+              toast({
+                title: "Recording Stopped",
+                description: data.message || "Interview recording has stopped",
+              })
             }
             break
           case "editor":
@@ -1280,6 +1360,16 @@ export default function InterviewPage() {
             )}
             {role === "interviewer" && candidateReady && templateData && (
               <Button size="sm" onClick={openAssignDialog}>Assign Question</Button>
+            )}
+            {role === "interviewer" && isConnected && (
+              <Button 
+                size="sm" 
+                variant={isRecordingInterview ? "destructive" : "default"}
+                onClick={isRecordingInterview ? handleStopRecording : handleStartRecording}
+              >
+                <Mic className="w-4 h-4 mr-2" />
+                {isRecordingInterview ? "Stop Recording" : "Start Recording"}
+              </Button>
             )}
             {role === "interviewer" && (
               <Button size="sm" variant="outline" onClick={toggleHeatmapOverlay} disabled={heatmapLoading}>

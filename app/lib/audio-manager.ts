@@ -333,12 +333,22 @@ class AudioBufferManager {
         console.warn('⚠️ Audio blob seems very small, might be empty audio');
       }
 
+      // Let's examine the actual audio data to debug
+      const audioArrayBuffer = await audioBlob.arrayBuffer();
+      const audioBytes = new Uint8Array(audioArrayBuffer);
+      console.log(`🔍 Audio data inspection:`, {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        firstBytes: Array.from(audioBytes.slice(0, 16)).map(b => b.toString(16).padStart(2, '0')).join(' '),
+        lastBytes: Array.from(audioBytes.slice(-16)).map(b => b.toString(16).padStart(2, '0')).join(' ')
+      });
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
       formData.append('role', role);
 
-      console.log('📤 Sending transcription request...');
-      const response = await fetch('/api/transcribe', {
+      console.log('📤 Sending transcription request to debug endpoint...');
+      const response = await fetch('/api/transcribe-debug', {
         method: 'POST',
         body: formData,
       });
@@ -347,12 +357,22 @@ class AudioBufferManager {
 
       if (!response.ok) {
         let errorData;
+        let responseText = '';
         try {
-          errorData = await response.json();
+          responseText = await response.text();
+          errorData = JSON.parse(responseText);
         } catch (e) {
-          const errorText = await response.text();
-          throw new Error(`Transcription failed: ${response.status} ${response.statusText} - ${errorText}`);
+          console.error('❌ Failed to parse error response:', responseText);
+          throw new Error(`Transcription failed: ${response.status} ${response.statusText} - ${responseText}`);
         }
+        
+        console.error('❌ Detailed API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          responseText: responseText.slice(0, 500)
+        });
+        
         throw new Error(`Transcription failed: ${errorData.error || response.statusText}${errorData.details ? ` - ${errorData.details}` : ''}`);
       }
 
@@ -438,7 +458,7 @@ class AudioBufferManager {
       // Set up 1-minute interval for processing audio chunks
       this.intervalId = setInterval(() => {
         this.processAudioChunk();
-      }, 60000); // 60 seconds
+      }, 300000); // 60 seconds
 
       // Set up health check every 10 seconds
       this.healthCheckIntervalId = setInterval(() => {

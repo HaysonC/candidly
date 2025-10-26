@@ -394,14 +394,15 @@ class AudioBufferManager {
   async uploadInterviewData(
     candidateName: string,
     transcript: string,
-    interviewerName: string
+    interviewerName: string,
+    filenameOverride?: string
   ): Promise<boolean> {
     try {
       console.log(`📝 Uploading interview transcript for ${candidateName}...`);
 
       // Create structured data from the transcript
       const codeData = {
-        filename: `interview-transcript-${Date.now()}.txt`,
+        filename: filenameOverride || `interview-transcript-${Date.now()}.txt`,
         question: "Interview Conversation Transcript",
         candidate_response: transcript,
         language: "text"
@@ -519,6 +520,26 @@ class AudioBufferManager {
   /**
    * Process transcript asynchronously (non-blocking)
    */
+  private lastUploadedTranscriptHash: string | null = null;
+
+  private hashString(input: string): string {
+    // Simple djb2 hash
+    let hash = 5381;
+    for (let i = 0; i < input.length; i++) {
+      hash = ((hash << 5) + hash) + input.charCodeAt(i);
+      hash = hash & 0xffffffff;
+    }
+    return (hash >>> 0).toString(16);
+  }
+
+  private stripTimestampWrapper(text: string): string {
+    const lines = text.split('\n');
+    if (lines.length && /^\[[^\]]+\]\s*$/.test(lines[0])) {
+      return lines.slice(1).join('\n').trim();
+    }
+    return text.trim();
+  }
+
   private async processTranscriptAsync(audioBlob: Blob): Promise<void> {
     try {
       if (!this.currentInterviewData) return;
@@ -526,21 +547,33 @@ class AudioBufferManager {
       console.log(`🔄 Processing transcript for ${audioBlob.size} bytes of audio...`);
 
       // Transcribe audio
-      const transcript = await this.transcribeAudio(audioBlob, 'interview');
+  const transcript = await this.transcribeAudio(audioBlob, 'interview');
       
       if (transcript && transcript.trim()) {
         // Add timestamp to transcript
         const timestamp = new Date().toISOString();
         const timestampedTranscript = `[${timestamp}]\n${transcript}\n\n`;
         
-        // Store transcript part
+        // Deduplicate by transcript content (ignore timestamp wrapper)
+        const core = this.stripTimestampWrapper(timestampedTranscript);
+        const coreHash = this.hashString(core);
+        if (this.lastUploadedTranscriptHash === coreHash) {
+          console.log('ℹ️ Duplicate transcript content detected, skipping upload.');
+          return;
+        }
+
+        // Store transcript part and remember last hash
         this.transcriptParts.push(timestampedTranscript);
+        this.lastUploadedTranscriptHash = coreHash;
         
         // Upload individual chunk (for backup/real-time processing)
+        const safeTs = timestamp.replace(/[:.]/g, '-');
+        const chunkFilename = `transcript-chunk-${safeTs}.txt`;
         await this.uploadInterviewData(
           this.currentInterviewData.candidateName,
           timestampedTranscript,
-          this.currentInterviewData.interviewerName
+          this.currentInterviewData.interviewerName,
+          chunkFilename
         );
         
         console.log('✅ Audio chunk processed and uploaded');
@@ -583,23 +616,33 @@ class AudioBufferManager {
       // Upload complete transcript
       let uploadSuccess = false;
       if (this.currentInterviewData && fullTranscript) {
-        const finalTranscriptData = {
-          filename: `complete-interview-transcript-${Date.now()}.txt`,
-          question: `Complete Interview Transcript - ${this.currentInterviewData.meetingCode}`,
-          candidate_response: fullTranscript,
-          language: "text"
-        };
+        // If only one part and equals the core content of that part, skip final to avoid duplicate file
+        const onlyOnePart = this.transcriptParts.length === 1;
+        let isDuplicateOfSinglePart = false;
+        if (onlyOnePart) {
+          const corePart = this.stripTimestampWrapper(this.transcriptParts[0]);
+          const coreFull = this.stripTimestampWrapper(fullTranscript);
+          isDuplicateOfSinglePart = corePart === coreFull;
+        }
 
-        uploadSuccess = await this.uploadInterviewData(
-          this.currentInterviewData.candidateName,
-          fullTranscript,
-          this.currentInterviewData.interviewerName
-        );
+        if (!isDuplicateOfSinglePart) {
+          const finalName = `complete-interview-transcript-${this.currentInterviewData.meetingCode}.txt`;
+          uploadSuccess = await this.uploadInterviewData(
+            this.currentInterviewData.candidateName,
+            fullTranscript,
+            this.currentInterviewData.interviewerName,
+            finalName
+          );
+        } else {
+          uploadSuccess = true; // We already uploaded that single part
+          console.log('ℹ️ Skipping final transcript upload to avoid duplicate content file.');
+        }
       }
 
       // Clean up
-      this.currentInterviewData = null;
-      this.transcriptParts = [];
+  this.currentInterviewData = null;
+  this.transcriptParts = [];
+  this.lastUploadedTranscriptHash = null;
 
       console.log('✅ Interview recording stopped and final transcript uploaded');
       return { fullTranscript, success: uploadSuccess };

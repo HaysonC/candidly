@@ -327,7 +327,7 @@ export default function DashboardPage() {
                   <h3 className="font-semibold text-sm text-muted-foreground mb-2">
                     {selectedFile ? selectedFile.name : 'Select a file'}
                   </h3>
-                  <ScrollArea className="flex-1">
+                  <ScrollArea className="flex-1 max-h-[60vh]">
                     {loadingFileContent ? (
                       <div className="text-center py-8 text-muted-foreground">Loading content...</div>
                     ) : selectedFile ? (

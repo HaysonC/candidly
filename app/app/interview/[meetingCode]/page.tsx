@@ -87,6 +87,12 @@ export default function InterviewPage() {
   const [heatmapPoints, setHeatmapPoints] = useState<Array<[number, number]>>([])
   const [showHeatmapOverlay, setShowHeatmapOverlay] = useState(false)
 
+  const CLUELY_MESSAGE = "Cluely: Buy some binary seeds :)"
+  const [showCluelyOverlay, setShowCluelyOverlay] = useState(false)
+  const [cluelyTypedText, setCluelyTypedText] = useState("")
+  const cluelyTypeIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const cluelyHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
   const [editorMinimized, setEditorMinimized] = useState(false)
@@ -268,6 +274,64 @@ export default function InterviewPage() {
       cleanup()
     }
   }, [meetingCode, role, hasConsented])
+
+  const triggerCluelyOverlay = () => {
+    if (cluelyTypeIntervalRef.current) {
+      clearInterval(cluelyTypeIntervalRef.current)
+      cluelyTypeIntervalRef.current = null
+    }
+    if (cluelyHideTimeoutRef.current) {
+      clearTimeout(cluelyHideTimeoutRef.current)
+      cluelyHideTimeoutRef.current = null
+    }
+
+    setCluelyTypedText("")
+    setShowCluelyOverlay(true)
+
+    let index = 0
+    cluelyTypeIntervalRef.current = setInterval(() => {
+      index += 1
+      setCluelyTypedText(CLUELY_MESSAGE.slice(0, index))
+      if (index >= CLUELY_MESSAGE.length) {
+        if (cluelyTypeIntervalRef.current) {
+          clearInterval(cluelyTypeIntervalRef.current)
+          cluelyTypeIntervalRef.current = null
+        }
+        cluelyHideTimeoutRef.current = setTimeout(() => {
+          setShowCluelyOverlay(false)
+          setCluelyTypedText("")
+        }, 3200)
+      }
+    }, 40)
+  }
+
+  useEffect(() => {
+    const handleCluelyHotkey = (event: KeyboardEvent) => {
+      if (event.key !== "T" && event.key !== "t") return
+      const target = event.target as HTMLElement | null
+      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return
+      event.preventDefault()
+      triggerCluelyOverlay()
+    }
+
+    window.addEventListener("keydown", handleCluelyHotkey)
+    return () => {
+      window.removeEventListener("keydown", handleCluelyHotkey)
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (cluelyTypeIntervalRef.current) {
+        clearInterval(cluelyTypeIntervalRef.current)
+        cluelyTypeIntervalRef.current = null
+      }
+      if (cluelyHideTimeoutRef.current) {
+        clearTimeout(cluelyHideTimeoutRef.current)
+        cluelyHideTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const attachLocalStream = async () => {
@@ -1540,6 +1604,16 @@ export default function InterviewPage() {
               playsInline
               className={`w-full h-full object-cover transition-all ${remoteVideoBlurred ? "blur-xl" : ""}`}
             />
+            {showCluelyOverlay && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="max-w-sm w-full mx-6 bg-black/80 text-white rounded-xl shadow-lg border border-white/20 px-5 py-4 backdrop-blur-sm animate-in fade-in-0 zoom-in-95">
+                  <p className="font-mono text-sm leading-relaxed whitespace-pre-wrap text-center">
+                    {cluelyTypedText}
+                    {cluelyTypedText.length < CLUELY_MESSAGE.length && <span className="inline-block w-2 bg-white/80 animate-pulse ml-1" />}
+                  </p>
+                </div>
+              </div>
+            )}
             {(!isConnected || (isConnected && !remoteVideoReady)) && (
               <div className="absolute inset-0 flex items-center justify-center bg-muted">
                 <div className="text-center space-y-3">

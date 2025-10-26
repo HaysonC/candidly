@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const [candidateFiles, setCandidateFiles] = useState<CandidateTrackingData | null>(null)
   const [loadingFiles, setLoadingFiles] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<{ name: string; content: string } | null>(null)
+  const [selectedFile, setSelectedFile] = useState<{ name: string; content?: string; contentBase64?: string; contentType?: string } | null>(null)
   const [loadingFileContent, setLoadingFileContent] = useState(false)
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function DashboardPage() {
     setLoadingFileContent(true)
     try {
       const fileData = await getCandidateFile(username, selectedCandidate, filename)
-      setSelectedFile({ name: filename, content: fileData.content })
+      setSelectedFile({ name: filename, content: fileData.content, contentBase64: (fileData as any).contentBase64, contentType: (fileData as any).contentType })
     } catch (error) {
       console.error("Failed to load file content:", error)
     } finally {
@@ -327,15 +327,62 @@ export default function DashboardPage() {
                     {loadingFileContent ? (
                       <div className="text-center py-8 text-muted-foreground">Loading content...</div>
                     ) : selectedFile ? (
-                      <pre className="text-xs whitespace-pre-wrap break-words font-mono">
-                        {selectedFile.content}
-                      </pre>
+                      selectedFile.contentBase64 && selectedFile.contentType && selectedFile.contentType.startsWith('image/') ? (
+                        <div className="w-full h-full flex items-center justify-center p-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={selectedFile.name}
+                            src={`data:${selectedFile.contentType};base64,${selectedFile.contentBase64}`}
+                            className="max-w-full max-h-[60vh] rounded border"
+                          />
+                        </div>
+                      ) : selectedFile.content ? (
+                        <pre className="text-xs whitespace-pre-wrap break-words font-mono">
+                          {selectedFile.content}
+                        </pre>
+                      ) : selectedFile.contentBase64 ? (
+                        <div className="text-sm text-muted-foreground">Binary file ({selectedFile.contentType || 'application/octet-stream'})</div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">No preview available.</div>
+                      )
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         Click a file to view its content
                       </div>
                     )}
                   </ScrollArea>
+                  {selectedFile && (
+                    <div className="pt-3 flex justify-end">
+                      {selectedFile.contentBase64 && selectedFile.contentType ? (
+                        <a
+                          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded border"
+                          download={selectedFile.name}
+                          href={`data:${selectedFile.contentType};base64,${selectedFile.contentBase64}`}
+                        >
+                          <Download className="w-4 h-4" /> Download
+                        </a>
+                      ) : selectedFile.content ? (
+                        <button
+                          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded border"
+                          onClick={() => {
+                            try {
+                              const blob = new Blob([selectedFile.content as string], { type: 'text/plain;charset=utf-8' })
+                              const url = URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = selectedFile.name
+                              document.body.appendChild(a)
+                              a.click()
+                              document.body.removeChild(a)
+                              setTimeout(() => URL.revokeObjectURL(url), 1000)
+                            } catch {}
+                          }}
+                        >
+                          <Download className="w-4 h-4" /> Download
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

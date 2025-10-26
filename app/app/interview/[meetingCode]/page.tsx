@@ -1030,13 +1030,13 @@ export default function InterviewPage() {
               palette: "classic",
               alpha: 0.9,
             })
-            // Upload a real PNG file using base64 (strip data URL prefix)
-            const dataUrl = report.dataUrl || ""
-            const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
+            // Convert to JPEG for smaller size and better dashboard compatibility
+            const jpegUrl = report.canvas.toDataURL("image/jpeg", 0.9)
+            const base64 = jpegUrl.includes(",") ? jpegUrl.split(",")[1] : ""
             if (base64) {
               const okPng = await uploadCandidateFileBinary(
                 sessionInfo.candidate_name,
-                `heatmap-${meetingCode}.png`,
+                `heatmap-${meetingCode}.jpg`,
                 base64,
                 sessionInfo.interviewer_name,
               )

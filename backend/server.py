@@ -463,27 +463,75 @@ async def put_candidate_file(name: str, req: CandidateFilePutRequest):
 
 @app.get("/candidate_interviewed/{name}/file/{filename}")
 async def get_candidate_file(name: str, filename: str, interviewer: Optional[str] = None):
-    """Get the content of a specific file for a candidate."""
+    """Get the content of a specific file for a candidate.
+
+    Returns JSON. For text-like files, returns:
+    { filename, content, size }
+    For binary/image files, returns base64 with contentType:
+    { filename, contentBase64, contentType, size }
+    """
     if not interviewer:
         raise HTTPException(status_code=400, detail="interviewer is required")
     if not _is_safe_filename(filename):
         raise HTTPException(status_code=400, detail="invalid filename")
-    
+
     candidate_dir = _candidate_base_dir(interviewer, name)
     if not candidate_dir.exists():
         raise HTTPException(status_code=404, detail="Candidate not found")
-    
+
     fpath = candidate_dir / filename
     if not fpath.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
+
+    # Decide response format based on file type/extension
+    ext = fpath.suffix.lower()
+    image_exts = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+    text_exts = {".txt", ".md", ".json", ".log", ".py", ".java", ".cpp", ".c", ".ts", ".tsx", ".js", ".css", ".html"}
+    mime_by_ext = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+    }
+
     try:
-        content = fpath.read_text(encoding="utf-8")
-        return {
-            "filename": filename,
-            "content": content,
-            "size": fpath.stat().st_size,
-        }
+        if ext in text_exts:
+            content = fpath.read_text(encoding="utf-8")
+            return {
+                "filename": filename,
+                "content": content,
+                "size": fpath.stat().st_size,
+            }
+        elif ext in image_exts:
+            with open(fpath, "rb") as fh:
+                b = fh.read()
+            b64 = base64.b64encode(b).decode("ascii")
+            return {
+                "filename": filename,
+                "contentBase64": b64,
+                "contentType": mime_by_ext.get(ext, "application/octet-stream"),
+                "size": len(b),
+            }
+        else:
+            # Try text first, fallback to base64
+            try:
+                content = fpath.read_text(encoding="utf-8")
+                return {
+                    "filename": filename,
+                    "content": content,
+                    "size": fpath.stat().st_size,
+                }
+            except Exception:
+                with open(fpath, "rb") as fh:
+                    b = fh.read()
+                b64 = base64.b64encode(b).decode("ascii")
+                return {
+                    "filename": filename,
+                    "contentBase64": b64,
+                    "contentType": "application/octet-stream",
+                    "size": len(b),
+                }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read file: {e}")
 

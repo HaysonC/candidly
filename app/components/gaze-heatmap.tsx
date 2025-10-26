@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo, useRef } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 
 type Point = { x: number; y: number } | [number, number]
 
@@ -26,6 +26,15 @@ export default function GazeHeatmap({
   onImageReady,
 }: GazeHeatmapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const [viewport, setViewport] = useState<{ vw: number; vh: number }>({ vw: 1200, vh: 800 })
+
+  // Track window size to scale heatmap to fit within viewport
+  useEffect(() => {
+    const update = () => setViewport({ vw: window.innerWidth, vh: window.innerHeight })
+    update()
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
+  }, [])
 
   const filtered = useMemo(() => {
     return (points || [])
@@ -54,16 +63,24 @@ export default function GazeHeatmap({
         const el = containerRef.current
         if (!el || destroyed) return
 
+        // Scale down to fit within viewport (90vw x 65vh), maintain aspect ratio
+        const maxW = Math.max(320, Math.floor(viewport.vw * 0.9))
+        const maxH = Math.max(240, Math.floor(viewport.vh * 0.65))
+        const scale = Math.min(maxW / W, maxH / H, 1)
+        const SW = Math.max(1, Math.floor(W * scale))
+        const SH = Math.max(1, Math.floor(H * scale))
+
         // Prepare container size and clear previous contents
         el.style.position = "relative"
-        el.style.width = `${W}px`
-        el.style.height = `${H}px`
+        el.style.width = `${SW}px`
+        el.style.height = `${SH}px`
         el.innerHTML = ""
 
-        instance = h337.create({ container: el, radius, maxOpacity, blur })
+        const scaledRadius = Math.max(8, Math.round(radius * scale))
+        instance = h337.create({ container: el, radius: scaledRadius, maxOpacity, blur })
         const data = {
           max: 5,
-          data: filtered.map(({ x, y }) => ({ x: Math.round(x), y: Math.round(y), value: 1 })),
+          data: filtered.map(({ x, y }) => ({ x: Math.round(x * scale), y: Math.round(y * scale), value: 1 })),
         }
         instance.setData(data)
 
@@ -88,7 +105,7 @@ export default function GazeHeatmap({
       if (el) el.innerHTML = ""
       instance = null
     }
-  }, [filtered, W, H, radius, maxOpacity, blur, onImageReady])
+  }, [filtered, W, H, radius, maxOpacity, blur, onImageReady, viewport])
 
   return (
     <div

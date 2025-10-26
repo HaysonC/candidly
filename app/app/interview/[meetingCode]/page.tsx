@@ -1082,10 +1082,16 @@ export default function InterviewPage() {
     gazeAnalysis: string
   ) => {
     try {
-      console.log("[debug] Generating interview PDF reports...")
+      console.log("[debug] ===== STARTING PDF REPORT GENERATION =====")
+      console.log("[debug] Candidate:", candidateName)
+      console.log("[debug] Interviewer:", interviewerName)
+      console.log("[debug] Meeting Code:", meetingCode)
+      console.log("[debug] Gaze Analysis Length:", gazeAnalysis?.length || 0)
       
       // Get the current transcript
       const currentTranscript = getCurrentTranscript()
+      console.log("[debug] Current Transcript Length:", currentTranscript?.length || 0)
+      console.log("[debug] Transcript Preview:", currentTranscript?.slice(0, 100) || "No transcript")
       
       // For demo purposes, we'll use placeholder data for questions/answers
       // In production, you'd collect this during the interview
@@ -1093,13 +1099,13 @@ export default function InterviewPage() {
 Technical Questions and Responses:
 
 Q1: Explain the difference between a stack and a queue.
-A1: ${currentTranscript.slice(0, 200)}...
+A1: ${currentTranscript?.slice(0, 200) || "No response recorded"}...
 
 Q2: Write a function to reverse a string.
 A2: [Code solution would be captured here]
 
 Q3: Describe your experience with React/JavaScript.
-A3: ${currentTranscript.slice(200, 400)}...
+A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
       `.trim()
 
       const reportRequest = {
@@ -1107,7 +1113,7 @@ A3: ${currentTranscript.slice(200, 400)}...
         candidate_name: candidateName,
         transcript: currentTranscript || "No transcript available",
         questions_and_answers: questionsAndAnswers,
-        gaze_analysis: gazeAnalysis,
+        gaze_analysis: gazeAnalysis || "No gaze analysis available",
         template_criteria: [
           "Problem Solving",
           "Communication Skills", 
@@ -1118,12 +1124,20 @@ A3: ${currentTranscript.slice(200, 400)}...
         model: "gemini-2.0-flash"
       }
 
+      console.log("[debug] Report Request Object:", {
+        ...reportRequest,
+        transcript: `${reportRequest.transcript.length} chars`,
+        questions_and_answers: `${reportRequest.questions_and_answers.length} chars`
+      })
+
       // Show loading toast
       toast({
         title: "Generating Reports",
         description: "Creating AI-powered assessment reports. This may take a moment...",
       })
 
+      console.log("[debug] Making API call to /generate-all-reports...")
+      
       // Call the backend to generate all reports
       const response = await fetch('/generate-all-reports', {
         method: 'POST',
@@ -1133,35 +1147,54 @@ A3: ${currentTranscript.slice(200, 400)}...
         body: JSON.stringify(reportRequest),
       })
 
+      console.log("[debug] API Response Status:", response.status)
+      console.log("[debug] API Response Status Text:", response.statusText)
+      console.log("[debug] API Response Headers:", Object.fromEntries(response.headers.entries()))
+
       if (response.ok) {
         const result = await response.json()
-        console.log("[debug] PDF reports generated:", result)
+        console.log("[debug] PDF reports result:", JSON.stringify(result, null, 2))
         
         if (result.success) {
           toast({
             title: "Reports Generated",
             description: `Successfully created ${result.reports_generated} assessment reports`,
           })
+          console.log("[debug] ✅ All reports generated successfully")
         } else {
           toast({
             title: "Partial Success",
             description: `Generated ${result.reports_generated} of ${result.total_reports} reports`,
             variant: "destructive"
           })
+          console.log("[debug] ⚠️ Partial success - some reports failed")
+          console.log("[debug] Failed results:", result.results)
         }
       } else {
-        console.error("[debug] Failed to generate reports:", response.status)
+        let errorDetails = "Unknown error"
+        try {
+          const errorData = await response.json()
+          errorDetails = JSON.stringify(errorData, null, 2)
+          console.log("[debug] ❌ API Error Response:", errorData)
+        } catch (e) {
+          const errorText = await response.text()
+          errorDetails = errorText
+          console.log("[debug] ❌ API Error Text:", errorText)
+        }
+        
+        console.error("[debug] Failed to generate reports:", response.status, errorDetails)
         toast({
           title: "Report Generation Failed",
-          description: "Failed to generate assessment reports. They can be created manually later.",
+          description: `API Error ${response.status}: ${response.statusText}`,
           variant: "destructive"
         })
       }
     } catch (error) {
-      console.error("[debug] Error generating reports:", error)
+      console.error("[debug] ❌ Exception in generateInterviewReports:", error)
+      console.error("[debug] Error stack:", error instanceof Error ? error.stack : "No stack trace")
       toast({
         title: "Report Error",
-        description: "Error occurred while generating reports. They can be created manually later.",
+        description: `Network or client error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       })
     }

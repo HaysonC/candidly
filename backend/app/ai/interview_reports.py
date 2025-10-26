@@ -22,7 +22,14 @@ def get_llm(model: Optional[str] = None) -> ChatGoogleGenerativeAI:
 def generate_candidate_assessment(req: InterviewReportRequest) -> CandidateAssessmentReport:
     """Generate candidate assessment report for the interviewer."""
     
+    print(f"🎯 generate_candidate_assessment called")
+    print(f"🔑 API Key available: {'Yes' if os.getenv('GOOGLE_API_KEY') else 'No'}")
+    print(f"📝 Request details: candidate={req.candidate_name}, model={req.model}")
+    print(f"📊 Data lengths: transcript={len(req.transcript) if req.transcript else 0}, qa={len(req.questions_and_answers) if req.questions_and_answers else 0}")
+    
+    print("🔄 Getting LLM...")
     llm = get_llm(req.model)
+    print("✅ LLM obtained")
     
     # Build the prompt with gaze analysis if available
     gaze_context = ""
@@ -53,19 +60,25 @@ def generate_candidate_assessment(req: InterviewReportRequest) -> CandidateAsses
     ])
     
     try:
+        print("🔄 Creating structured output...")
         structured = llm.with_structured_output(CandidateAssessmentReport)
+        print("🔄 Invoking AI model...")
         result = structured.invoke({
             "transcript": req.transcript,
             "questions_and_answers": req.questions_and_answers,
             "gaze_context": gaze_context,
             "criteria_context": criteria_context
         })
+        print("✅ AI model responded successfully")
         
         if isinstance(result, dict):
+            print("🔄 Converting dict to model...")
             return CandidateAssessmentReport.model_validate(result)
+        print("✅ Returning structured result")
         return result
         
     except Exception as e:
+        print(f"❌ Structured output failed, trying fallback: {e}")
         # Fallback to basic prompting if structured output fails
         chain = prompt | llm
         result = chain.invoke({

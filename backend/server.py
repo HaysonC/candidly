@@ -806,35 +806,57 @@ async def generate_overall_summary_report(req: InterviewReportRequest):
 async def generate_all_reports(req: InterviewReportRequest):
     """Generate all three PDF reports (candidate assessment, interviewer assessment, overall summary)."""
     try:
-        logger.info(f"Generating all reports for interview: {req.candidate_name} by {req.interviewer}")
+        logger.info(f"🎯 ===== STARTING PDF REPORT GENERATION =====")
+        logger.info(f"📊 Request Details:")
+        logger.info(f"   - Candidate: {req.candidate_name}")
+        logger.info(f"   - Interviewer: {req.interviewer}")
+        logger.info(f"   - Transcript Length: {len(req.transcript) if req.transcript else 0}")
+        logger.info(f"   - Q&A Length: {len(req.questions_and_answers) if req.questions_and_answers else 0}")
+        logger.info(f"   - Gaze Analysis: {len(req.gaze_analysis) if req.gaze_analysis else 0}")
+        logger.info(f"   - Template Criteria: {len(req.template_criteria) if req.template_criteria else 0}")
+        logger.info(f"   - Model: {req.model}")
         
         results = {}
         
         # Generate candidate assessment
+        logger.info("🔄 Generating candidate assessment...")
         try:
             candidate_result = await generate_candidate_assessment_report(req)
             results["candidate_assessment"] = candidate_result
+            logger.info("✅ Candidate assessment generated successfully")
         except Exception as e:
-            logger.error(f"Failed to generate candidate assessment: {e}")
+            logger.error(f"❌ Failed to generate candidate assessment: {e}")
+            logger.error(f"❌ Candidate assessment error stack:", exc_info=True)
             results["candidate_assessment"] = {"success": False, "error": str(e)}
         
         # Generate interviewer assessment
+        logger.info("🔄 Generating interviewer assessment...")
         try:
             interviewer_result = await generate_interviewer_assessment_report(req)
             results["interviewer_assessment"] = interviewer_result
+            logger.info("✅ Interviewer assessment generated successfully")
         except Exception as e:
-            logger.error(f"Failed to generate interviewer assessment: {e}")
+            logger.error(f"❌ Failed to generate interviewer assessment: {e}")
+            logger.error(f"❌ Interviewer assessment error stack:", exc_info=True)
             results["interviewer_assessment"] = {"success": False, "error": str(e)}
         
         # Generate overall summary
+        logger.info("🔄 Generating overall summary...")
         try:
             summary_result = await generate_overall_summary_report(req)
             results["overall_summary"] = summary_result
+            logger.info("✅ Overall summary generated successfully")
         except Exception as e:
-            logger.error(f"Failed to generate overall summary: {e}")
+            logger.error(f"❌ Failed to generate overall summary: {e}")
+            logger.error(f"❌ Overall summary error stack:", exc_info=True)
             results["overall_summary"] = {"success": False, "error": str(e)}
         
         success_count = sum(1 for r in results.values() if r.get("success", False))
+        
+        logger.info(f"📈 Report Generation Summary:")
+        logger.info(f"   - Successful: {success_count}")
+        logger.info(f"   - Total: 3")
+        logger.info(f"   - Results: {results}")
         
         return {
             "success": success_count > 0,
@@ -844,7 +866,8 @@ async def generate_all_reports(req: InterviewReportRequest):
         }
         
     except Exception as e:
-        logger.error(f"Error generating reports: {e}")
+        logger.error(f"💥 CRITICAL ERROR in generate_all_reports: {e}")
+        logger.error(f"💥 Critical error stack:", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate reports: {str(e)}")
 
 @app.websocket("/ws/{meeting_code}/{role}")

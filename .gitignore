@@ -39,6 +39,7 @@ next-env.d.ts
 data/
 
 .next/
+.next/dev/
 
 data/
 

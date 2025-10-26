@@ -109,6 +109,8 @@ export default function InterviewPage() {
   
   // Audio recording state
   const [isRecordingInterview, setIsRecordingInterview] = useState(false)
+  // Report generation overlay state
+  const [isGeneratingReports, setIsGeneratingReports] = useState(false)
   
   // Timer functionality
   useEffect(() => {
@@ -1363,6 +1365,7 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
     // Always attempt report generation, regardless of the above outcomes
     try {
       toast({ title: "Generating Reports", description: "Creating interview assessment reports..." })
+      setIsGeneratingReports(true)
       await generateInterviewReports(candidateName, interviewerName, meetingCode, gazeSummary)
     } catch (genErr) {
       console.error("[debug] Report generation failed:", genErr)
@@ -1370,6 +1373,7 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
     } finally {
       // Cleanup and navigate away regardless
       try {
+        setIsGeneratingReports(false)
         await cleanup()
       } catch (clErr) {
         console.warn("[debug] Cleanup encountered errors", clErr)
@@ -1682,6 +1686,17 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
 
   return (
     <div className="min-h-screen bg-background p-4">
+      {isGeneratingReports && (
+        <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-background/90 rounded-xl p-6 shadow-lg border">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-medium">Generating report…</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">Please wait while we create your PDF assessments.</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -1914,7 +1929,7 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
             </Button>
           )}
 
-          <Button variant="destructive" size="lg" onClick={endCall} className="rounded-full w-14 h-14">
+          <Button variant="destructive" size="lg" onClick={endCall} className="rounded-full w-14 h-14 cursor-pointer">
             <Phone className="w-5 h-5 rotate-[135deg]" />
           </Button>
         </div>

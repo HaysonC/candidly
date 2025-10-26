@@ -536,6 +536,7 @@ async def get_candidate_file(name: str, filename: str, interviewer: Optional[str
         ".jpeg": "image/jpeg",
         ".gif": "image/gif",
         ".webp": "image/webp",
+        ".pdf": "application/pdf",
     }
 
     try:
@@ -556,6 +557,16 @@ async def get_candidate_file(name: str, filename: str, interviewer: Optional[str
                 "contentType": mime_by_ext.get(ext, "application/octet-stream"),
                 "size": len(b),
             }
+        elif ext == ".pdf":
+            with open(fpath, "rb") as fh:
+                b = fh.read()
+            b64 = base64.b64encode(b).decode("ascii")
+            return {
+                "filename": filename,
+                "contentBase64": b64,
+                "contentType": "application/pdf",
+                "size": len(b),
+            }
         else:
             # Try text first, fallback to base64
             try:
@@ -572,7 +583,7 @@ async def get_candidate_file(name: str, filename: str, interviewer: Optional[str
                 return {
                     "filename": filename,
                     "contentBase64": b64,
-                    "contentType": "application/octet-stream",
+                    "contentType": mime_by_ext.get(ext, "application/octet-stream"),
                     "size": len(b),
                 }
     except Exception as e:

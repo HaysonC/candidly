@@ -340,6 +340,14 @@ export default function DashboardPage() {
                             className="max-w-full max-h-[60vh] rounded border"
                           />
                         </div>
+                      ) : selectedFile.contentBase64 && selectedFile.contentType === 'application/pdf' ? (
+                        <div className="w-full h-full">
+                          <iframe
+                            title={selectedFile.name}
+                            src={`data:application/pdf;base64,${selectedFile.contentBase64}`}
+                            className="w-full h-[60vh] border rounded"
+                          />
+                        </div>
                       ) : selectedFile.content ? (
                         <pre className="text-xs whitespace-pre-wrap break-words font-mono">
                           {selectedFile.content}

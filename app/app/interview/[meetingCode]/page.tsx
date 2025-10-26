@@ -15,7 +15,7 @@ import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
 import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
-import { uploadCandidateInterviewed } from "@/lib/upload"
+import { uploadCandidateInterviewed, uploadCandidateFileBinary } from "@/lib/upload"
 import GazeHeatmap from "@/components/gaze-heatmap"
 import { startInterviewRecording, stopInterviewRecording, isInterviewRecordingActive, getCurrentTranscript } from "@/lib/audio-manager"
 
@@ -743,6 +743,15 @@ export default function InterviewPage() {
                   setTimerSeconds(0)
                 }
               }
+              if (p.kind === "submitted") {
+                // Candidate submitted code – notify interviewer
+                if (role === "interviewer") {
+                  toast({
+                    title: "Code submitted",
+                    description: "The candidate has submitted their solution.",
+                  })
+                }
+              }
             }
             break
 
@@ -1021,33 +1030,39 @@ export default function InterviewPage() {
               palette: "classic",
               alpha: 0.9,
             })
-            const md = [
-              `# Gaze Heatmap Report`,
-              ``,
-              `- Meeting: ${meetingCode}`,
-              `- Candidate: ${sessionInfo.candidate_name}`,
-              `- Interviewer: ${sessionInfo.interviewer_name}`,
-              `- Samples: ${report.stats.sampleCount}`,
-              `- Total time: ${report.stats.totalTimeSec.toFixed(1)}s`,
-              `- Viewport changes: ${report.stats.viewportChanges}`,
-              `- Base viewport: ${report.baseWidth}×${report.baseHeight}`,
-              ``,
-              `![heatmap](${report.dataUrl})`,
-            ].join("\n")
+            // Upload a real PNG file using base64 (strip data URL prefix)
+            const dataUrl = report.dataUrl || ""
+            const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
+            if (base64) {
+              const okPng = await uploadCandidateFileBinary(
+                sessionInfo.candidate_name,
+                `heatmap-${meetingCode}.png`,
+                base64,
+                sessionInfo.interviewer_name,
+              )
+              if (!okPng) console.warn("[debug] Upload heatmap PNG failed")
+            }
 
-            const ok = await uploadCandidateInterviewed(
+            // Also upload a small text summary for reference
+            const summary = [
+              `Meeting: ${meetingCode}`,
+              `Candidate: ${sessionInfo.candidate_name}`,
+              `Interviewer: ${sessionInfo.interviewer_name}`,
+              `Samples: ${report.stats.sampleCount}`,
+              `Total time: ${report.stats.totalTimeSec.toFixed(1)}s`,
+              `Viewport changes: ${report.stats.viewportChanges}`,
+              `Base viewport: ${report.baseWidth}x${report.baseHeight}`,
+            ].join("\n")
+            await uploadCandidateInterviewed(
               sessionInfo.candidate_name,
               {
-                filename: `heatmap-${meetingCode}.md`,
-                question: "Gaze Heatmap",
-                candidate_response: md,
-                language: "heatmap",
+                filename: `heatmap-${meetingCode}.txt`,
+                question: "Gaze Heatmap Summary",
+                candidate_response: summary,
+                language: "text",
               },
               sessionInfo.interviewer_name,
             )
-            if (!ok) {
-              console.warn("[debug] Upload heatmap failed")
-            }
           }
         }
       } catch (e) {
@@ -1576,7 +1591,7 @@ export default function InterviewPage() {
             {isVideoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
           </Button>
 
-          {role === "interviewer" && (
+          {(role === "interviewer" || role === "interviewee") && (
             <Button
               variant={isScreenSharing ? "default" : "secondary"}
               size="lg"
@@ -1616,6 +1631,14 @@ export default function InterviewPage() {
             onNewQuestion={() => {
               // Reset submission state when new question is assigned
               console.log('New question assigned, resetting editor state');
+            }}
+            onSubmitted={() => {
+              // Broadcast a submitted event to the peer
+              sendEditorUpdate({ kind: 'submitted' })
+              // Also give local feedback for interviewer if they triggered a manual submission (unlikely)
+              if (role === 'interviewer') {
+                toast({ title: 'Submitted', description: 'Submission event broadcast.' })
+              }
             }}
           />
         </div>

@@ -45,6 +45,7 @@ export interface CodeEditorProps {
   timerActive?: boolean
   timerSeconds?: number
   onTimerToggle?: (active: boolean) => void
+  onSubmitted?: () => void // Notify parent (for WS broadcast)
 }
 
 export function CodeEditorPanel(props: CodeEditorProps) {
@@ -154,6 +155,10 @@ export function CodeEditorPanel(props: CodeEditorProps) {
       if (success) {
         setIsSubmitted(true);
         setSubmitSuccess(true);
+        // Notify parent so it can broadcast over WS
+        if (typeof props.onSubmitted === 'function') {
+          try { props.onSubmitted(); } catch {}
+        }
       } else {
         console.error('Failed to submit code');
       }

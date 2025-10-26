@@ -8,6 +8,7 @@ import threading
 import json as _json
 import os
 from pathlib import Path
+import base64
 from datetime import datetime
 from time import time
 
@@ -429,10 +430,22 @@ async def put_candidate_file(name: str, req: CandidateFilePutRequest):
     # Write directly to candidate base directory instead of timestamp subdirectory
     candidate_dir = _candidate_base_dir(interviewer, name)
 
-    # write file
+    # write file (binary if contentBase64 provided)
     fpath = candidate_dir / req.filename
     try:
-        fpath.write_text(req.content, encoding="utf-8")
+        if req.contentBase64 and isinstance(req.contentBase64, str):
+            try:
+                data = base64.b64decode(req.contentBase64)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Invalid base64 content: {e}")
+            with open(fpath, "wb") as fh:
+                fh.write(data)
+        else:
+            if req.content is None:
+                raise HTTPException(status_code=400, detail="content or contentBase64 is required")
+            fpath.write_text(req.content, encoding="utf-8")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to write file: {e}")
 

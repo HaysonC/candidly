@@ -84,5 +84,6 @@ class CandidateTrackingRequest(BaseModel):
 class CandidateFilePutRequest(BaseModel):
     interviewer: str = Field(..., description="Account/interviewer name")
     filename: str = Field(..., description="Filename to create or replace inside timestamp dir")
-    content: str = Field(..., description="Raw string content to write to the file (UTF-8)")
+    content: Optional[str] = Field(None, description="Raw string content to write to the file (UTF-8)")
+    contentBase64: Optional[str] = Field(None, description="Base64-encoded file content for binary uploads (omit data: prefix)")
     timestamp: Optional[str] = Field(None, description="Optional timestamp folder; defaults to latest or a new one if none exist")

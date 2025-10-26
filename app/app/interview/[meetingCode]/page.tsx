@@ -1206,44 +1206,56 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
     console.log("[debug] Is recording interview:", isRecordingInterview)
     console.log("[debug] Session info:", sessionInfo)
     console.log("[debug] Account name:", accountName)
-    
+
+    // Always try to stop recording first, but don't let failures block the rest
     try {
-      // Stop interview recording if active BEFORE cleanup
       if (isRecordingInterview) {
         console.log("[debug] Stopping interview recording...")
-        const result = await stopInterviewRecording();
+        const result = await stopInterviewRecording()
         console.log("[debug] Stop recording result:", result)
-        
         if (result.success) {
-          toast({
-            title: "Interview Recording Saved",
-            description: "Complete transcript has been saved",
-          });
+          toast({ title: "Interview Recording Saved", description: "Complete transcript has been saved" })
         }
-        setIsRecordingInterview(false);
+        setIsRecordingInterview(false)
       } else {
         console.log("[debug] No interview recording to stop")
       }
+    } catch (e) {
+      console.warn("[debug] Failed to stop recording; continuing to reports", e)
+    }
 
-      // If interviewer, attempt to generate and upload final heatmap before redirect
-      if (role === "interviewer") {
+    // Prepare safe defaults for report generation
+    const candidateName = sessionInfo?.candidate_name || "Unknown Candidate"
+    const interviewerName = sessionInfo?.interviewer_name || accountName || "Unknown Interviewer"
+    let gazeSummary = [
+      `Meeting: ${meetingCode}`,
+      `Candidate: ${candidateName}`,
+      `Interviewer: ${interviewerName}`,
+      `Samples: 0`,
+      `Render size: n/a`,
+    ].join("\n")
+
+    // If interviewer, try to compute gaze summary and upload artifacts, but keep all variables scoped here
+    if (role === "interviewer") {
       try {
         const res = await fetch(`/api/gaze-data?meetingCode=${encodeURIComponent(meetingCode)}`)
         if (res.ok) {
           const json = await res.json()
-          const samples = Array.isArray(json?.data) ? json.data : []
-          if (samples.length > 0 && sessionInfo?.candidate_name && sessionInfo?.interviewer_name) {
-            // Build a heatmap image using heatmap.js (same as overlay rendering)
-            // 1) Determine render size
-            const rect = remoteVideoRef.current?.getBoundingClientRect()
-            const rW = Math.max(640, Math.round(rect?.width || 1280))
-            const rH = Math.max(360, Math.round(rect?.height || Math.round((rW * 9) / 16)))
+          const samples: any[] = Array.isArray(json?.data) ? json.data : []
+          let rW = 0
+          let rH = 0
 
-            // 2) Pick a base viewport from samples
+          if (samples.length > 0) {
+            // Determine render size safely
+            const rect = remoteVideoRef.current?.getBoundingClientRect()
+            rW = Math.max(640, Math.round(rect?.width || 1280))
+            rH = Math.max(360, Math.round(rect?.height || Math.round((rW * 9) / 16)))
+
+            // Infer base viewport and export optional image
             const counts = new Map<string, { w: number; h: number; c: number }>()
             for (const s of samples) {
-              const w = s.pageW && s.pageW > 0 ? Math.round(s.pageW) : undefined
-              const h = s.pageH && s.pageH > 0 ? Math.round(s.pageH) : undefined
+              const w = s?.pageW && s.pageW > 0 ? Math.round(s.pageW) : undefined
+              const h = s?.pageH && s.pageH > 0 ? Math.round(s.pageH) : undefined
               if (!w || !h) continue
               const key = `${w}x${h}`
               const e = counts.get(key)
@@ -1257,23 +1269,21 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
               if (best) { baseW = best.w; baseH = best.h }
             }
 
-            // 3) Reproject samples to render size as simple points
-            const pts: Array<{ x: number; y: number }> = []
-            for (const s of samples) {
-              const sw = s.pageW && s.pageW > 0 ? s.pageW : baseW
-              const sh = s.pageH && s.pageH > 0 ? s.pageH : baseH
-              const sx = (s.x / sw) * rW
-              const sy = (s.y / sh) * rH
-              if (Number.isFinite(sx) && Number.isFinite(sy) && sx >= 0 && sy >= 0) {
-                pts.push({ x: Math.round(sx), y: Math.round(sy) })
+            // Reproject and optionally export heatmap image
+            try {
+              const pts: Array<{ x: number; y: number }> = []
+              for (const s of samples) {
+                const sw = s?.pageW && s.pageW > 0 ? s.pageW : baseW
+                const sh = s?.pageH && s.pageH > 0 ? s.pageH : baseH
+                const sx = (s.x / sw) * rW
+                const sy = (s.y / sh) * rH
+                if (Number.isFinite(sx) && Number.isFinite(sy) && sx >= 0 && sy >= 0) {
+                  pts.push({ x: Math.round(sx), y: Math.round(sy) })
+                }
               }
-            }
-
-            if (pts.length) {
-              try {
+              if (pts.length && sessionInfo?.candidate_name && sessionInfo?.interviewer_name) {
                 const mod: any = await import("heatmap.js")
                 const h337: any = mod?.default ?? mod
-                // Create an offscreen container
                 const container = document.createElement("div")
                 container.style.position = "fixed"
                 container.style.top = "-9999px"
@@ -1281,118 +1291,89 @@ A3: ${currentTranscript?.slice(200, 400) || "No response recorded"}...
                 container.style.width = `${rW}px`
                 container.style.height = `${rH}px`
                 document.body.appendChild(container)
-
                 const radius = Math.max(16, Math.round(40 * Math.min(rW / baseW, rH / baseH)))
                 const instance = h337.create({ container, radius, maxOpacity: 0.6, blur: 0.85 })
                 instance.setData({ max: 5, data: pts.map((p) => ({ x: p.x, y: p.y, value: 1 })) })
-
-                // Extract PNG
                 const canvas = container.querySelector("canvas") as HTMLCanvasElement | null
-                let dataUrl = ""
-                if (canvas) dataUrl = canvas.toDataURL("image/png")
-                // Cleanup container
+                let dataUrl = canvas ? canvas.toDataURL("image/png") : ""
                 container.remove()
-
                 if (dataUrl) {
-                  // Prefer Blob upload
-                  const blob = await (await fetch(dataUrl)).blob()
-                  const okBlob = await uploadCandidateFileBlob(
-                    sessionInfo.candidate_name,
-                    `heatmap-${meetingCode}.png`,
-                    blob,
-                    sessionInfo.interviewer_name,
-                  )
-                  if (!okBlob) {
-                    const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
-                    if (base64) {
-                      await uploadCandidateFileBinary(
-                        sessionInfo.candidate_name,
-                        `heatmap-${meetingCode}.png`,
-                        base64,
-                        sessionInfo.interviewer_name,
-                      )
+                  try {
+                    const blob = await (await fetch(dataUrl)).blob()
+                    const okBlob = await uploadCandidateFileBlob(
+                      sessionInfo.candidate_name,
+                      `heatmap-${meetingCode}.png`,
+                      blob,
+                      sessionInfo.interviewer_name,
+                    )
+                    if (!okBlob) {
+                      const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
+                      if (base64) {
+                        await uploadCandidateFileBinary(
+                          sessionInfo.candidate_name,
+                          `heatmap-${meetingCode}.png`,
+                          base64,
+                          sessionInfo.interviewer_name,
+                        )
+                      }
                     }
+                  } catch (imgErr) {
+                    console.warn("[debug] Heatmap image upload failed", imgErr)
                   }
                 }
-              } catch (e) {
-                console.warn("[debug] heatmap.js export failed, skipping image upload", e)
               }
+            } catch (hmErr) {
+              console.warn("[debug] Heatmap render/export failed", hmErr)
             }
 
-            // Also upload a small text summary for reference
-            const summary = [
+            // Update summary with actual numbers
+            gazeSummary = [
               `Meeting: ${meetingCode}`,
-              `Candidate: ${sessionInfo.candidate_name}`,
-              `Interviewer: ${sessionInfo.interviewer_name}`,
+              `Candidate: ${candidateName}`,
+              `Interviewer: ${interviewerName}`,
               `Samples: ${samples.length}`,
-              // We don't compute exact total time/viewport changes here to keep logic simple
               `Render size: ${rW}x${rH}`,
             ].join("\n")
-            await uploadCandidateInterviewed(
-              sessionInfo.candidate_name,
-              {
-                filename: `heatmap-${meetingCode}.txt`,
-                question: "Gaze Heatmap Summary",
-                candidate_response: summary,
-                language: "text",
-              },
-              sessionInfo.interviewer_name,
-            )
 
-            // Generate AI-powered PDF reports
-            console.log("[debug] ===== CALLING GENERATE INTERVIEW REPORTS =====")
-            console.log("[debug] Candidate name:", sessionInfo.candidate_name)
-            console.log("[debug] Interviewer name:", sessionInfo.interviewer_name)
-            console.log("[debug] Meeting code:", meetingCode)
-            console.log("[debug] Summary length:", summary?.length || 0)
-            
-            await generateInterviewReports(
-              sessionInfo.candidate_name,
-              sessionInfo.interviewer_name,
-              meetingCode,
-              summary // Pass gaze analysis summary
-            )
-            
-            console.log("[debug] ===== GENERATE INTERVIEW REPORTS COMPLETED =====")
-            
-            // Additional logging for confirmation
-            toast({
-              title: "✅ LLM Reports Called",
-              description: "Report generation function has been invoked successfully",
-            })
+            // Upload text summary (best-effort)
+            if (sessionInfo?.candidate_name && sessionInfo?.interviewer_name) {
+              try {
+                await uploadCandidateInterviewed(
+                  sessionInfo.candidate_name,
+                  {
+                    filename: `heatmap-${meetingCode}.txt`,
+                    question: "Gaze Heatmap Summary",
+                    candidate_response: gazeSummary,
+                    language: "text",
+                  },
+                  sessionInfo.interviewer_name,
+                )
+              } catch (txtErr) {
+                console.warn("[debug] Text summary upload failed", txtErr)
+              }
+            }
           }
         }
       } catch (e) {
-        console.warn("[debug] Skipping heatmap upload due to error", e)
+        console.warn("[debug] Skipping heatmap/gaze processing due to error", e)
       }
-      
-        // Show loading state while generating reports
-        toast({
-          title: "Generating Reports",
-          description: "Creating interview assessment reports...",
-        })
+    }
 
-        // Call cleanup AFTER all processing is done
+    // Always attempt report generation, regardless of the above outcomes
+    try {
+      toast({ title: "Generating Reports", description: "Creating interview assessment reports..." })
+      await generateInterviewReports(candidateName, interviewerName, meetingCode, gazeSummary)
+    } catch (genErr) {
+      console.error("[debug] Report generation failed:", genErr)
+      toast({ title: "Report Generation Failed", description: "Could not generate reports", variant: "destructive" })
+    } finally {
+      // Cleanup and navigate away regardless
+      try {
         await cleanup()
-        router.push("/dashboard")
-        return
+      } catch (clErr) {
+        console.warn("[debug] Cleanup encountered errors", clErr)
       }
-
-      // Non-interviewer - still cleanup and redirect
-      await cleanup()
-      router.push("/")
-      
-    } catch (error) {
-      console.error("[debug] Error in endCall:", error)
-      toast({
-        title: "Error Ending Call",
-        description: "There was an error ending the interview",
-        variant: "destructive",
-      })
-      
-      // Still try to cleanup and redirect even if something failed
-      await cleanup()
-      router.push('/dashboard')
+      router.push("/dashboard")
     }
   }
 

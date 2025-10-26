@@ -16,6 +16,7 @@ import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
 import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
 import GazeHeatmap from "@/components/gaze-heatmap"
+import { startInterviewRecording, stopInterviewRecording, isInterviewRecordingActive, getCurrentTranscript } from "@/lib/audio-manager"
 
 interface GazeData {
   x: number
@@ -98,6 +99,9 @@ export default function InterviewPage() {
   const [timerActive, setTimerActive] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [timerStartTime, setTimerStartTime] = useState<number | null>(null)
+  
+  // Audio recording state
+  const [isRecordingInterview, setIsRecordingInterview] = useState(false)
   
   // Timer functionality
   useEffect(() => {
@@ -522,6 +526,24 @@ export default function InterviewPage() {
             console.log("[debug] User joined, creating offer")
             await createOffer()
             setIsConnected(true)
+            
+            // Start automatic interview recording when both users are connected
+            if (sessionInfo && !isRecordingInterview) {
+              console.log("[debug] Starting automatic interview recording...")
+              const recordingStarted = await startInterviewRecording(
+                sessionInfo.candidate_name,
+                sessionInfo.interviewer_name,
+                meetingCode
+              );
+              if (recordingStarted) {
+                setIsRecordingInterview(true);
+                toast({
+                  title: "Interview Recording Started",
+                  description: "Audio transcription is now active",
+                });
+              }
+            }
+            
             toast({
               title: `${data.role === "interviewer" ? "Interviewer" : "Candidate"} joined`,
               description: "Starting video connection...",
@@ -898,8 +920,8 @@ export default function InterviewPage() {
     }
   }
 
-  const endCall = () => {
-    cleanup()
+  const endCall = async () => {
+    await cleanup()
     router.push("/")
   }
 
@@ -1136,8 +1158,25 @@ export default function InterviewPage() {
     setSelectedQuestion(questions[idx])
   }
 
-  const cleanup = () => {
+  const cleanup = async () => {
     isEyeTrackingActiveRef.current = false
+
+    // Stop interview recording if active
+    if (isRecordingInterview) {
+      console.log("[debug] Stopping interview recording...")
+      try {
+        const result = await stopInterviewRecording();
+        if (result.success) {
+          toast({
+            title: "Interview Recording Saved",
+            description: "Complete transcript has been saved",
+          });
+        }
+      } catch (error) {
+        console.error("[debug] Error stopping interview recording:", error);
+      }
+      setIsRecordingInterview(false);
+    }
 
     localStreamRef.current?.getTracks().forEach((track) => track.stop())
     screenStreamRef.current?.getTracks().forEach((track) => track.stop())
@@ -1210,6 +1249,12 @@ export default function InterviewPage() {
               <span className="flex items-center gap-1.5 px-3 py-1 text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full">
                 <Eye className="w-3 h-3" />
                 Eye Tracking Active
+              </span>
+            )}
+            {isRecordingInterview && (
+              <span className="flex items-center gap-1.5 px-3 py-1 text-xs bg-red-500/10 text-red-600 dark:text-red-400 rounded-full">
+                <div className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full animate-pulse" />
+                Recording Interview
               </span>
             )}
           </div>

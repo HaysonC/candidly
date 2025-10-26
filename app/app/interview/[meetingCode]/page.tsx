@@ -87,7 +87,7 @@ export default function InterviewPage() {
   const [heatmapPoints, setHeatmapPoints] = useState<Array<[number, number]>>([])
   const [showHeatmapOverlay, setShowHeatmapOverlay] = useState(false)
 
-  const CLUELY_MESSAGE = "Cluely: buy some binary seeds. Why buy binary seeds? So when they look confused it triggers."
+  const CLUELY_MESSAGE = "Cluely: Buy some binary seeds :)"
   const [showCluelyOverlay, setShowCluelyOverlay] = useState(false)
   const [cluelyTypedText, setCluelyTypedText] = useState("")
   const cluelyTypeIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -1607,8 +1607,7 @@ export default function InterviewPage() {
             {showCluelyOverlay && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="max-w-sm w-full mx-6 bg-black/80 text-white rounded-xl shadow-lg border border-white/20 px-5 py-4 backdrop-blur-sm animate-in fade-in-0 zoom-in-95">
-                  <div className="text-xs uppercase tracking-[0.35em] text-primary/80 mb-1">Cluely</div>
-                  <p className="font-mono text-sm leading-relaxed whitespace-pre-wrap">
+                  <p className="font-mono text-sm leading-relaxed whitespace-pre-wrap text-center">
                     {cluelyTypedText}
                     {cluelyTypedText.length < CLUELY_MESSAGE.length && <span className="inline-block w-2 bg-white/80 animate-pulse ml-1" />}
                   </p>

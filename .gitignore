@@ -6,7 +6,7 @@ venv/
 dist/
 cache/
 
-pychache__/
+__pycache__/
 .venv/
 
 

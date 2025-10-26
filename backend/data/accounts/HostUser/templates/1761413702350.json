@@ -1,12 +1,17 @@
 {
   "id": "1761413702350",
   "account": "HostUser",
-  "name": "Untitled Template",
+  "name": "ECE",
   "criteria": [
-    "afa"
+    "Assess the candidate's ability to write efficient code and apply their ECE knowledge to software engineering problems.",
+    "Problem Solving",
+    "Code Efficiency",
+    "ECE Knowledge Application",
+    "Code Quality"
   ],
   "coding_questions": [
-    "adfad",
-    "dafad"
+    "Signal Processing Filter — Implement a function `filter_signal(signal, coefficients)` that applies a Finite Impulse Response (FIR) filter to a given signal. \n\n`signal`: A list of floating-point numbers representing the input signal. The length of the signal is between 1 and 1000.\n`coefficients`: A list of floating-point numbers representing the filter coefficients. The length of the coefficients is between 1 and 10.\n\nThe function should return a new list representing the filtered signal. The output signal should be of the same length as the input signal. Handle edge cases appropriately (e.g., when the filter extends beyond the signal boundaries, assume the signal is zero). Provide example usage with `signal = [1.0, 2.0, 3.0, 4.0, 5.0]` and `coefficients = [0.5, 0.5]`.",
+    "Power Spectrum Estimation — Write a function `estimate_power_spectrum(signal, sampling_rate)` that estimates the power spectrum of a given signal using the Welch method. \n\n`signal`: A list of floating-point numbers representing the input signal. The length of the signal is between 100 and 2048.\n`sampling_rate`: A floating-point number representing the sampling rate of the signal (in Hz). The sampling rate is between 100 and 10000.\n\nThe function should return two lists: `frequencies` and `power_spectrum`. `frequencies` should be a list of floating-point numbers representing the frequencies at which the power spectrum is estimated. `power_spectrum` should be a list of floating-point numbers representing the power spectral density at each frequency. Assume the signal is real-valued. You can use any library for FFT calculation. Provide example usage with `signal = [1.0, 2.0, 1.0, 0.0, -1.0, -2.0, -1.0, 0.0]` and `sampling_rate = 100.0`.",
+    "Data Acquisition System — Simulate a simplified data acquisition system. Implement a function `acquire_data(sensor_readings, threshold)` that processes a list of sensor readings and identifies readings that exceed a given threshold.\n\n`sensor_readings`: A list of integers representing sensor readings. The range of each reading is between 0 and 1023. The length of the list is between 1 and 500.\n`threshold`: An integer representing the threshold value. The threshold is between 0 and 1023.\n\nThe function should return a list of tuples, where each tuple contains the index and value of the sensor reading that exceeds the threshold. For example, if `sensor_readings = [100, 500, 800, 300, 900]` and `threshold = 600`, the function should return `[(2, 800), (4, 900)]`. Optimize for efficiency if the input list is very large. Provide example usage with `sensor_readings = [200, 700, 300, 900, 100]` and `threshold = 500`."
   ]
 }

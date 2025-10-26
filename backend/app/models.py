@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Dict, Set
+from typing import Dict, List, Literal, Optional, Set
 from pydantic import BaseModel, Field
 
 # -------- Core interview session models --------
@@ -8,6 +8,8 @@ class InterviewSession(BaseModel):
     candidate_email: str
     notes: Optional[str] = ""
     interviewer_name: str
+    scheduled_at: Optional[str] = None
+    status: Literal["scheduled", "completed", "canceled"] = "scheduled"
 
 # -------- AI interview prep models --------
 class CriteriaArea(BaseModel):

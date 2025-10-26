@@ -249,11 +249,40 @@ async def create_session(session: InterviewSession):
     logger.info(f"  Candidate: {session.candidate_name}")
     logger.info(f"  Email: '{session.candidate_email}' (length: {len(session.candidate_email)})")
     logger.info(f"  Interviewer: {session.interviewer_name}")
+    if session.scheduled_at:
+        logger.info(f"  Scheduled at: {session.scheduled_at}")
+    logger.info(f"  Status: {session.status}")
     
     return {
         "meeting_code": meeting_code,
         "join_link": f"/join?code={meeting_code}"
     }
+
+
+@app.get("/api/sessions")
+async def list_sessions(interviewer: Optional[str] = None, status: Optional[str] = "scheduled"):
+    """Return interview sessions filtered by interviewer and status."""
+    items = []
+    for code, sess in interview_sessions.items():
+        if interviewer and sess.interviewer_name != interviewer:
+            continue
+        if status and getattr(sess, "status", "scheduled") != status:
+            continue
+        items.append({
+            "meeting_code": code,
+            "candidate_name": sess.candidate_name,
+            "candidate_email": sess.candidate_email,
+            "interviewer_name": sess.interviewer_name,
+            "scheduled_at": getattr(sess, "scheduled_at", None),
+            "status": getattr(sess, "status", "scheduled"),
+        })
+
+    def sort_key(item: dict) -> str:
+        scheduled = item.get("scheduled_at") or ""
+        return scheduled
+
+    items.sort(key=sort_key)
+    return items
 
 
 # -------- Templates API (per interviewer account) --------

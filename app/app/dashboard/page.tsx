@@ -21,6 +21,10 @@ export default function DashboardPage() {
   const [selectedFile, setSelectedFile] = useState<{ name: string; content?: string; contentBase64?: string; contentType?: string } | null>(null)
   const [loadingFileContent, setLoadingFileContent] = useState(false)
 
+  const displayedFiles = candidateFiles
+    ? Object.entries(candidateFiles.files).filter(([filename]) => !/^heatmap-.*\.txt$/i.test(filename))
+    : []
+
   useEffect(() => {
     const name = sessionStorage.getItem("interviewer_name")
     if (!name) {
@@ -289,8 +293,8 @@ export default function DashboardPage() {
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                   {loadingFiles ? (
                     <div className="text-center py-8 text-muted-foreground">Loading files...</div>
-                  ) : candidateFiles && Object.keys(candidateFiles.files).length > 0 ? (
-                    Object.entries(candidateFiles.files).map(([filename, fileInfo]) => (
+                  ) : candidateFiles && displayedFiles.length > 0 ? (
+                    displayedFiles.map(([filename, fileInfo]) => (
                       <Card
                         key={filename}
                         className={`cursor-pointer transition-colors hover:bg-accent/60 ${

@@ -1,140 +1,62 @@
-[00:00:00.668] Server  LOG      ✓ Ready in 468ms
-[00:00:04.168] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:04.544] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:04.544] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:04.544] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423395986}
-[00:00:10.640] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:10.752] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:10.752] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/interview","route":"/interview"}
-[00:00:10.752] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview color: rgb(120, 120, 120) color: inherit {"dp":"/interview","o":"http://localhost:3000/interview","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423402193}
-[00:00:15.798] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:15.941] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:15.941] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/interview/3","route":"/interview/[meetingCode]"}
-[00:00:15.941] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview/3 color: rgb(120, 120, 120) color: inherit {"dp":"/interview/[meetingCode]","o":"http://localhost:3000/interview/3","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423407382}
-[00:00:29.333] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:29.461] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:29.461] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/interview","route":"/interview"}
-[00:00:29.461] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview color: rgb(120, 120, 120) color: inherit {"dp":"/interview","o":"http://localhost:3000/interview","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423420903}
-[00:00:30.161] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:30.271] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:30.271] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:30.271] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423421714}
-[00:00:31.780] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/join color: rgb(120, 120, 120) color: inherit {"dp":"/join","o":"http://localhost:3000/join","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423423220}
-[00:00:43.560] Browser LOG     [debug] Verifying email: 123
-[00:00:43.560] Browser LOG     [debug] Meeting code: EENCYM
-[00:00:43.560] Browser LOG     [debug] Verification URL: http://localhost:8000/api/verify-email/EENCYM/123
-[00:00:43.560] Browser ERROR   [debug] Error verifying: {}
-[00:00:45.812] Browser LOG     [debug] Verifying email: 123
-[00:00:45.812] Browser LOG     [debug] Meeting code: EENCYM
-[00:00:45.812] Browser LOG     [debug] Verification URL: http://localhost:8000/api/verify-email/EENCYM/123
-[00:00:45.812] Browser ERROR   [debug] Error verifying: {}
-[00:00:46.599] Browser LOG     [debug] Verifying email: 123
-[00:00:46.599] Browser LOG     [debug] Meeting code: EENCYM
-[00:00:46.599] Browser LOG     [debug] Verification URL: http://localhost:8000/api/verify-email/EENCYM/123
-[00:00:46.599] Browser ERROR   [debug] Error verifying: {}
-[00:00:55.534] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423447057}
-[00:00:59.163] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:59.279] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:59.279] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/34","route":"/34"}
-[00:00:59.279] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/34 color: rgb(120, 120, 120) color: inherit {"dp":"/34","o":"http://localhost:3000/34","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423450804}
-[00:01:04.583] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:04.738] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:04.738] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/interview/31","route":"/interview/[meetingCode]"}
-[00:01:04.738] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview/31 color: rgb(120, 120, 120) color: inherit {"dp":"/interview/[meetingCode]","o":"http://localhost:3000/interview/31","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423456265}
-[00:01:12.282] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:12.397] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:12.397] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/interview/ENNER","route":"/interview/[meetingCode]"}
-[00:01:12.397] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview/ENNER color: rgb(120, 120, 120) color: inherit {"dp":"/interview/[meetingCode]","o":"http://localhost:3000/interview/ENNER","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423463923}
-[00:01:13.673] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:13.810] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:13.810] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/interview/31","route":"/interview/[meetingCode]"}
-[00:01:13.810] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview/31 color: rgb(120, 120, 120) color: inherit {"dp":"/interview/[meetingCode]","o":"http://localhost:3000/interview/31","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423465336}
-[00:01:14.215] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:14.345] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:14.345] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/34","route":"/34"}
-[00:01:14.345] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/34 color: rgb(120, 120, 120) color: inherit {"dp":"/34","o":"http://localhost:3000/34","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423465870}
-[00:01:15.146] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:15.284] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:15.284] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:01:15.284] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423466810}
-[00:03:02.785] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423574313}
-[00:03:06.196] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423577714}
-[00:03:07.949] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard/start-interview color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard/start-interview","o":"http://localhost:3000/dashboard/start-interview","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423579463}
-[00:03:13.742] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview/EFR23_?role=interviewer color: rgb(120, 120, 120) color: inherit {"dp":"/interview/[meetingCode]","o":"http://localhost:3000/interview/EFR23_?role=interviewer","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423585271}
-[00:03:14.051] Browser LOG     [debug] ===== STARTING INITIALIZE CALL =====
-[00:03:14.051] Browser LOG     [debug] Initializing call as interviewer
-[00:03:14.052] Browser LOG     [debug] Requesting user media...
-[00:03:14.052] Browser LOG     [debug] ===== STARTING INITIALIZE CALL =====
-[00:03:14.052] Browser LOG     [debug] Initializing call as interviewer
-[00:03:14.052] Browser LOG     [debug] Requesting user media...
-[00:03:16.691] Browser LOG     [debug] ===== GOT USER MEDIA STREAM =====
-[00:03:16.692] Browser LOG     [debug] Got local stream with 2 tracks
-[00:03:16.692] Browser LOG     [debug] Setting isLoading to false
-[00:03:16.692] Browser LOG     [debug] Connecting to: ws://localhost:8000/ws/EFR23_/interviewer
-[00:03:16.692] Browser LOG     [debug] ===== ATTACHING LOCAL STREAM TO VIDEO ELEMENT =====
-[00:03:16.692] Browser LOG     [debug] WebSocket connected
-[00:03:16.692] Browser LOG     [debug] Received: session-info
-[00:03:16.692] Browser LOG     [debug] Session info: {"candidate_email":"123","candidate_name":"dsfds","interviewer_name":"dfsd","role":"interviewer","type":"session-info"}
-[00:03:16.692] Browser LOG     [debug] Received: room-joined
-[00:03:16.692] Browser LOG     [debug] Joined room with 1 participants
-[00:03:17.062] Browser LOG     [debug] ===== LOCAL VIDEO PLAYING =====
-[00:03:17.062] Browser LOG     [debug] ===== GOT USER MEDIA STREAM =====
-[00:03:17.062] Browser LOG     [debug] Got local stream with 2 tracks
-[00:03:17.062] Browser LOG     [debug] Setting isLoading to false
-[00:03:17.062] Browser LOG     [debug] Connecting to: ws://localhost:8000/ws/EFR23_/interviewer
-[00:03:17.062] Browser LOG     [debug] Received: user-joined
-[00:03:17.062] Browser LOG     [debug] User joined, creating offer
-[00:03:17.062] Browser LOG     [debug] Adding track to peer connection: audio
-[00:03:17.062] Browser LOG     [debug] Adding track to peer connection: video
-[00:03:17.062] Browser LOG     [debug] WebSocket connected
-[00:03:17.062] Browser LOG     [debug] Received: session-info
-[00:03:17.062] Browser LOG     [debug] Session info: {"candidate_email":"123","candidate_name":"dsfds","interviewer_name":"dfsd","role":"interviewer","type":"session-info"}
-[00:03:17.062] Browser LOG     [debug] Received: room-joined
-[00:03:17.062] Browser LOG     [debug] Joined room with 2 participants
-[00:03:17.062] Browser LOG     [debug] Received: offer
-[00:03:17.062] Browser LOG     [debug] Received offer
-[00:03:17.062] Browser LOG     [debug] Adding track to peer connection: audio
-[00:03:17.062] Browser LOG     [debug] Adding track to peer connection: video
-[00:03:17.062] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.062] Browser LOG     [debug] Received ICE candidate
-[00:03:17.062] Browser LOG     [debug] Received remote track: audio readyState: live
-[00:03:17.062] Browser LOG     [debug] Remote stream has 2 tracks
-[00:03:17.062] Browser LOG     [debug] Setting remote video srcObject
-[00:03:17.062] Browser LOG     [debug] Remote play attempt 1/5
-[00:03:17.062] Browser LOG     [debug] Remote video readyState: 0, paused: true
-[00:03:17.062] Browser LOG     [debug] Received remote track: video readyState: live
-[00:03:17.062] Browser LOG     [debug] Remote stream has 2 tracks
-[00:03:17.062] Browser LOG     [debug] Remote video srcObject already set, skipping
-[00:03:17.062] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.063] Browser LOG     [debug] Received ICE candidate
-[00:03:17.063] Browser LOG     [debug] Received: answer
-[00:03:17.063] Browser LOG     [debug] Received answer
-[00:03:17.063] Browser LOG     [debug] Connection state: connecting
-[00:03:17.063] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
-[00:03:17.063] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.063] Browser LOG     [debug] Received ICE candidate
-[00:03:17.063] Browser LOG     [debug] Connection state: connecting
-[00:03:17.063] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.063] Browser LOG     [debug] Received ICE candidate
-[00:03:17.063] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.063] Browser LOG     [debug] Received ICE candidate
-[00:03:17.063] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.063] Browser LOG     [debug] Received ICE candidate
-[00:03:17.063] Browser LOG     [debug] Received: ice-candidate
-[00:03:17.063] Browser LOG     [debug] Received ICE candidate
-[00:06:59.469] Browser LOG     [debug] Connection state: failed
-[00:08:27.707] Browser LOG     [debug] WebSocket closed
-[00:08:27.707] Browser LOG     [debug] Received: user-left
-[00:08:27.707] Browser LOG     [debug] User left
-[00:08:27.707] Browser ERROR   [debug] Remote play attempt 1 failed: {}
-[00:08:27.707] Browser LOG     [debug] Retrying remote play in 300ms...
-[00:08:27.873] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761423899410}
-[00:08:27.980] Browser LOG     [debug] Remote play attempt 2/5
-[00:08:27.980] Browser LOG     [debug] Remote video readyState: 0, paused: true
-[00:22:18.139] Browser LOG     [debug] WebSocket closed
-[01:08:10.944] Server  LOG      ✓ Compiled in 102ms
-[02:21:39.756] Server  LOG      ✓ Compiled in 521ms
-[03:02:26.541] Server  LOG      ✓ Compiled in 417ms
-[03:04:22.825] Server  LOG      ✓ Compiled in 151ms
-[03:34:11.431] Server  LOG      ✓ Compiled in 426ms
-[04:07:05.441] Server  LOG      ✓ Compiled in 266ms
+[00:00:00.810] Server  LOG      ✓ Ready in 560ms
+[00:00:07.179] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:07.383] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:07.383] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:07.383] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440780180}
+[00:00:08.562] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440781377}
+[00:00:12.377] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440785186}
+[00:00:41.339] Server  LOG      ✓ Compiled in 97ms
+[00:00:47.454] Server  LOG      ✓ Compiled in 47ms
+[00:00:55.472] Server  LOG      ✓ Compiled in 48ms
+[00:01:13.646] Server  LOG      ✓ Compiled in 74ms
+[00:01:29.848] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:30.027] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:01:30.027] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:01:30.027] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440862842}
+[00:01:33.027] Browser ERROR   Failed to load file content: {}
+[00:01:34.275] Browser ERROR   Failed to load file content: {}
+[00:01:34.789] Browser ERROR   Failed to load file content: {}
+[00:01:35.325] Browser ERROR   Failed to load file content: {}
+[00:01:35.475] Browser ERROR   Failed to load file content: {}
+[00:01:35.607] Browser ERROR   Failed to load file content: {}
+[00:01:35.794] Browser ERROR   Failed to load file content: {}
+[00:01:55.767] Browser ERROR   Failed to load file content: {}
+[00:01:56.199] Browser ERROR   Failed to load file content: {}
+[00:01:56.554] Browser ERROR   Failed to load file content: {}
+[00:01:56.728] Browser ERROR   Failed to load file content: {}
+[00:01:56.886] Browser ERROR   Failed to load file content: {}
+[00:01:57.053] Browser ERROR   Failed to load file content: {}
+[00:01:57.201] Browser ERROR   Failed to load file content: {}
+[00:01:57.356] Browser ERROR   Failed to load file content: {}
+[00:01:57.521] Browser ERROR   Failed to load file content: {}
+[00:01:57.922] Browser ERROR   Failed to load file content: {}
+[00:01:58.338] Browser ERROR   Failed to load file content: {}
+[00:02:03.034] Server  LOG      ✓ Compiled in 155ms
+[00:03:06.485] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:03:06.485] Browser ERROR   Received non-JSON response: <!DOCTYPE html>
+<html class="h-full" lang="en-US" dir="ltr">
+  <head>
+    <link rel="preload" href="https://cdn.ngrok.com/static/fonts/euclid-square/EuclidSquare-Regular-WebS.woff" as="font" type="fon
+[00:03:06.485] Browser ERROR   Failed to load file content: {}
+[00:03:29.503] Server  LOG      ✓ Compiled in 81ms
+[00:03:37.486] Server  LOG      ✓ Compiled in 39ms
+[00:03:46.726] Server  LOG      ✓ Compiled in 31ms
+[00:03:54.714] Server  LOG      ✓ Compiled in 54ms
+[00:04:05.670] Server  LOG      ✓ Compiled in 28ms
+[00:04:30.212] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:30.389] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:04:30.389] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:04:30.390] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441043204}
+[00:04:32.885] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:04:33.229] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
+[00:04:33.229] Browser ERROR   Failed to load file content: {}
+[00:04:34.368] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:04:34.717] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
+[00:04:34.718] Browser ERROR   Failed to load file content: {}
+[00:04:35.092] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:04:35.263] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
+[00:04:35.263] Browser ERROR   Failed to load file content: {}
+[00:04:38.334] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-1?interviewer=Eric%20Xie
+[00:04:38.774] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
+[00:04:38.774] Browser ERROR   Failed to load file content: {}
+[00:05:08.409] Server  LOG      ✓ Compiled in 57ms

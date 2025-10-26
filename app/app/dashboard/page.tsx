@@ -4,12 +4,22 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Video, Users, Calendar, CreditCard, Settings, BarChart3, Clock, CheckCircle2 } from "lucide-react"
+import { Video, Users, Calendar, CreditCard, Settings, BarChart3, Clock, CheckCircle2, FileText, ChevronRight, Download } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { getCandidateList, getCandidateTracking, getCandidateFile, type CandidateTrackingData } from "@/lib/candidateQuery"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function DashboardPage() {
   const router = useRouter()
   const [username, setUsername] = useState("")
+  const [candidates, setCandidates] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
+  const [candidateFiles, setCandidateFiles] = useState<CandidateTrackingData | null>(null)
+  const [loadingFiles, setLoadingFiles] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<{ name: string; content: string } | null>(null)
+  const [loadingFileContent, setLoadingFileContent] = useState(false)
 
   useEffect(() => {
     const name = sessionStorage.getItem("interviewer_name")
@@ -18,7 +28,48 @@ export default function DashboardPage() {
       return
     }
     setUsername(name)
+    loadCandidates(name)
   }, [router])
+
+  const loadCandidates = async (interviewer: string) => {
+    try {
+      setLoading(true)
+      const candidateList = await getCandidateList(interviewer)
+      setCandidates(candidateList)
+    } catch (error) {
+      console.error("Failed to load candidates:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCandidateClick = async (candidateName: string) => {
+    setSelectedCandidate(candidateName)
+    setLoadingFiles(true)
+    setCandidateFiles(null)
+    setSelectedFile(null)
+    try {
+      const tracking = await getCandidateTracking(username, candidateName)
+      setCandidateFiles(tracking)
+    } catch (error) {
+      console.error("Failed to load candidate files:", error)
+    } finally {
+      setLoadingFiles(false)
+    }
+  }
+
+  const handleFileClick = async (filename: string) => {
+    if (!selectedCandidate) return
+    setLoadingFileContent(true)
+    try {
+      const fileData = await getCandidateFile(username, selectedCandidate, filename)
+      setSelectedFile({ name: filename, content: fileData.content })
+    } catch (error) {
+      console.error("Failed to load file content:", error)
+    } finally {
+      setLoadingFileContent(false)
+    }
+  }
 
   if (!username) {
     return null
@@ -135,24 +186,32 @@ export default function DashboardPage() {
               <CardDescription>Your latest interview sessions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                { name: "Sarah Johnson", position: "Senior Developer", date: "2 days ago", status: "completed" },
-                { name: "Michael Chen", position: "Product Manager", date: "5 days ago", status: "completed" },
-                { name: "Emily Davis", position: "UX Designer", date: "1 week ago", status: "completed" },
-              ].map((interview, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex-1">
-                    <p className="font-medium">{interview.name}</p>
-                    <p className="text-sm text-muted-foreground">{interview.position}</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="secondary" className="mb-1">
-                      {interview.status}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground">{interview.date}</p>
-                  </div>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading candidates...</div>
+              ) : candidates.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No interviews yet. Start your first interview!
                 </div>
-              ))}
+              ) : (
+                candidates.slice(0, 5).map((candidateName, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
+                    onClick={() => handleCandidateClick(candidateName)}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{candidateName}</p>
+                      <p className="text-sm text-muted-foreground">Click to view files</p>
+                    </div>
+                    <div className="text-right flex items-center gap-2">
+                      <Badge variant="secondary">
+                        completed
+                      </Badge>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -216,6 +275,76 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Candidate Files Dialog */}
+      <Dialog open={!!selectedCandidate} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedCandidate(null)
+          setSelectedFile(null)
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Interview Files - {selectedCandidate}</DialogTitle>
+            <DialogDescription>
+              Click on a file to view its content
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
+            {/* File List */}
+            <div className="space-y-2 overflow-y-auto pr-2">
+              <h3 className="font-semibold text-sm text-muted-foreground mb-2">Files</h3>
+              {loadingFiles ? (
+                <div className="text-center py-8 text-muted-foreground">Loading files...</div>
+              ) : candidateFiles && Object.keys(candidateFiles.files).length > 0 ? (
+                Object.entries(candidateFiles.files).map(([filename, fileInfo]) => (
+                  <Card 
+                    key={filename}
+                    className={`cursor-pointer transition-colors hover:bg-accent ${
+                      selectedFile?.name === filename ? 'border-primary bg-accent' : ''
+                    }`}
+                    onClick={() => handleFileClick(filename)}
+                  >
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        {filename}
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {fileInfo.size} bytes • {new Date(fileInfo.updated_at).toLocaleString()}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No files found for this candidate
+                </div>
+              )}
+            </div>
+
+            {/* File Content */}
+            <div className="border rounded-lg p-4 overflow-hidden flex flex-col">
+              <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                {selectedFile ? selectedFile.name : 'Select a file'}
+              </h3>
+              <ScrollArea className="flex-1">
+                {loadingFileContent ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading content...</div>
+                ) : selectedFile ? (
+                  <pre className="text-xs whitespace-pre-wrap break-words font-mono">
+                    {selectedFile.content}
+                  </pre>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Click a file to view its content
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

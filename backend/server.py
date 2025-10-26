@@ -447,6 +447,34 @@ async def put_candidate_file(name: str, req: CandidateFilePutRequest):
     _write_tracking(candidate_dir, tracking)
     return {"ok": True, "candidate": name, "file": req.filename}
 
+
+@app.get("/candidate_interviewed/{name}/file/{filename}")
+async def get_candidate_file(name: str, filename: str, interviewer: Optional[str] = None):
+    """Get the content of a specific file for a candidate."""
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+    if not _is_safe_filename(filename):
+        raise HTTPException(status_code=400, detail="invalid filename")
+    
+    candidate_dir = _candidate_base_dir(interviewer, name)
+    if not candidate_dir.exists():
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    fpath = candidate_dir / filename
+    if not fpath.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    try:
+        content = fpath.read_text(encoding="utf-8")
+        return {
+            "filename": filename,
+            "content": content,
+            "size": fpath.stat().st_size,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read file: {e}")
+
+
 @app.get("/api/verify-email/{meeting_code}/{email}")
 async def verify_email(meeting_code: str, email: str):
     """Verify if email matches the session"""

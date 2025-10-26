@@ -435,7 +435,7 @@ class AudioBufferManager {
   }
 
   /**
-   * Start automatic interview recording with 1-minute intervals
+   * Start automatic interview recording with 2-minute intervals
    */
   async startInterviewRecording(
     candidateName: string,
@@ -455,10 +455,10 @@ class AudioBufferManager {
         throw new Error('Failed to start recording');
       }
 
-      // Set up 1-minute interval for processing audio chunks
+      // Set up 2-minute interval for processing audio chunks
       this.intervalId = setInterval(() => {
         this.processAudioChunk();
-      }, 60000); // 60 seconds
+      }, 120000); // 120 seconds (2 minutes)
 
       // Set up health check every 10 seconds
       this.healthCheckIntervalId = setInterval(() => {
@@ -475,14 +475,14 @@ class AudioBufferManager {
   }
 
   /**
-   * Process current audio chunk (called every minute)
+   * Process current audio chunk (called every 2 minutes)
    */
   private async processAudioChunk(): Promise<void> {
     try {
-      console.log('🔄 Processing 1-minute audio chunk...');
+      console.log('🔄 Processing 2-minute audio chunk...');
       console.log(`📊 Current recording state: ${this.getState().isRecording ? 'Active' : 'Inactive'}, chunks: ${this.getState().chunksCount}`);
       
-      // Get current audio buffer and reset for next minute
+      // Get current audio buffer and reset for next 2-minute interval
       const audioBlob = this.resetRecording();
       
       if (!audioBlob) {

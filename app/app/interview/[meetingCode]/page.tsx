@@ -1549,10 +1549,8 @@ export default function InterviewPage() {
 
           <div className="space-y-4">
             {heatmapPoints && heatmapPoints.length > 0 ? (
-              <div className="w-full max-h-[70vh] overflow-auto rounded border bg-white p-2">
-                <div className="min-w-fit mx-auto">
-                  <GazeHeatmap points={heatmapPoints} onImageReady={setHeatmapUrl} />
-                </div>
+              <div className="w-full flex items-center justify-center">
+                <GazeHeatmap points={heatmapPoints} onImageReady={setHeatmapUrl} />
               </div>
             ) : (
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No points</div>

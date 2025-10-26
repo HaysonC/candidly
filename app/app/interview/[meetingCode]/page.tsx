@@ -1007,6 +1007,16 @@ export default function InterviewPage() {
     }
   }
 
+  // Toggle handler: hide overlay if visible, otherwise fetch and show
+  const toggleHeatmapOverlay = () => {
+    if (showHeatmapOverlay) {
+      setShowHeatmapOverlay(false)
+      return
+    }
+    // Not visible: (re)generate and show
+    void generateHeatmap()
+  }
+
   // Prepare and send assignment payload to the peer
   const openAssignDialog = () => {
     setSelectedQuestion("")
@@ -1223,9 +1233,11 @@ export default function InterviewPage() {
               <Button size="sm" onClick={openAssignDialog}>Assign Question</Button>
             )}
             {role === "interviewer" && (
-              <Button size="sm" variant="outline" onClick={generateHeatmap} disabled={heatmapLoading}>
+              <Button size="sm" variant="outline" onClick={toggleHeatmapOverlay} disabled={heatmapLoading}>
                 {heatmapLoading ? (
                   <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Generating…</span>
+                ) : showHeatmapOverlay ? (
+                  "Hide Heatmap"
                 ) : (
                   "Generate Heatmap"
                 )}
@@ -1662,16 +1674,7 @@ export default function InterviewPage() {
             )}
           </div>
 
-          {/* Close button */}
-          <div className="absolute top-3 right-3 pointer-events-auto">
-            <button
-              onClick={() => setShowHeatmapOverlay(false)}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-full border bg-white/90 text-sm shadow"
-              aria-label="Close heatmap overlay"
-            >
-              ×
-            </button>
-          </div>
+          {/* Overlay is toggled via the header button; no close icon per request */}
         </div>
       )}
     </div>

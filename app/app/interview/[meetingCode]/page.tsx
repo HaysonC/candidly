@@ -900,7 +900,11 @@ export default function InterviewPage() {
 
   const endCall = () => {
     cleanup()
-    router.push("/")
+    if (role === "interviewer") {
+      router.push("/dashboard")
+    } else {
+      router.push("/")
+    }
   }
 
   // --- Shared editor helpers ---

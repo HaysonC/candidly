@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,6 +30,55 @@ export default function StartInterviewPage() {
   const [joinLink, setJoinLink] = useState("")
   const [copied, setCopied] = useState(false)
   const [templatesLoading, setTemplatesLoading] = useState(false)
+  const [candidateJoined, setCandidateJoined] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
+
+  // Lightweight WebSocket: when on the waiting step, watch for the candidate to join
+  useEffect(() => {
+    // Cleanup any existing listener when leaving waiting step
+    if (step !== "waiting" || !meetingCode) {
+      if (wsRef.current) {
+        try { wsRef.current.close() } catch {}
+        wsRef.current = null
+      }
+      setCandidateJoined(false)
+      return
+    }
+
+    const signalingServer = process.env.NEXT_PUBLIC_SIGNALING_SERVER || "ws://localhost:8000"
+    const wsUrl = `${signalingServer.replace(/\/$/,'')}/ws/${meetingCode}/interviewer`
+    let ws: WebSocket | null = null
+    try {
+      ws = new WebSocket(wsUrl)
+      wsRef.current = ws
+
+      ws.onmessage = (evt) => {
+        try {
+          const msg = JSON.parse(evt.data)
+          switch (msg.type) {
+            case "room-joined":
+              if (typeof msg.participants === 'number' && msg.participants >= 2) {
+                setCandidateJoined(true)
+              }
+              break
+            case "user-joined":
+              if (msg.role === "interviewee") setCandidateJoined(true)
+              break
+            case "user-left":
+              if (msg.role === "interviewee") setCandidateJoined(false)
+              break
+          }
+        } catch {}
+      }
+    } catch {
+      // Ignore errors; UI still works without the hint
+    }
+
+    return () => {
+      try { ws?.close() } catch {}
+      wsRef.current = null
+    }
+  }, [step, meetingCode])
 
   useEffect(() => {
     const name = sessionStorage.getItem("interviewer_name")
@@ -275,7 +324,11 @@ export default function StartInterviewPage() {
             </div>
 
             <div className="pt-4 space-y-3">
-              <p className="text-sm text-muted-foreground text-center">Waiting for {candidateName} to join...</p>
+              {candidateJoined ? (
+                <p className="text-sm text-green-600 dark:text-green-400 text-center font-medium">{candidateName} has joined. You can enter the room when ready.</p>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center">Waiting for {candidateName} to join...</p>
+              )}
               <Button onClick={handleJoinCall} className="w-full" size="lg">
                 Join Interview Room
               </Button>

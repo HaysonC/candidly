@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import FormData from 'form-data';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,16 +16,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Fish Audio API key not configured' }, { status: 500 });
     }
 
-    // Convert File to Buffer
-    const arrayBuffer = await audioFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Create FormData for Fish Audio API using form-data package
+    // Create FormData for Fish Audio API using native FormData
     const fishFormData = new FormData();
-    fishFormData.append('audio', buffer, {
-      filename: audioFile.name || 'audio.webm',
-      contentType: audioFile.type || 'audio/webm',
-    });
+    fishFormData.append('audio', audioFile, audioFile.name || 'audio.webm');
     fishFormData.append('language', 'en');
     fishFormData.append('ignore_timestamps', 'false');
 
@@ -37,9 +29,8 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${FISH_API_KEY}`,
-        ...fishFormData.getHeaders(),
       },
-      body: fishFormData as any,
+      body: fishFormData,
     });
 
     const rawText = await response.text();

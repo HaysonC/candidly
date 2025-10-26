@@ -1,13 +1,15 @@
 __turbopack_load_page_chunks__("/_error", [
-  "static/chunks/ded2c_next_dist_compiled_6a473a18._.js",
-  "static/chunks/ded2c_next_dist_shared_lib_17343fba._.js",
-  "static/chunks/ded2c_next_dist_client_88231085._.js",
-  "static/chunks/ded2c_next_dist_59ba5da1._.js",
-  "static/chunks/ded2c_next_error_8c687296.js",
-  "static/chunks/[next]_entry_page-loader_ts_d922f4ef._.js",
-  "static/chunks/ded2c_react-dom_91aef9a8._.js",
-  "static/chunks/ded2c_229dd04a._.js",
-  "static/chunks/[root-of-the-server]__7e273cc4._.js",
-  "static/chunks/programs_ANTICLUELY_app_pages__error_2da965e7._.js",
-  "static/chunks/turbopack-programs_ANTICLUELY_app_pages__error_35e2e9e3._.js"
+  "static/chunks/84905_next_dist_compiled_c7adfa64._.js",
+  "static/chunks/84905_next_dist_shared_lib_015802e5._.js",
+  "static/chunks/84905_next_dist_client_b1599be3._.js",
+  "static/chunks/84905_next_dist_d860ee7c._.js",
+  "static/chunks/84905_next_error_eceff311.js",
+  "static/chunks/[next]_entry_page-loader_ts_89cdeb1e._.js",
+  "static/chunks/84905_react_0fe54b32._.js",
+  "static/chunks/84905_react-dom_cjs_react-dom_development_71a63121.js",
+  "static/chunks/84905_react-dom_98c568a6._.js",
+  "static/chunks/84905_01a6e1e3._.js",
+  "static/chunks/[root-of-the-server]__c3e2e4a7._.js",
+  "static/chunks/candidly_app_pages__error_2da965e7._.js",
+  "static/chunks/turbopack-candidly_app_pages__error_990ac0de._.js"
 ])

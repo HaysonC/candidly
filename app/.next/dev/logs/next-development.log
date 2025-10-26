@@ -1,62 +1,1091 @@
-[00:00:00.810] Server  LOG      ✓ Ready in 560ms
-[00:00:07.179] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:07.383] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:07.383] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:07.383] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440780180}
-[00:00:08.562] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440781377}
-[00:00:12.377] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440785186}
-[00:00:41.339] Server  LOG      ✓ Compiled in 97ms
-[00:00:47.454] Server  LOG      ✓ Compiled in 47ms
-[00:00:55.472] Server  LOG      ✓ Compiled in 48ms
-[00:01:13.646] Server  LOG      ✓ Compiled in 74ms
-[00:01:29.848] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:30.027] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:30.027] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
-[00:01:30.027] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761440862842}
-[00:01:33.027] Browser ERROR   Failed to load file content: {}
-[00:01:34.275] Browser ERROR   Failed to load file content: {}
-[00:01:34.789] Browser ERROR   Failed to load file content: {}
-[00:01:35.325] Browser ERROR   Failed to load file content: {}
-[00:01:35.475] Browser ERROR   Failed to load file content: {}
-[00:01:35.607] Browser ERROR   Failed to load file content: {}
-[00:01:35.794] Browser ERROR   Failed to load file content: {}
-[00:01:55.767] Browser ERROR   Failed to load file content: {}
-[00:01:56.199] Browser ERROR   Failed to load file content: {}
-[00:01:56.554] Browser ERROR   Failed to load file content: {}
-[00:01:56.728] Browser ERROR   Failed to load file content: {}
-[00:01:56.886] Browser ERROR   Failed to load file content: {}
-[00:01:57.053] Browser ERROR   Failed to load file content: {}
-[00:01:57.201] Browser ERROR   Failed to load file content: {}
-[00:01:57.356] Browser ERROR   Failed to load file content: {}
-[00:01:57.521] Browser ERROR   Failed to load file content: {}
-[00:01:57.922] Browser ERROR   Failed to load file content: {}
-[00:01:58.338] Browser ERROR   Failed to load file content: {}
-[00:02:03.034] Server  LOG      ✓ Compiled in 155ms
-[00:03:06.485] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
-[00:03:06.485] Browser ERROR   Received non-JSON response: <!DOCTYPE html>
-<html class="h-full" lang="en-US" dir="ltr">
-  <head>
-    <link rel="preload" href="https://cdn.ngrok.com/static/fonts/euclid-square/EuclidSquare-Regular-WebS.woff" as="font" type="fon
-[00:03:06.485] Browser ERROR   Failed to load file content: {}
-[00:03:29.503] Server  LOG      ✓ Compiled in 81ms
-[00:03:37.486] Server  LOG      ✓ Compiled in 39ms
-[00:03:46.726] Server  LOG      ✓ Compiled in 31ms
-[00:03:54.714] Server  LOG      ✓ Compiled in 54ms
-[00:04:05.670] Server  LOG      ✓ Compiled in 28ms
-[00:04:30.212] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:04:30.389] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:04:30.389] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
-[00:04:30.390] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441043204}
-[00:04:32.885] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
-[00:04:33.229] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
-[00:04:33.229] Browser ERROR   Failed to load file content: {}
-[00:04:34.368] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
-[00:04:34.717] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
-[00:04:34.718] Browser ERROR   Failed to load file content: {}
-[00:04:35.092] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
-[00:04:35.263] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
-[00:04:35.263] Browser ERROR   Failed to load file content: {}
-[00:04:38.334] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-1?interviewer=Eric%20Xie
-[00:04:38.774] Browser ERROR   Failed to fetch file: 404 {"detail":"Not Found"}
-[00:04:38.774] Browser ERROR   Failed to load file content: {}
-[00:05:08.409] Server  LOG      ✓ Compiled in 57ms
+[00:00:00.754] Server  LOG      ✓ Ready in 509ms
+[00:00:07.830] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:08.035] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:08.035] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/start","route":"/start"}
+[00:00:08.035] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441704746}
+[00:00:13.480] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441710182}
+[00:00:50.076] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview-template color: rgb(120, 120, 120) color: inherit {"dp":"/interview-template","o":"http://localhost:3000/interview-template","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441746787}
+[00:00:52.622] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441749324}
+[00:00:55.622] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview-template color: rgb(120, 120, 120) color: inherit {"dp":"/interview-template","o":"http://localhost:3000/interview-template","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441752332}
+[00:00:59.242] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview-template/1761416524575 color: rgb(120, 120, 120) color: inherit {"dp":"/interview-template/[id]","o":"http://localhost:3000/interview-template/1761416524575","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441755951}
+[00:01:01.236] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview-template color: rgb(120, 120, 120) color: inherit {"dp":"/interview-template","o":"http://localhost:3000/interview-template","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441757946}
+[00:01:01.865] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441758567}
+[00:04:16.283] Server  LOG      ✓ Compiled in 97ms
+[00:04:24.743] Server  LOG      ✓ Compiled in 113ms
+[00:04:36.741] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:36.899] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:04:37.006] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:04:37.006] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:04:37.006] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761441973714}
+[00:04:37.193] Browser LOG     Received candidates: ["a","c"]
+[00:04:41.476] Browser LOG     Fetching files for candidate: a
+[00:04:41.476] Browser LOG     Using interviewer: Eric Xie
+[00:04:41.731] Browser LOG     Received tracking data: {"files":{}}
+[00:06:58.208] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:58.359] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:06:58.483] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:06:58.483] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:06:58.483] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442115194}
+[00:06:58.619] Browser LOG     Received candidates: ["a","c"]
+[00:06:59.557] Browser LOG     Fetching files for candidate: a
+[00:06:59.557] Browser LOG     Using interviewer: Eric Xie
+[00:06:59.756] Browser LOG     Received tracking data: {"files":{}}
+[00:07:29.802] Browser LOG     Fetching files for candidate: a
+[00:07:29.802] Browser LOG     Using interviewer: Eric Xie
+[00:07:30.045] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:07:30.749] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:07:30.749] Browser LOG     Interviewer: Eric Xie
+[00:07:30.749] Browser LOG     Candidate: a
+[00:07:30.749] Browser LOG     Filename: coding-task-1
+[00:07:38.498] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:07:38.498] Browser LOG     Interviewer: Eric Xie
+[00:07:38.498] Browser LOG     Candidate: a
+[00:07:38.498] Browser LOG     Filename: coding-task-3
+[00:08:16.411] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:08:16.412] Browser LOG     Interviewer: Eric Xie
+[00:08:16.412] Browser LOG     Candidate: a
+[00:08:16.412] Browser LOG     Filename: coding-task-1
+[00:09:38.683] Server  LOG      ✓ Compiled in 101ms
+[00:10:17.467] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:17.682] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:10:17.684] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/start","route":"/start"}
+[00:10:17.684] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442314390}
+[00:10:19.963] Browser LOG     Loading candidates for interviewer: Erix Xie
+[00:10:19.963] Browser LOG     Loading candidates for interviewer: Erix Xie
+[00:10:19.963] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442316661}
+[00:10:20.544] Browser LOG     Received candidates: []
+[00:10:20.544] Browser LOG     Received candidates: []
+[00:10:28.399] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442325107}
+[00:10:31.388] Browser LOG     Loading candidates for interviewer: Erix Xie
+[00:10:31.388] Browser LOG     Loading candidates for interviewer: Erix Xie
+[00:10:31.388] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442328087}
+[00:10:31.694] Browser LOG     Received candidates: []
+[00:10:31.694] Browser LOG     Received candidates: []
+[00:10:32.383] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/start color: rgb(120, 120, 120) color: inherit {"dp":"/start","o":"http://localhost:3000/start","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442329093}
+[00:10:34.575] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:10:34.575] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:10:34.575] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442331272}
+[00:10:34.929] Browser LOG     Received candidates: ["a","c"]
+[00:10:34.929] Browser LOG     Received candidates: ["a","c"]
+[00:10:35.644] Browser LOG     Fetching files for candidate: a
+[00:10:35.644] Browser LOG     Using interviewer: Eric Xie
+[00:10:36.124] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:10:36.593] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:10:36.593] Browser LOG     Interviewer: Eric Xie
+[00:10:36.593] Browser LOG     Candidate: a
+[00:10:36.593] Browser LOG     Filename: coding-task-1
+[00:10:40.426] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:10:40.426] Browser LOG     Interviewer: Eric Xie
+[00:10:40.426] Browser LOG     Candidate: a
+[00:10:40.426] Browser LOG     Filename: coding-task-3
+[00:10:56.902] Server  LOG      ✓ Compiled in 123ms
+[00:11:09.117] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:09.297] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:11:09.297] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:11:09.297] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:11:09.297] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442366004}
+[00:11:09.526] Browser LOG     Received candidates: ["a","c"]
+[00:11:10.205] Browser LOG     Fetching files for candidate: a
+[00:11:10.205] Browser LOG     Using interviewer: Eric Xie
+[00:11:10.455] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:11:12.198] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:11:12.198] Browser LOG     Interviewer: Eric Xie
+[00:11:12.198] Browser LOG     Candidate: a
+[00:11:12.198] Browser LOG     Filename: coding-task-1
+[00:11:30.797] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:11:30.797] Browser LOG     Interviewer: Eric Xie
+[00:11:30.797] Browser LOG     Candidate: a
+[00:11:30.797] Browser LOG     Filename: coding-task-3
+[00:11:31.570] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:32.532] Browser LOG     Loading candidates for interviewer: A
+[00:11:32.532] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:11:32.532] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:11:32.532] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442388519}
+[00:11:32.532] Browser LOG     Received candidates: []
+[00:11:55.589] Server  LOG      ✓ Compiled in 155ms
+[00:12:06.665] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:06.805] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:12:06.805] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:06.805] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:12:06.805] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442423514}
+[00:12:07.015] Browser LOG     Received candidates: ["a","c"]
+[00:12:07.793] Browser LOG     Fetching files for candidate: a
+[00:12:07.793] Browser LOG     Using interviewer: Eric Xie
+[00:12:07.982] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:12:08.846] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:12:08.846] Browser LOG     Interviewer: Eric Xie
+[00:12:08.846] Browser LOG     Candidate: a
+[00:12:08.846] Browser LOG     Filename: coding-task-1
+[00:12:09.270] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:12:09.270] Browser LOG     Interviewer: Eric Xie
+[00:12:09.270] Browser LOG     Candidate: a
+[00:12:09.270] Browser LOG     Filename: coding-task-3
+[00:12:10.166] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:12:10.166] Browser LOG     Interviewer: Eric Xie
+[00:12:10.166] Browser LOG     Candidate: a
+[00:12:10.166] Browser LOG     Filename: coding-task-1
+[00:12:28.514] Browser LOG     Fetching files for candidate: c
+[00:12:28.514] Browser LOG     Using interviewer: Eric Xie
+[00:12:29.074] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":390,"updated_at":"2025-10-25T23:21:11.378953Z"},"coding-task-4":{"size":393,"updated_at":"2025-10-25T23:03:48.417476Z"}}}
+[00:12:29.613] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-1?interviewer=Eric%20Xie
+[00:12:29.613] Browser LOG     Interviewer: Eric Xie
+[00:12:29.613] Browser LOG     Candidate: c
+[00:12:29.613] Browser LOG     Filename: coding-task-1
+[00:12:30.186] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-4?interviewer=Eric%20Xie
+[00:12:30.186] Browser LOG     Interviewer: Eric Xie
+[00:12:30.186] Browser LOG     Candidate: c
+[00:12:30.186] Browser LOG     Filename: coding-task-4
+[00:12:32.320] Server  LOG      ✓ Compiled in 137ms
+[00:12:34.361] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-1?interviewer=Eric%20Xie
+[00:12:34.361] Browser LOG     Interviewer: Eric Xie
+[00:12:34.361] Browser LOG     Candidate: c
+[00:12:34.361] Browser LOG     Filename: coding-task-1
+[00:12:35.987] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-4?interviewer=Eric%20Xie
+[00:12:35.987] Browser LOG     Interviewer: Eric Xie
+[00:12:35.987] Browser LOG     Candidate: c
+[00:12:35.987] Browser LOG     Filename: coding-task-4
+[00:12:37.945] Browser LOG     Fetching files for candidate: a
+[00:12:37.945] Browser LOG     Using interviewer: Eric Xie
+[00:12:38.119] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:12:38.961] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:12:38.961] Browser LOG     Interviewer: Eric Xie
+[00:12:38.961] Browser LOG     Candidate: a
+[00:12:38.961] Browser LOG     Filename: coding-task-3
+[00:13:03.141] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:03.287] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:13:03.287] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:13:03.287] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:13:03.287] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442479997}
+[00:13:03.485] Browser LOG     Received candidates: ["a","c"]
+[00:13:04.415] Browser LOG     Fetching files for candidate: a
+[00:13:04.415] Browser LOG     Using interviewer: Eric Xie
+[00:13:04.740] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:13:40.301] Server  LOG      ✓ Compiled in 119ms
+[00:13:51.589] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:51.731] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:13:51.731] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:13:51.731] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:13:51.731] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442528458}
+[00:13:51.986] Browser LOG     Received candidates: ["a","c"]
+[00:13:52.743] Browser LOG     Fetching files for candidate: a
+[00:13:52.743] Browser LOG     Using interviewer: Eric Xie
+[00:13:52.955] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:14:13.034] Server  LOG      ✓ Compiled in 61ms
+[00:14:43.417] Browser LOG     Fetching files for candidate: a
+[00:14:43.417] Browser LOG     Using interviewer: Eric Xie
+[00:14:43.661] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:16:29.711] Server  LOG      ✓ Compiled in 115ms
+[00:16:52.991] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:16:53.189] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:16:53.189] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:16:53.189] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:16:53.189] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442709918}
+[00:16:53.429] Browser LOG     Received candidates: ["a","c"]
+[00:16:54.563] Browser LOG     Fetching files for candidate: a
+[00:16:54.563] Browser LOG     Using interviewer: Eric Xie
+[00:16:54.801] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:16:58.467] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:16:58.467] Browser LOG     Interviewer: Eric Xie
+[00:16:58.467] Browser LOG     Candidate: a
+[00:16:58.467] Browser LOG     Filename: coding-task-1
+[00:16:59.650] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:16:59.650] Browser LOG     Interviewer: Eric Xie
+[00:16:59.650] Browser LOG     Candidate: a
+[00:16:59.650] Browser LOG     Filename: coding-task-3
+[00:17:01.036] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:17:01.036] Browser LOG     Interviewer: Eric Xie
+[00:17:01.036] Browser LOG     Candidate: a
+[00:17:01.036] Browser LOG     Filename: coding-task-1
+[00:17:35.436] Browser LOG     Fetching files for candidate: a
+[00:17:35.436] Browser LOG     Using interviewer: Eric Xie
+[00:17:35.682] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:18:16.831] Server  LOG      ✓ Compiled in 98ms
+[00:18:23.489] Server  LOG      ✓ Compiled in 50ms
+[00:18:49.029] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:18:49.175] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:18:49.175] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:18:49.175] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:18:49.175] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442825904}
+[00:18:49.413] Browser LOG     Received candidates: ["a","c"]
+[00:18:50.249] Browser LOG     Fetching files for candidate: a
+[00:18:50.249] Browser LOG     Using interviewer: Eric Xie
+[00:18:50.423] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:18:53.092] Browser LOG     Fetching files for candidate: c
+[00:18:53.092] Browser LOG     Using interviewer: Eric Xie
+[00:18:53.296] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":390,"updated_at":"2025-10-25T23:21:11.378953Z"},"coding-task-4":{"size":393,"updated_at":"2025-10-25T23:03:48.417476Z"}}}
+[00:18:54.398] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-1?interviewer=Eric%20Xie
+[00:18:54.399] Browser LOG     Interviewer: Eric Xie
+[00:18:54.399] Browser LOG     Candidate: c
+[00:18:54.399] Browser LOG     Filename: coding-task-1
+[00:18:54.749] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/c/file/coding-task-4?interviewer=Eric%20Xie
+[00:18:54.749] Browser LOG     Interviewer: Eric Xie
+[00:18:54.749] Browser LOG     Candidate: c
+[00:18:54.749] Browser LOG     Filename: coding-task-4
+[00:19:52.150] Server  LOG      ✓ Compiled in 82ms
+[00:20:03.322] Browser LOG     Fetching files for candidate: a
+[00:20:03.323] Browser LOG     Using interviewer: Eric Xie
+[00:20:03.323] Browser ERROR   Failed to load candidate files: {}
+[00:20:09.307] Browser LOG     Fetching files for candidate: a
+[00:20:09.307] Browser LOG     Using interviewer: Eric Xie
+[00:20:09.462] Browser ERROR   Failed to load candidate files: {}
+[00:20:10.834] Browser LOG     Fetching files for candidate: c
+[00:20:10.835] Browser LOG     Using interviewer: Eric Xie
+[00:20:10.835] Browser ERROR   Failed to load candidate files: {}
+[00:20:14.886] Browser LOG     Fetching files for candidate: c
+[00:20:14.886] Browser LOG     Using interviewer: Eric Xie
+[00:20:14.886] Browser ERROR   Failed to load candidate files: {}
+[00:20:16.368] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:20:16.556] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:20:16.556] Browser ERROR   Failed to load candidates: {}
+[00:20:16.556] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:20:16.556] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:20:16.556] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442913285}
+[00:20:18.134] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:20:18.134] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:20:18.259] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:20:18.259] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:20:18.259] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761442914989}
+[00:20:18.475] Browser LOG     Received candidates: ["a","c"]
+[00:20:19.014] Browser LOG     Fetching files for candidate: a
+[00:20:19.014] Browser LOG     Using interviewer: Eric Xie
+[00:20:19.262] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:20:22.194] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:20:22.194] Browser LOG     Interviewer: Eric Xie
+[00:20:22.194] Browser LOG     Candidate: a
+[00:20:22.194] Browser LOG     Filename: coding-task-3
+[00:20:23.042] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:20:23.042] Browser LOG     Interviewer: Eric Xie
+[00:20:23.042] Browser LOG     Candidate: a
+[00:20:23.042] Browser LOG     Filename: coding-task-1
+[00:20:48.358] Server  LOG      ✓ Compiled in 80ms
+[00:21:59.985] Server  LOG      ✓ Compiled in 80ms
+[00:22:03.794] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:22:03.935] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:22:04.056] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:22:04.056] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:22:04.056] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443020787}
+[00:22:04.344] Browser LOG     Received candidates: ["a","c"]
+[00:22:05.568] Browser LOG     Fetching files for candidate: a
+[00:22:05.569] Browser LOG     Using interviewer: Eric Xie
+[00:22:06.011] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:22:43.847] Browser LOG     Fetching files for candidate: a
+[00:22:43.847] Browser LOG     Using interviewer: Eric Xie
+[00:22:44.100] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:23:21.416] Server  LOG      ✓ Compiled in 329ms
+[00:23:21.528] Browser LOG     Loading candidates for interviewer: A
+[00:23:21.531] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:23:22.528] Browser LOG     Received candidates: []
+[00:23:22.528] Browser LOG     Received candidates: ["a","c"]
+[00:23:54.287] Server  LOG      ✓ Compiled in 129ms
+[00:23:54.533] Browser LOG     Loading candidates for interviewer: A
+[00:23:54.533] Browser ERROR   Failed to load candidates: {}
+[00:23:54.533] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:23:54.533] Browser ERROR   Failed to load candidates: {}
+[00:24:34.314] Server  LOG      ✓ Compiled in 158ms
+[00:24:34.532] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:105:12
+Parsing ecmascript source code failed
+  103 |       </Sheet>
+  104 |
+> 105 |       <div className="container mx-auto px-4 py-8 space-y-6">
+      |            ^^^^^^^^^
+  106 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  107 |           <CardContent className="pt-6">
+  108 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:24:34.532] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:105:12
+Parsing ecmascript source code failed
+  103 |       </Sheet>
+  104 |
+> 105 |       <div className="container mx-auto px-4 py-8 space-y-6">
+      |            ^^^^^^^^^
+  106 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  107 |           <CardContent className="pt-6">
+  108 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:31.532] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:31.533] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:35.199] Server  ERROR    ⨯ ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+
+[00:25:35.317] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:35.552] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.115] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.115] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.530] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.530] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.530] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.618] Browser ERROR   uncaughtError: Error: ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+
+[00:25:36.726] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.726] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:36.743] Server  ERROR    ⨯ ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+
+[00:25:37.043] Browser ERROR   uncaughtError: Error: ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+
+[00:25:37.183] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:37.183] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:37.529] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:37.529] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:25:37.529] Browser ERROR   ./candidly/app/app/dashboard/page.tsx:33:12
+Parsing ecmascript source code failed
+  31 |     loadCandidates(name)
+  32 |
+> 33 |       <div className="container mx-auto px-4 py-8 space-y-6">
+     |            ^^^^^^^^^
+  34 |         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+  35 |           <CardContent className="pt-6">
+  36 |             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+
+Expected ';', '}' or <eof>
+
+Import traces:
+  Client Component Browser:
+    ./candidly/app/app/dashboard/page.tsx [Client Component Browser]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./candidly/app/app/dashboard/page.tsx [Client Component SSR]
+    ./candidly/app/app/dashboard/page.tsx [Server Component]
+[00:26:46.716] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:26:46.735] Server  LOG      ✓ Compiled in 116ms
+[00:26:47.436] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:26:47.778] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:26:47.778] Browser ERROR   Failed to load candidates: {}
+[00:26:47.778] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:26:47.778] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:26:47.778] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443304466}
+[00:26:50.137] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:26:50.137] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:26:50.275] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:26:50.275] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:26:50.275] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443307008}
+[00:26:50.275] Browser ERROR   Failed to load candidates: {}
+[00:26:53.937] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:26:54.084] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:26:54.084] Browser ERROR   Failed to load candidates: {}
+[00:26:54.084] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:26:54.084] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:26:54.084] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443310817}
+[00:26:55.171] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:26:55.171] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:26:55.296] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:26:55.296] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:26:55.296] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443312028}
+[00:26:55.296] Browser ERROR   Failed to load candidates: {}
+[00:26:55.996] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:26:56.134] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:26:56.134] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:26:56.134] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:26:56.134] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443312864}
+[00:26:56.134] Browser ERROR   Failed to load candidates: {}
+[00:27:02.939] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:27:02.939] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:27:03.072] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:27:03.072] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:27:03.072] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443319804}
+[00:27:03.284] Browser LOG     Received candidates: ["a","c"]
+[00:27:04.068] Browser LOG     Fetching files for candidate: a
+[00:27:04.069] Browser LOG     Using interviewer: Eric Xie
+[00:27:04.257] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:27:08.460] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:08.460] Browser LOG     Interviewer: Eric Xie
+[00:27:08.460] Browser LOG     Candidate: a
+[00:27:08.460] Browser LOG     Filename: coding-task-1
+[00:27:09.303] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:09.303] Browser LOG     Interviewer: Eric Xie
+[00:27:09.303] Browser LOG     Candidate: a
+[00:27:09.303] Browser LOG     Filename: coding-task-3
+[00:27:13.193] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:13.193] Browser LOG     Interviewer: Eric Xie
+[00:27:13.193] Browser LOG     Candidate: a
+[00:27:13.193] Browser LOG     Filename: coding-task-1
+[00:27:15.385] Browser LOG     Fetching files for candidate: a
+[00:27:15.385] Browser LOG     Using interviewer: Eric Xie
+[00:27:15.587] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:27:17.420] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:17.420] Browser LOG     Interviewer: Eric Xie
+[00:27:17.420] Browser LOG     Candidate: a
+[00:27:17.420] Browser LOG     Filename: coding-task-3
+[00:27:18.081] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:18.081] Browser LOG     Interviewer: Eric Xie
+[00:27:18.081] Browser LOG     Candidate: a
+[00:27:18.081] Browser LOG     Filename: coding-task-1
+[00:27:19.135] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:19.135] Browser LOG     Interviewer: Eric Xie
+[00:27:19.135] Browser LOG     Candidate: a
+[00:27:19.135] Browser LOG     Filename: coding-task-3
+[00:27:19.907] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:19.907] Browser LOG     Interviewer: Eric Xie
+[00:27:19.907] Browser LOG     Candidate: a
+[00:27:19.907] Browser LOG     Filename: coding-task-1
+[00:27:21.088] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:21.088] Browser LOG     Interviewer: Eric Xie
+[00:27:21.088] Browser LOG     Candidate: a
+[00:27:21.088] Browser LOG     Filename: coding-task-3
+[00:27:31.360] Browser LOG     Fetching files for candidate: a
+[00:27:31.360] Browser LOG     Using interviewer: Eric Xie
+[00:27:31.600] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:27:32.376] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:32.376] Browser LOG     Interviewer: Eric Xie
+[00:27:32.376] Browser LOG     Candidate: a
+[00:27:32.376] Browser LOG     Filename: coding-task-3
+[00:27:32.584] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:32.584] Browser LOG     Interviewer: Eric Xie
+[00:27:32.584] Browser LOG     Candidate: a
+[00:27:32.584] Browser LOG     Filename: coding-task-3
+[00:27:33.080] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:33.080] Browser LOG     Interviewer: Eric Xie
+[00:27:33.080] Browser LOG     Candidate: a
+[00:27:33.080] Browser LOG     Filename: coding-task-1
+[00:27:40.685] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:40.685] Browser LOG     Interviewer: Eric Xie
+[00:27:40.685] Browser LOG     Candidate: a
+[00:27:40.685] Browser LOG     Filename: coding-task-3
+[00:27:43.851] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:43.851] Browser LOG     Interviewer: Eric Xie
+[00:27:43.851] Browser LOG     Candidate: a
+[00:27:43.851] Browser LOG     Filename: coding-task-1
+[00:27:44.312] Server  LOG      ✓ Compiled in 84ms
+[00:27:44.392] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:27:44.570] Browser LOG     Received candidates: ["a","c"]
+[00:27:45.529] Browser LOG     Loading candidates for interviewer: A
+[00:27:45.529] Browser LOG     Received candidates: []
+[00:27:45.817] Browser LOG     Fetching files for candidate: a
+[00:27:45.817] Browser LOG     Using interviewer: Eric Xie
+[00:27:45.990] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:27:46.546] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:27:46.546] Browser LOG     Interviewer: Eric Xie
+[00:27:46.546] Browser LOG     Candidate: a
+[00:27:46.546] Browser LOG     Filename: coding-task-3
+[00:27:46.882] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:27:46.882] Browser LOG     Interviewer: Eric Xie
+[00:27:46.882] Browser LOG     Candidate: a
+[00:27:46.882] Browser LOG     Filename: coding-task-1
+[00:28:02.741] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard/start-interview color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard/start-interview","o":"http://localhost:3000/dashboard/start-interview","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443379409}
+[00:28:05.627] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:28:05.627] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:28:05.627] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443382350}
+[00:28:05.814] Browser LOG     Received candidates: ["a","c"]
+[00:28:05.814] Browser LOG     Received candidates: ["a","c"]
+[00:29:51.350] Server  LOG      ✓ Compiled in 76ms
+[00:30:19.885] Server  LOG      ✓ Compiled in 75ms
+[00:32:43.969] Server  LOG      ✓ Compiled in 107ms
+[00:32:57.172] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:32:57.378] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:32:57.378] Browser ERROR   Failed to load candidates: {}
+[00:32:57.378] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:32:57.378] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:32:57.378] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443674112}
+[00:33:14.158] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:33:14.158] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:33:14.297] Browser ERROR   Failed to load candidates: {}
+[00:33:14.297] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:33:14.297] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:33:14.297] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443691032}
+[00:33:16.030] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:33:16.030] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:33:16.154] Browser ERROR   Failed to load candidates: {}
+[00:33:16.154] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:33:16.154] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:33:16.154] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443692888}
+[00:33:16.855] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:33:16.989] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:33:16.989] Browser ERROR   Failed to load candidates: {}
+[00:33:16.989] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:33:16.989] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:33:16.989] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443693724}
+[00:33:17.558] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:33:17.558] Browser LOG     Loading candidates for interviewer: Eric Xie
+[00:33:17.683] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:33:17.683] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/dashboard","route":"/dashboard"}
+[00:33:17.683] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443694416}
+[00:33:18.062] Browser LOG     Received candidates: ["a","c"]
+[00:33:18.730] Browser LOG     Fetching files for candidate: a
+[00:33:18.730] Browser LOG     Using interviewer: Eric Xie
+[00:33:19.143] Browser LOG     Received tracking data: {"files":{"coding-task-1":{"size":941,"updated_at":"2025-10-25T23:45:52.962098Z"},"coding-task-3":{"size":402,"updated_at":"2025-10-26T00:01:56.222002Z"}}}
+[00:33:19.611] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-1?interviewer=Eric%20Xie
+[00:33:19.611] Browser LOG     Interviewer: Eric Xie
+[00:33:19.611] Browser LOG     Candidate: a
+[00:33:19.611] Browser LOG     Filename: coding-task-1
+[00:33:20.173] Browser LOG     Fetching file from: https://cfa9649968eb.ngrok-free.app/candidate_interviewed/a/file/coding-task-3?interviewer=Eric%20Xie
+[00:33:20.173] Browser LOG     Interviewer: Eric Xie
+[00:33:20.173] Browser LOG     Candidate: a
+[00:33:20.173] Browser LOG     Filename: coding-task-3
+[00:34:28.116] Server  LOG      ✓ Compiled in 81ms
+[00:35:14.242] Server  LOG      ✓ Compiled in 70ms
+[00:35:32.784] Server  LOG      ✓ Compiled in 69ms
+[00:35:40.056] Server  LOG      ✓ Compiled in 46ms
+[00:35:47.710] Server  LOG      ✓ Compiled in 49ms
+[00:35:54.277] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard/start-interview color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard/start-interview","o":"http://localhost:3000/dashboard/start-interview","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443850985}
+[00:36:06.551] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/interview/BQK43J?role=interviewer color: rgb(120, 120, 120) color: inherit {"dp":"/interview/[meetingCode]","o":"http://localhost:3000/interview/BQK43J?role=interviewer","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1761443863251}
+[00:36:06.818] Browser LOG     [debug] ===== STARTING INITIALIZE CALL =====
+[00:36:06.818] Browser LOG     [debug] Initializing call as interviewer
+[00:36:06.818] Browser LOG     [debug] Requesting user media...
+[00:36:06.818] Browser LOG     [debug] ===== STARTING INITIALIZE CALL =====
+[00:36:06.818] Browser LOG     [debug] Initializing call as interviewer
+[00:36:06.818] Browser LOG     [debug] Requesting user media...
+[00:36:12.005] Browser LOG     [debug] ===== GOT USER MEDIA STREAM =====
+[00:36:12.005] Browser LOG     [debug] Got local stream with 2 tracks
+[00:36:12.005] Browser LOG     [debug] Setting isLoading to false
+[00:36:12.005] Browser LOG     [debug] Connecting to: https://cfa9649968eb.ngrok-free.app/ws/BQK43J/interviewer
+[00:36:12.005] Browser LOG     [debug] ===== ATTACHING LOCAL STREAM TO VIDEO ELEMENT =====
+[00:36:12.006] Browser LOG     [debug] ===== LOCAL VIDEO PLAYING =====
+[00:36:12.006] Browser LOG     [debug] ===== GOT USER MEDIA STREAM =====
+[00:36:12.006] Browser LOG     [debug] Got local stream with 2 tracks
+[00:36:12.006] Browser LOG     [debug] Setting isLoading to false
+[00:36:12.006] Browser LOG     [debug] Connecting to: https://cfa9649968eb.ngrok-free.app/ws/BQK43J/interviewer
+[00:36:12.006] Browser LOG     [debug] WebSocket connected
+[00:36:12.006] Browser LOG     [debug] Received: session-info
+[00:36:12.006] Browser LOG     [debug] Session info: {"candidate_email":"Cheney.sang@gmail.com","candidate_name":"Hayson","interviewer_name":"Eric Xie","role":"interviewer","type":"session-info"}
+[00:36:12.006] Browser LOG     [debug] Received: room-joined
+[00:36:12.006] Browser LOG     [debug] Joined room with 1 participants
+[00:36:12.347] Browser LOG     [debug] Received: user-joined
+[00:36:12.347] Browser LOG     [debug] User joined, creating offer
+[00:36:12.348] Browser LOG     [debug] Adding track to peer connection: audio
+[00:36:12.348] Browser LOG     [debug] Adding track to peer connection: video
+[00:36:12.348] Browser LOG     [debug] WebSocket connected
+[00:36:12.348] Browser LOG     [debug] Received: session-info
+[00:36:12.348] Browser LOG     [debug] Session info: {"candidate_email":"Cheney.sang@gmail.com","candidate_name":"Hayson","interviewer_name":"Eric Xie","role":"interviewer","type":"session-info"}
+[00:36:12.348] Browser LOG     [debug] Received: room-joined
+[00:36:12.348] Browser LOG     [debug] Joined room with 2 participants
+[00:36:12.698] Browser LOG     [debug] Received: offer
+[00:36:12.698] Browser LOG     [debug] Received offer
+[00:36:12.699] Browser LOG     [debug] Adding track to peer connection: audio
+[00:36:12.699] Browser LOG     [debug] Adding track to peer connection: video
+[00:36:12.699] Browser LOG     [debug] Received remote track: audio readyState: live
+[00:36:12.699] Browser LOG     [debug] Remote stream has 2 tracks
+[00:36:12.699] Browser LOG     [debug] Setting remote video srcObject
+[00:36:12.699] Browser LOG     [debug] Remote play attempt 1/5
+[00:36:12.699] Browser LOG     [debug] Remote video readyState: 0, paused: true
+[00:36:12.699] Browser LOG     [debug] Received remote track: video readyState: live
+[00:36:12.699] Browser LOG     [debug] Remote stream has 2 tracks
+[00:36:12.699] Browser LOG     [debug] Remote video srcObject already set, skipping
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:36:12.699] Browser LOG     [debug] Connection state: connecting
+[00:36:12.699] Browser LOG     [debug] Connection state: connecting
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:36:12.699] Browser LOG     [debug] Received: answer
+[00:36:12.699] Browser LOG     [debug] Received answer
+[00:36:12.699] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:36:12.699] Browser LOG     [debug] Received: ice-candidate
+[00:36:12.699] Browser LOG     [debug] Received ICE candidate
+[00:37:17.845] Browser LOG     [debug] Received: user-joined
+[00:37:17.846] Browser LOG     [debug] User joined, creating offer
+[00:37:17.846] Browser LOG     [debug] Adding track to peer connection: audio
+[00:37:17.846] Browser LOG     [debug] Adding track to peer connection: video
+[00:37:17.846] Browser LOG     [debug] Received: user-joined
+[00:37:17.846] Browser LOG     [debug] User joined, creating offer
+[00:37:17.846] Browser LOG     [debug] Adding track to peer connection: audio
+[00:37:17.846] Browser LOG     [debug] Adding track to peer connection: video
+[00:37:18.446] Browser LOG     [debug] Received: offer
+[00:37:18.447] Browser LOG     [debug] Received offer
+[00:37:18.447] Browser LOG     [debug] Adding track to peer connection: audio
+[00:37:18.447] Browser LOG     [debug] Adding track to peer connection: video
+[00:37:18.447] Browser LOG     [debug] Received: offer
+[00:37:18.447] Browser LOG     [debug] Received offer
+[00:37:18.447] Browser LOG     [debug] Adding track to peer connection: audio
+[00:37:18.447] Browser LOG     [debug] Adding track to peer connection: video
+[00:37:18.447] Browser LOG     [debug] Received remote track: audio readyState: live
+[00:37:18.447] Browser LOG     [debug] Remote stream has 2 tracks
+[00:37:18.447] Browser LOG     [debug] Setting remote video srcObject
+[00:37:18.447] Browser LOG     [debug] Remote play attempt 1/5
+[00:37:18.447] Browser LOG     [debug] Remote video readyState: 0, paused: true
+[00:37:18.447] Browser ERROR   [debug] Remote play attempt 1 failed: {}
+[00:37:18.447] Browser LOG     [debug] Retrying remote play in 300ms...
+[00:37:18.447] Browser LOG     [debug] Received remote track: video readyState: live
+[00:37:18.447] Browser LOG     [debug] Remote stream has 2 tracks
+[00:37:18.447] Browser LOG     [debug] Remote video srcObject already set, skipping
+[00:37:18.447] Browser LOG     [debug] Received remote track: audio readyState: live
+[00:37:18.447] Browser LOG     [debug] Remote stream has 2 tracks
+[00:37:18.447] Browser LOG     [debug] Setting remote video srcObject
+[00:37:18.447] Browser LOG     [debug] Remote play attempt 1/5
+[00:37:18.447] Browser LOG     [debug] Remote video readyState: 0, paused: true
+[00:37:18.447] Browser ERROR   [debug] Remote play attempt 1 failed: {}
+[00:37:18.447] Browser LOG     [debug] Retrying remote play in 300ms...
+[00:37:18.447] Browser LOG     [debug] Received remote track: video readyState: live
+[00:37:18.447] Browser LOG     [debug] Remote stream has 2 tracks
+[00:37:18.447] Browser LOG     [debug] Remote video srcObject already set, skipping
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Connection state: connecting
+[00:37:18.447] Browser LOG     [debug] Connection state: connecting
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: answer
+[00:37:18.447] Browser LOG     [debug] Received answer
+[00:37:18.447] Browser LOG     [debug] Received: answer
+[00:37:18.447] Browser LOG     [debug] Received answer
+[00:37:18.447] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:37:18.447] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: answer
+[00:37:18.447] Browser LOG     [debug] Received answer
+[00:37:18.447] Browser LOG     [debug] Received: answer
+[00:37:18.447] Browser LOG     [debug] Received answer
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: answer
+[00:37:18.447] Browser LOG     [debug] Received answer
+[00:37:18.447] Browser LOG     [debug] Received: answer
+[00:37:18.447] Browser LOG     [debug] Received answer
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:37:18.447] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:37:18.447] Browser ERROR   unhandledRejection: InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Called in wrong state: stable
+[00:37:18.447] Browser LOG     [debug] Remote play attempt 2/5
+[00:37:18.447] Browser LOG     [debug] Remote video readyState: 0, paused: false
+[00:37:18.447] Browser LOG     [debug] Remote play attempt 2/5
+[00:37:18.447] Browser LOG     [debug] Remote video readyState: 0, paused: false
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate
+[00:37:18.447] Browser LOG     [debug] Received: ice-candidate
+[00:37:18.447] Browser LOG     [debug] Received ICE candidate

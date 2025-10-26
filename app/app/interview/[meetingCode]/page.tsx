@@ -15,7 +15,7 @@ import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
 import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
-import { uploadCandidateInterviewed, uploadCandidateFileBinary } from "@/lib/upload"
+import { uploadCandidateInterviewed, uploadCandidateFileBinary, uploadCandidateFileBlob } from "@/lib/upload"
 import GazeHeatmap from "@/components/gaze-heatmap"
 import { startInterviewRecording, stopInterviewRecording, isInterviewRecordingActive, getCurrentTranscript } from "@/lib/audio-manager"
 
@@ -1030,17 +1030,43 @@ export default function InterviewPage() {
               palette: "classic",
               alpha: 0.9,
             })
-            // Convert to JPEG for smaller size and better dashboard compatibility
-            const jpegUrl = report.canvas.toDataURL("image/jpeg", 0.9)
-            const base64 = jpegUrl.includes(",") ? jpegUrl.split(",")[1] : ""
-            if (base64) {
-              const okPng = await uploadCandidateFileBinary(
-                sessionInfo.candidate_name,
-                `heatmap-${meetingCode}.jpg`,
-                base64,
-                sessionInfo.interviewer_name,
-              )
-              if (!okPng) console.warn("[debug] Upload heatmap PNG failed")
+            // Upload a real PNG file using Blob (preferred); fallback to base64 if needed
+            const dataUrl = report.dataUrl || ""
+            if (dataUrl) {
+              try {
+                const blob = await (await fetch(dataUrl)).blob()
+                const okBlob = await uploadCandidateFileBlob(
+                  sessionInfo.candidate_name,
+                  `heatmap-${meetingCode}.png`,
+                  blob,
+                  sessionInfo.interviewer_name,
+                )
+                if (!okBlob) {
+                  console.warn("[debug] Blob upload failed, falling back to base64")
+                  const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
+                  if (base64) {
+                    const okPng = await uploadCandidateFileBinary(
+                      sessionInfo.candidate_name,
+                      `heatmap-${meetingCode}.png`,
+                      base64,
+                      sessionInfo.interviewer_name,
+                    )
+                    if (!okPng) console.warn("[debug] Upload heatmap PNG (base64) failed")
+                  }
+                }
+              } catch (err) {
+                console.warn("[debug] Failed preparing blob, falling back to base64", err)
+                const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : ""
+                if (base64) {
+                  const okPng = await uploadCandidateFileBinary(
+                    sessionInfo.candidate_name,
+                    `heatmap-${meetingCode}.png`,
+                    base64,
+                    sessionInfo.interviewer_name,
+                  )
+                  if (!okPng) console.warn("[debug] Upload heatmap PNG (base64) failed")
+                }
+              }
             }
 
             // Also upload a small text summary for reference

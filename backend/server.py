@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import logging
@@ -534,6 +534,62 @@ async def get_candidate_file(name: str, filename: str, interviewer: Optional[str
                 }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read file: {e}")
+
+
+@app.post("/candidate_interviewed/{name}/upload")
+async def upload_candidate_file(
+    name: str,
+    interviewer: str = Form(...),
+    file: UploadFile = File(...),
+    filename: Optional[str] = Form(None),
+):
+    """Upload a binary file (e.g., image) as multipart/form-data and update tracking.json.
+
+    Form fields:
+    - interviewer: Account/interviewer name
+    - filename: Optional explicit filename override; falls back to the uploaded file's original name
+    - file: The uploaded file blob
+    """
+    interviewer = interviewer.strip()
+    if not interviewer:
+        raise HTTPException(status_code=400, detail="interviewer is required")
+
+    use_name = filename or (file.filename or "")
+    if not use_name:
+        raise HTTPException(status_code=400, detail="filename is required")
+    if not _is_safe_filename(use_name):
+        raise HTTPException(status_code=400, detail="invalid filename")
+
+    candidate_dir = _candidate_base_dir(interviewer, name)
+    fpath = candidate_dir / use_name
+
+    try:
+        # Stream to disk to handle large files efficiently
+        with open(fpath, "wb") as out:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to write uploaded file: {e}")
+
+    # update tracking
+    tracking = _read_tracking(candidate_dir)
+    files = tracking.get("files", {})
+    try:
+        size = fpath.stat().st_size
+    except Exception:
+        size = 0
+    files[use_name] = {
+        "size": size,
+        "updated_at": datetime.utcnow().isoformat() + "Z",
+        "content_type": getattr(file, "content_type", None) or "application/octet-stream",
+    }
+    tracking["files"] = files
+    _write_tracking(candidate_dir, tracking)
+
+    return {"ok": True, "candidate": name, "file": use_name}
 
 
 @app.get("/api/verify-email/{meeting_code}/{email}")

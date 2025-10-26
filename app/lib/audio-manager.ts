@@ -459,7 +459,7 @@ class AudioBufferManager {
       // Set up 2-minute interval for processing audio chunks
       this.intervalId = setInterval(() => {
         this.processAudioChunk();
-      }, 120000); // 120 seconds (2 minutes)
+      }, 60000); // 60 seconds (1 minute)
 
       // Set up health check every 10 seconds
       this.healthCheckIntervalId = setInterval(() => {

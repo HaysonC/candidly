@@ -1074,6 +1074,99 @@ export default function InterviewPage() {
     }
   }
 
+  // Generate all three PDF reports
+  const generateInterviewReports = async (
+    candidateName: string, 
+    interviewerName: string, 
+    meetingCode: string,
+    gazeAnalysis: string
+  ) => {
+    try {
+      console.log("[debug] Generating interview PDF reports...")
+      
+      // Get the current transcript
+      const currentTranscript = getCurrentTranscript()
+      
+      // For demo purposes, we'll use placeholder data for questions/answers
+      // In production, you'd collect this during the interview
+      const questionsAndAnswers = `
+Technical Questions and Responses:
+
+Q1: Explain the difference between a stack and a queue.
+A1: ${currentTranscript.slice(0, 200)}...
+
+Q2: Write a function to reverse a string.
+A2: [Code solution would be captured here]
+
+Q3: Describe your experience with React/JavaScript.
+A3: ${currentTranscript.slice(200, 400)}...
+      `.trim()
+
+      const reportRequest = {
+        interviewer: interviewerName,
+        candidate_name: candidateName,
+        transcript: currentTranscript || "No transcript available",
+        questions_and_answers: questionsAndAnswers,
+        gaze_analysis: gazeAnalysis,
+        template_criteria: [
+          "Problem Solving",
+          "Communication Skills", 
+          "Technical Knowledge",
+          "Code Quality",
+          "Analytical Thinking"
+        ],
+        model: "gemini-2.0-flash"
+      }
+
+      // Show loading toast
+      toast({
+        title: "Generating Reports",
+        description: "Creating AI-powered assessment reports. This may take a moment...",
+      })
+
+      // Call the backend to generate all reports
+      const response = await fetch('/generate-all-reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportRequest),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log("[debug] PDF reports generated:", result)
+        
+        if (result.success) {
+          toast({
+            title: "Reports Generated",
+            description: `Successfully created ${result.reports_generated} assessment reports`,
+          })
+        } else {
+          toast({
+            title: "Partial Success",
+            description: `Generated ${result.reports_generated} of ${result.total_reports} reports`,
+            variant: "destructive"
+          })
+        }
+      } else {
+        console.error("[debug] Failed to generate reports:", response.status)
+        toast({
+          title: "Report Generation Failed",
+          description: "Failed to generate assessment reports. They can be created manually later.",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error("[debug] Error generating reports:", error)
+      toast({
+        title: "Report Error",
+        description: "Error occurred while generating reports. They can be created manually later.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const endCall = async () => {
     cleanup()
     // If interviewer, attempt to generate and upload final heatmap before redirect
@@ -1189,11 +1282,27 @@ export default function InterviewPage() {
               },
               sessionInfo.interviewer_name,
             )
+
+            // Generate AI-powered PDF reports
+            console.log("[debug] Starting PDF report generation...")
+            await generateInterviewReports(
+              sessionInfo.candidate_name,
+              sessionInfo.interviewer_name,
+              meetingCode,
+              summary // Pass gaze analysis summary
+            )
           }
         }
       } catch (e) {
         console.warn("[debug] Skipping heatmap upload due to error", e)
       }
+      
+      // Show loading state while generating reports
+      toast({
+        title: "Generating Reports",
+        description: "Creating interview assessment reports...",
+      })
+
       router.push("/dashboard")
       return
     }

@@ -15,6 +15,7 @@ import { ConsentDialog } from "@/components/consent-dialog"
 import { CalibrationFullscreen } from "@/components/calibration-fullscreen"
 import { GazeTrackingCanvas } from "@/components/gaze-tracking-canvas"
 import { buildHeatmapReportFromSamples } from "@/lib/heatmap"
+import { uploadCandidateInterviewed } from "@/lib/upload"
 import GazeHeatmap from "@/components/gaze-heatmap"
 import { startInterviewRecording, stopInterviewRecording, isInterviewRecordingActive, getCurrentTranscript } from "@/lib/audio-manager"
 
@@ -920,13 +921,64 @@ export default function InterviewPage() {
     }
   }
 
-  const endCall = () => {
+  const endCall = async () => {
     cleanup()
+    // If interviewer, attempt to generate and upload final heatmap before redirect
     if (role === "interviewer") {
+      try {
+        const res = await fetch(`/api/gaze-data?meetingCode=${encodeURIComponent(meetingCode)}`)
+        if (res.ok) {
+          const json = await res.json()
+          const samples = Array.isArray(json?.data) ? json.data : []
+          if (samples.length > 0 && sessionInfo?.candidate_name && sessionInfo?.interviewer_name) {
+            // Build a heatmap image (client-side canvas) at a reasonable size
+            const report = buildHeatmapReportFromSamples(samples, {
+              cellSize: 16,
+              dwellCapMs: 200,
+              renderWidth: 1280,
+              renderHeight: 720,
+              blurRadius: 20,
+              palette: "classic",
+              alpha: 0.9,
+            })
+            const md = [
+              `# Gaze Heatmap Report`,
+              ``,
+              `- Meeting: ${meetingCode}`,
+              `- Candidate: ${sessionInfo.candidate_name}`,
+              `- Interviewer: ${sessionInfo.interviewer_name}`,
+              `- Samples: ${report.stats.sampleCount}`,
+              `- Total time: ${report.stats.totalTimeSec.toFixed(1)}s`,
+              `- Viewport changes: ${report.stats.viewportChanges}`,
+              `- Base viewport: ${report.baseWidth}×${report.baseHeight}`,
+              ``,
+              `![heatmap](${report.dataUrl})`,
+            ].join("\n")
+
+            const ok = await uploadCandidateInterviewed(
+              sessionInfo.candidate_name,
+              {
+                filename: `heatmap-${meetingCode}.md`,
+                question: "Gaze Heatmap",
+                candidate_response: md,
+                language: "heatmap",
+              },
+              sessionInfo.interviewer_name,
+            )
+            if (!ok) {
+              console.warn("[debug] Upload heatmap failed")
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[debug] Skipping heatmap upload due to error", e)
+      }
       router.push("/dashboard")
-    } else {
-      router.push("/")
+      return
     }
+
+    // Non-interviewer
+    router.push("/")
   }
 
   // --- Shared editor helpers ---

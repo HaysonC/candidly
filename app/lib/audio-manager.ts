@@ -16,6 +16,7 @@ class AudioBufferManager {
   };
 
   private intervalId: NodeJS.Timeout | null = null;
+  private healthCheckIntervalId: NodeJS.Timeout | null = null;
   private transcriptParts: string[] = [];
   private currentInterviewData: {
     candidateName: string;
@@ -26,6 +27,9 @@ class AudioBufferManager {
   private onDataAvailable = (event: BlobEvent) => {
     if (event.data.size > 0) {
       this.state.audioChunks.push(event.data);
+      console.log(`📦 Audio chunk received: ${event.data.size} bytes (total chunks: ${this.state.audioChunks.length})`);
+    } else {
+      console.warn('⚠️ Empty audio chunk received - this might indicate an issue with recording');
     }
   };
 
@@ -60,10 +64,25 @@ class AudioBufferManager {
         this.state.isRecording = false;
       };
 
+      mediaRecorder.onerror = (event) => {
+        console.error('❌ MediaRecorder error:', event);
+        this.state.isRecording = false;
+      };
+
+      mediaRecorder.onpause = () => {
+        console.log('⏸️ Audio recording paused');
+      };
+
+      mediaRecorder.onresume = () => {
+        console.log('▶️ Audio recording resumed');
+      };
+
       this.state.mediaRecorder = mediaRecorder;
       
       // Start recording with 1-second chunks for continuous buffering
       mediaRecorder.start(1000);
+      
+      console.log(`📊 MediaRecorder initialized with state: ${mediaRecorder.state}`);
       
       return true;
     } catch (error) {
@@ -83,12 +102,63 @@ class AudioBufferManager {
     let audioBlob: Blob | null = null;
     if (this.state.audioChunks.length > 0) {
       audioBlob = new Blob(this.state.audioChunks, { type: 'audio/webm' });
+      console.log(`📊 Reset buffer contains ${this.state.audioChunks.length} chunks, total size: ${audioBlob.size} bytes`);
+    } else {
+      console.warn('⚠️ No audio chunks available during reset - this might indicate recording stopped unexpectedly');
     }
     
     // Clear the audio chunks buffer but keep recording
     this.state.audioChunks = [];
     
+    // Verify recording is still active
+    if (this.state.mediaRecorder && this.state.mediaRecorder.state !== 'recording') {
+      console.error('❌ MediaRecorder stopped unexpectedly! State:', this.state.mediaRecorder.state);
+      // Try to restart recording
+      this.restartRecording();
+    } else {
+      console.log('✅ MediaRecorder still active, state:', this.state.mediaRecorder?.state);
+    }
+    
     return audioBlob;
+  }
+
+  /**
+   * Restart recording if it stopped unexpectedly
+   */
+  private async restartRecording(): Promise<void> {
+    try {
+      console.log('🔄 Attempting to restart recording...');
+      
+      if (this.state.mediaRecorder && this.state.stream) {
+        // Create new MediaRecorder with existing stream
+        const mediaRecorder = new MediaRecorder(this.state.stream, {
+          mimeType: 'audio/webm;codecs=opus',
+        });
+
+        mediaRecorder.ondataavailable = this.onDataAvailable;
+        
+        mediaRecorder.onstart = () => {
+          console.log('🎙️ Audio recording restarted');
+          this.state.isRecording = true;
+        };
+
+        mediaRecorder.onstop = () => {
+          console.log('🛑 Audio recording stopped');
+          this.state.isRecording = false;
+        };
+
+        mediaRecorder.onerror = (event) => {
+          console.error('❌ MediaRecorder error:', event);
+        };
+
+        this.state.mediaRecorder = mediaRecorder;
+        mediaRecorder.start(1000);
+        
+        console.log('✅ Recording restarted successfully');
+      }
+    } catch (error) {
+      console.error('❌ Failed to restart recording:', error);
+    }
   }
 
   /**
@@ -100,20 +170,35 @@ class AudioBufferManager {
       return null;
     }
 
-    // this.state.mediaRecorder.stop();
+    console.log('🛑 Stopping MediaRecorder...');
+    this.state.mediaRecorder.stop();
     
     // Stop all audio tracks
     if (this.state.stream) {
-    //   this.state.stream.getTracks().forEach(track => track.stop());
+      console.log('🛑 Stopping audio stream tracks...');
+      this.state.stream.getTracks().forEach(track => {
+        track.stop();
+        console.log(`🛑 Stopped track: ${track.kind} (${track.label})`);
+      });
       this.state.stream = null;
     }
+
+    // Reset state
+    this.state.mediaRecorder = null;
+    this.state.isRecording = false;
 
     // Combine all audio chunks into a single blob
     if (this.state.audioChunks.length > 0) {
       const audioBlob = new Blob(this.state.audioChunks, { type: 'audio/webm' });
+      console.log(`📊 Final audio blob created: ${audioBlob.size} bytes from ${this.state.audioChunks.length} chunks`);
+      
+      // Clear chunks after creating blob
+      this.state.audioChunks = [];
+      
       return audioBlob;
     }
 
+    console.warn('⚠️ No audio chunks available when stopping recording');
     return null;
   }
 
@@ -232,6 +317,11 @@ class AudioBufferManager {
         this.processAudioChunk();
       }, 60000); // 60 seconds
 
+      // Set up health check every 10 seconds
+      this.healthCheckIntervalId = setInterval(() => {
+        this.performHealthCheck();
+      }, 10000);
+
       console.log('✅ Automatic interview recording started');
       return true;
 
@@ -247,14 +337,22 @@ class AudioBufferManager {
   private async processAudioChunk(): Promise<void> {
     try {
       console.log('🔄 Processing 1-minute audio chunk...');
+      console.log(`📊 Current recording state: ${this.getState().isRecording ? 'Active' : 'Inactive'}, chunks: ${this.getState().chunksCount}`);
       
       // Get current audio buffer and reset for next minute
       const audioBlob = this.resetRecording();
       
-      if (!audioBlob || !this.currentInterviewData) {
-        console.log('⚠️ No audio data or interview data available');
+      if (!audioBlob) {
+        console.log('⚠️ No audio data available - skipping this interval');
         return;
       }
+
+      if (!this.currentInterviewData) {
+        console.log('⚠️ No interview data available - skipping this interval');
+        return;
+      }
+
+      console.log(`📦 Processing audio blob of size: ${audioBlob.size} bytes`);
 
       // Process transcription and upload asynchronously
       this.processTranscriptAsync(audioBlob);
@@ -304,10 +402,14 @@ class AudioBufferManager {
     try {
       console.log('🛑 Stopping automatic interview recording...');
       
-      // Clear interval
+      // Clear intervals
       if (this.intervalId) {
         clearInterval(this.intervalId);
         this.intervalId = null;
+      }
+      if (this.healthCheckIntervalId) {
+        clearInterval(this.healthCheckIntervalId);
+        this.healthCheckIntervalId = null;
       }
 
       // Process final audio chunk
@@ -364,6 +466,33 @@ class AudioBufferManager {
    */
   isInterviewRecordingActive(): boolean {
     return this.intervalId !== null && this.state.isRecording;
+  }
+
+  /**
+   * Perform health check on recording system
+   */
+  private performHealthCheck(): void {
+    if (!this.isInterviewRecordingActive()) return;
+
+    const state = this.getState();
+    console.log(`🏥 Health check - Recording: ${state.isRecording}, Chunks: ${state.chunksCount}, MediaRecorder state: ${this.state.mediaRecorder?.state}`);
+
+    // Check if MediaRecorder stopped unexpectedly
+    if (this.state.mediaRecorder && this.state.mediaRecorder.state !== 'recording') {
+      console.warn('⚠️ Health check detected MediaRecorder not recording! Attempting restart...');
+      this.restartRecording();
+    }
+
+    // Check if stream is still active
+    if (this.state.stream) {
+      const audioTracks = this.state.stream.getAudioTracks();
+      const activeAudioTracks = audioTracks.filter(track => track.readyState === 'live');
+      console.log(`🏥 Audio tracks: ${audioTracks.length} total, ${activeAudioTracks.length} active`);
+      
+      if (activeAudioTracks.length === 0) {
+        console.warn('⚠️ Health check detected no active audio tracks! Stream may be dead.');
+      }
+    }
   }
 
   /**

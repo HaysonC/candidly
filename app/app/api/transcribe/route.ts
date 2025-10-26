@@ -10,41 +10,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
     }
 
-    // Get Fish Audio API key from environment
-    const FISH_API_KEY = process.env.FISH_API_KEY;
-    if (!FISH_API_KEY) {
-      return NextResponse.json({ error: 'Fish Audio API key not configured' }, { status: 500 });
+    // Get Deepgram API key from environment
+    const DG_API_KEY = process.env.DG_API_KEY;
+    if (!DG_API_KEY) {
+      return NextResponse.json({ error: 'Deepgram API key not configured' }, { status: 500 });
     }
 
-    // Create FormData for Fish Audio API using native FormData
-    const fishFormData = new FormData();
-    fishFormData.append('audio', audioFile, audioFile.name || 'audio.webm');
-    fishFormData.append('language', 'en');
-    fishFormData.append('ignore_timestamps', 'false');
+    console.log(`🎧 Transcribing ${audioFile.name} as ${role} using Deepgram...`);
 
-    console.log(`🎧 Transcribing ${audioFile.name} as ${role}...`);
+    // Convert audio file to array buffer for Deepgram
+    const audioBuffer = await audioFile.arrayBuffer();
 
-    // Call Fish Audio API
-    const response = await fetch('https://api.fish.audio/v1/asr', {
+    // Call Deepgram API with nova-3 model (matching Python implementation exactly)
+    const url = `https://api.deepgram.com/v1/listen?model=nova-3&language=en-US&smart_format=true&punctuate=true&utterances=true&paragraphs=true&diarize=true`;
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${FISH_API_KEY}`,
+        'Authorization': `Token ${DG_API_KEY}`,
+        'Content-Type': 'audio/webm',
       },
-      body: fishFormData,
+      body: audioBuffer,
     });
 
-    const rawText = await response.text();
-    let result;
-    
-    try {
-      result = JSON.parse(rawText);
-    } catch {
-      console.error('⚠️ Non-JSON Fish Audio response:', rawText.slice(0, 200));
-      result = { text: rawText };
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Deepgram API error:', response.status, errorText);
+      return NextResponse.json({ error: 'Transcription service error' }, { status: response.status });
     }
 
-    const transcript = result.text?.trim() || '';
-    console.log('✅ Transcription done:', transcript.slice(0, 60));
+    const result = await response.json();
+    
+    // Extract transcript from Deepgram response format (following your Python implementation)
+    let transcript = '';
+    
+    // If Deepgram returns utterances with speaker labels (diarization)
+    if (result.results?.utterances && result.results.utterances.length > 0) {
+      console.log('✅ Processing diarized transcript with speaker labels...');
+      const utteranceTexts = result.results.utterances.map((utt: any) => {
+        const speaker = utt.speaker !== undefined ? `Speaker ${utt.speaker}` : 'Speaker';
+        const text = utt.transcript?.trim() || '';
+        return text ? `${speaker}: ${text}` : '';
+      }).filter(Boolean);
+      
+      transcript = utteranceTexts.join('\n');
+    } else {
+      // Fallback: single transcript without speaker diarization
+      transcript = result.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim() || '';
+    }
+    
+    console.log('✅ Deepgram transcription done:', transcript.slice(0, 100));
 
     return NextResponse.json({ 
       transcript: transcript || '[no text returned]',

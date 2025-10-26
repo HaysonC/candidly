@@ -191,9 +191,9 @@ export function useWebRTC(
       peerConnectionRef.current.close()
     }
 
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop())
-    }
+    // if (localStream) {
+    //   localStream.getTracks().forEach((track) => track.stop())
+    // }
 
     setLocalStream(null)
     setRemoteStream(null)

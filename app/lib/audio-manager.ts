@@ -100,11 +100,11 @@ class AudioBufferManager {
       return null;
     }
 
-    this.state.mediaRecorder.stop();
+    // this.state.mediaRecorder.stop();
     
     // Stop all audio tracks
     if (this.state.stream) {
-      this.state.stream.getTracks().forEach(track => track.stop());
+    //   this.state.stream.getTracks().forEach(track => track.stop());
       this.state.stream = null;
     }
 

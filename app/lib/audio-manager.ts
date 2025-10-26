@@ -23,6 +23,7 @@ class AudioBufferManager {
     interviewerName: string;
     meetingCode: string;
   } | null = null;
+  private previousChunkCount: number = 0;
 
   private onDataAvailable = (event: BlobEvent) => {
     if (event.data.size > 0) {
@@ -43,20 +44,43 @@ class AudioBufferManager {
         return true;
       }
 
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('🎤 Requesting microphone access...');
+      // Request microphone access with specific constraints
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100
+        }
+      });
       this.state.stream = stream;
+      console.log('✅ Microphone access granted');
+
+      // Check if webm/opus is supported, fallback if needed
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        console.warn('⚠️ webm/opus not supported, trying alternatives...');
+        if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else {
+          mimeType = '';
+          console.warn('⚠️ Using default mime type');
+        }
+      }
+      console.log(`📝 Using mime type: ${mimeType || 'default'}`);
 
       // Create MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
 
       mediaRecorder.ondataavailable = this.onDataAvailable;
       
       mediaRecorder.onstart = () => {
         console.log('🎙️ Audio recording started');
         this.state.isRecording = true;
+        this.previousChunkCount = 0; // Reset chunk counter
       };
 
       mediaRecorder.onstop = () => {
@@ -84,9 +108,24 @@ class AudioBufferManager {
       
       console.log(`📊 MediaRecorder initialized with state: ${mediaRecorder.state}`);
       
+      // Verify recording started successfully after a brief delay
+      setTimeout(() => {
+        if (this.state.mediaRecorder?.state === 'recording') {
+          console.log('✅ Recording started successfully and confirmed active');
+        } else {
+          console.warn('⚠️ Recording may not have started properly, state:', this.state.mediaRecorder?.state);
+        }
+      }, 500);
+      
       return true;
     } catch (error) {
       console.error('❌ Failed to start recording:', error);
+      this.state.isRecording = false;
+      // Clean up on error
+      if (this.state.stream) {
+        this.state.stream.getTracks().forEach(track => track.stop());
+        this.state.stream = null;
+      }
       return false;
     }
   }
@@ -111,12 +150,24 @@ class AudioBufferManager {
     this.state.audioChunks = [];
     
     // Verify recording is still active
-    if (this.state.mediaRecorder && this.state.mediaRecorder.state !== 'recording') {
-      console.error('❌ MediaRecorder stopped unexpectedly! State:', this.state.mediaRecorder.state);
-      // Try to restart recording
-      this.restartRecording();
+    const mediaRecorderState = this.state.mediaRecorder?.state;
+    console.log(`🔍 Checking MediaRecorder state: ${mediaRecorderState}`);
+    
+    if (!this.state.mediaRecorder || mediaRecorderState !== 'recording') {
+      console.error(`❌ MediaRecorder issue! State: ${mediaRecorderState}, recorder exists: ${!!this.state.mediaRecorder}`);
+      // Try to restart recording asynchronously to avoid blocking
+      setTimeout(() => this.restartRecording(), 100);
     } else {
-      console.log('✅ MediaRecorder still active, state:', this.state.mediaRecorder?.state);
+      console.log('✅ MediaRecorder still active, state:', mediaRecorderState);
+      
+      // Double-check that we're actually receiving data
+      const initialChunkCount = this.state.audioChunks.length;
+      setTimeout(() => {
+        if (this.state.audioChunks.length === initialChunkCount) {
+          console.warn('⚠️ No new chunks received after reset - MediaRecorder might be stalled');
+          this.restartRecording();
+        }
+      }, 5000); // Check after 5 seconds
     }
     
     return audioBlob;
@@ -129,35 +180,64 @@ class AudioBufferManager {
     try {
       console.log('🔄 Attempting to restart recording...');
       
-      if (this.state.mediaRecorder && this.state.stream) {
-        // Create new MediaRecorder with existing stream
-        const mediaRecorder = new MediaRecorder(this.state.stream, {
-          mimeType: 'audio/webm;codecs=opus',
-        });
-
-        mediaRecorder.ondataavailable = this.onDataAvailable;
-        
-        mediaRecorder.onstart = () => {
-          console.log('🎙️ Audio recording restarted');
-          this.state.isRecording = true;
-        };
-
-        mediaRecorder.onstop = () => {
-          console.log('🛑 Audio recording stopped');
-          this.state.isRecording = false;
-        };
-
-        mediaRecorder.onerror = (event) => {
-          console.error('❌ MediaRecorder error:', event);
-        };
-
-        this.state.mediaRecorder = mediaRecorder;
-        mediaRecorder.start(1000);
-        
-        console.log('✅ Recording restarted successfully');
+      // Stop existing MediaRecorder if it exists
+      if (this.state.mediaRecorder) {
+        try {
+          if (this.state.mediaRecorder.state !== 'inactive') {
+            this.state.mediaRecorder.stop();
+          }
+        } catch (e) {
+          console.warn('⚠️ Error stopping existing MediaRecorder:', e);
+        }
       }
+      
+      // Check if stream is still active
+      if (this.state.stream) {
+        const audioTracks = this.state.stream.getAudioTracks();
+        const activeAudioTracks = audioTracks.filter(track => track.readyState === 'live');
+        
+        if (activeAudioTracks.length === 0) {
+          console.log('🔄 Stream inactive, requesting new microphone access...');
+          // Stop old stream
+          this.state.stream.getTracks().forEach(track => track.stop());
+          
+          // Get new stream
+          this.state.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+      } else {
+        console.log('🔄 No stream available, requesting microphone access...');
+        this.state.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+
+      // Create new MediaRecorder with stream
+      const mediaRecorder = new MediaRecorder(this.state.stream, {
+        mimeType: 'audio/webm;codecs=opus',
+      });
+
+      mediaRecorder.ondataavailable = this.onDataAvailable;
+      
+      mediaRecorder.onstart = () => {
+        console.log('🎙️ Audio recording restarted');
+        this.state.isRecording = true;
+      };
+
+      mediaRecorder.onstop = () => {
+        console.log('🛑 Audio recording stopped');
+        this.state.isRecording = false;
+      };
+
+      mediaRecorder.onerror = (event) => {
+        console.error('❌ MediaRecorder error:', event);
+        this.state.isRecording = false;
+      };
+
+      this.state.mediaRecorder = mediaRecorder;
+      mediaRecorder.start(1000);
+      
+      console.log('✅ Recording restarted successfully');
     } catch (error) {
       console.error('❌ Failed to restart recording:', error);
+      this.state.isRecording = false;
     }
   }
 
@@ -478,9 +558,16 @@ class AudioBufferManager {
     console.log(`🏥 Health check - Recording: ${state.isRecording}, Chunks: ${state.chunksCount}, MediaRecorder state: ${this.state.mediaRecorder?.state}`);
 
     // Check if MediaRecorder stopped unexpectedly
-    if (this.state.mediaRecorder && this.state.mediaRecorder.state !== 'recording') {
-      console.warn('⚠️ Health check detected MediaRecorder not recording! Attempting restart...');
+    if (!this.state.mediaRecorder) {
+      console.warn('⚠️ Health check detected no MediaRecorder! Attempting restart...');
       this.restartRecording();
+      return;
+    }
+
+    if (this.state.mediaRecorder.state !== 'recording') {
+      console.warn(`⚠️ Health check detected MediaRecorder not recording! State: ${this.state.mediaRecorder.state}. Attempting restart...`);
+      this.restartRecording();
+      return;
     }
 
     // Check if stream is still active
@@ -490,9 +577,24 @@ class AudioBufferManager {
       console.log(`🏥 Audio tracks: ${audioTracks.length} total, ${activeAudioTracks.length} active`);
       
       if (activeAudioTracks.length === 0) {
-        console.warn('⚠️ Health check detected no active audio tracks! Stream may be dead.');
+        console.warn('⚠️ Health check detected no active audio tracks! Stream may be dead. Attempting restart...');
+        this.restartRecording();
+        return;
       }
+    } else {
+      console.warn('⚠️ Health check detected no audio stream! Attempting restart...');
+      this.restartRecording();
+      return;
     }
+
+    // Check if we're not receiving chunks (stalled recording)
+    const previousChunkCount = this.previousChunkCount || 0;
+    if (state.chunksCount === previousChunkCount && state.chunksCount === 0) {
+      console.warn('⚠️ Health check detected no new chunks for 10 seconds! Recording may be stalled.');
+      // Don't restart immediately if chunks are 0, might be normal at start
+    }
+    
+    this.previousChunkCount = state.chunksCount;
   }
 
   /**

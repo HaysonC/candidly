@@ -333,24 +333,23 @@ async def delete_template(template_id: str, account: Optional[str] = None):
 # -------- Candidates API (per interviewer account) --------
 @app.post("/create_candidate")
 async def create_candidate(req: CreateCandidateRequest):
-    """Create candidate timestamp directory and empty tracking.json.
+    """Create candidate directory and empty tracking.json.
 
-    Structure: data/accounts/{interviewer}/candidates/{candidate}/{timestamp}/tracking.json
+    Structure: data/accounts/{interviewer}/candidates/{candidate}/tracking.json
     """
     interviewer = req.interviewer.strip()
     candidate = req.interviewee.strip()
     if not interviewer or not candidate:
         raise HTTPException(status_code=400, detail="interviewer and interviewee are required")
 
-    ts_dir = _candidate_timestamp_dir(interviewer, candidate, create=True)
+    candidate_dir = _candidate_base_dir(interviewer, candidate)
     # initialize empty tracking
-    if not _tracking_path(ts_dir).exists():
-        _write_tracking(ts_dir, {"files": {}, "created_at": datetime.utcnow().isoformat() + "Z"})
+    if not _tracking_path(candidate_dir).exists():
+        _write_tracking(candidate_dir, {"files": {}, "created_at": datetime.utcnow().isoformat() + "Z"})
     return {
         "interviewer": interviewer,
         "candidate": _safe_candidate_dirname(candidate),
-        "timestamp": ts_dir.name,
-        "path": str(ts_dir.relative_to(Path(__file__).parent))
+        "path": str(candidate_dir.relative_to(Path(__file__).parent))
     }
 
 
@@ -401,27 +400,25 @@ async def delete_candidate(name: str, interviewer: Optional[str] = None):
 @app.post("/candidate_interviewed/{name}")
 async def get_candidate_tracking(name: str, req: CandidateTrackingRequest):
     """Get tracking.json for a candidate.
-
-    If timestamp not provided, return the latest timestamp's tracking.
+    
+    Returns tracking data from the candidate's base directory.
     """
     interviewer = req.interviewer.strip()
     if not interviewer:
         raise HTTPException(status_code=400, detail="interviewer is required")
-    ts_dir: Optional[Path]
-    if req.timestamp:
-        ts_dir = _candidate_timestamp_dir(interviewer, name, req.timestamp, create=False)
-    else:
-        ts_dir = _latest_timestamp_dir(interviewer, name)
-    if ts_dir is None or not ts_dir.exists():
-        raise HTTPException(status_code=404, detail="No candidate timestamp found")
-    return _read_tracking(ts_dir)
+    
+    # Get tracking directly from candidate base directory
+    candidate_dir = _candidate_base_dir(interviewer, name)
+    if not candidate_dir.exists():
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    return _read_tracking(candidate_dir)
 
 
 @app.put("/candidate_interviewed/{name}")
 async def put_candidate_file(name: str, req: CandidateFilePutRequest):
-    """Create or replace a file in the candidate's timestamp folder and update tracking.json.
-
-    If timestamp is omitted, operate on latest; create a new timestamp if none exist.
+    """Create or replace a file in the candidate's directory and update tracking.json.
+    
+    Files are stored directly in the candidate directory without timestamp subdirectories.
     """
     interviewer = req.interviewer.strip()
     if not interviewer:
@@ -429,31 +426,26 @@ async def put_candidate_file(name: str, req: CandidateFilePutRequest):
     if not _is_safe_filename(req.filename):
         raise HTTPException(status_code=400, detail="invalid filename")
 
-    ts_dir = None
-    if req.timestamp:
-        ts_dir = _candidate_timestamp_dir(interviewer, name, req.timestamp, create=True)
-    else:
-        ts_dir = _latest_timestamp_dir(interviewer, name)
-        if ts_dir is None:
-            ts_dir = _candidate_timestamp_dir(interviewer, name, create=True)
+    # Write directly to candidate base directory instead of timestamp subdirectory
+    candidate_dir = _candidate_base_dir(interviewer, name)
 
     # write file
-    fpath = ts_dir / req.filename
+    fpath = candidate_dir / req.filename
     try:
         fpath.write_text(req.content, encoding="utf-8")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to write file: {e}")
 
     # update tracking
-    tracking = _read_tracking(ts_dir)
+    tracking = _read_tracking(candidate_dir)
     files = tracking.get("files", {})
     files[req.filename] = {
         "size": fpath.stat().st_size,
         "updated_at": datetime.utcnow().isoformat() + "Z",
     }
     tracking["files"] = files
-    _write_tracking(ts_dir, tracking)
-    return {"ok": True, "timestamp": ts_dir.name, "file": req.filename}
+    _write_tracking(candidate_dir, tracking)
+    return {"ok": True, "candidate": name, "file": req.filename}
 
 @app.get("/api/verify-email/{meeting_code}/{email}")
 async def verify_email(meeting_code: str, email: str):

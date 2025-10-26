@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-// @ts-expect-error types resolved at runtime after install
+
 import Editor from '@monaco-editor/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

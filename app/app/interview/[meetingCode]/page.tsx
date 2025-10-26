@@ -83,6 +83,7 @@ export default function InterviewPage() {
   const [heatmapLoading, setHeatmapLoading] = useState(false)
   const [heatmapSamples, setHeatmapSamples] = useState<any[]>([])
   const [heatmapPoints, setHeatmapPoints] = useState<Array<[number, number]>>([])
+  const [showHeatmapOverlay, setShowHeatmapOverlay] = useState(false)
 
   // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
@@ -996,7 +997,8 @@ export default function InterviewPage() {
         baseWidth: baseW,
         baseHeight: baseH,
       })
-      setShowHeatmapDialog(true)
+      // Show fullscreen overlay instead of dialog
+      setShowHeatmapOverlay(true)
     } catch (e) {
       console.error("[debug] Heatmap generation failed:", e)
       toast({ title: "Heatmap error", description: "Failed to generate report.", variant: "destructive" })
@@ -1537,7 +1539,7 @@ export default function InterviewPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Heatmap Report Dialog */}
+      {/* Heatmap Report Dialog (kept, but overlay is the primary view now) */}
       <Dialog open={showHeatmapDialog} onOpenChange={setShowHeatmapDialog}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -1605,6 +1607,73 @@ export default function InterviewPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Fullscreen Heatmap Overlay */}
+      {showHeatmapOverlay && (
+        <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
+          {/* Heatmap layer */}
+          <div className="absolute inset-0 flex items-start justify-start" style={{ overflow: 'hidden' }}>
+            <GazeHeatmap
+              points={heatmapPoints}
+              maxOpacity={0.45}
+              blur={0.85}
+              radius={40}
+              fitHeight
+              heightRatio={1}
+              transparentBackground
+              onImageReady={setHeatmapUrl}
+            />
+          </div>
+
+          {/* Controls bottom-left */}
+          <div className="absolute left-3 bottom-3 flex gap-2 pointer-events-auto">
+            {heatmapSamples && heatmapSamples.length > 0 && (
+              <button
+                onClick={() => {
+                  try {
+                    const lines = heatmapSamples
+                      .filter((s) => Number.isFinite(s.x) && Number.isFinite(s.y))
+                      .map((s) => `(${Math.round(s.x)}, ${Math.round(s.y)})`)
+                      .join("\n")
+                    const blob = new Blob([lines], { type: "text/plain;charset=utf-8" })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `gaze-tuples-${meetingCode}.txt`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    setTimeout(() => URL.revokeObjectURL(url), 1000)
+                  } catch {}
+                }}
+                className="inline-flex items-center justify-center h-8 px-3 rounded-md border bg-white/90 text-xs shadow"
+              >
+                Download tuples
+              </button>
+            )}
+            {heatmapUrl && (
+              <a
+                href={heatmapUrl}
+                download={`heatmap-${meetingCode}.png`}
+                className="inline-flex items-center justify-center h-8 px-3 rounded-md border bg-white/90 text-xs shadow"
+              >
+                Download PNG
+              </a>
+            )}
+          </div>
+
+          {/* Close button */}
+          <div className="absolute top-3 right-3 pointer-events-auto">
+            <button
+              onClick={() => setShowHeatmapOverlay(false)}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full border bg-white/90 text-sm shadow"
+              aria-label="Close heatmap overlay"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

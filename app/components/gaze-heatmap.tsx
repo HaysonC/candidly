@@ -13,6 +13,10 @@ export type GazeHeatmapProps = {
   className?: string
   style?: React.CSSProperties
   onImageReady?: (dataUrl: string) => void
+  // Overlay-oriented options
+  fitHeight?: boolean // scale to fit window height instead of a fixed cap
+  heightRatio?: number // fraction of window height to cover (default 1)
+  transparentBackground?: boolean // omit white/grid background for transparent overlay
 }
 
 export default function GazeHeatmap({
@@ -24,6 +28,9 @@ export default function GazeHeatmap({
   className,
   style,
   onImageReady,
+  fitHeight = false,
+  heightRatio = 1,
+  transparentBackground = false,
 }: GazeHeatmapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [viewport, setViewport] = useState<{ vw: number; vh: number }>({ vw: 1200, vh: 800 })
@@ -63,10 +70,16 @@ export default function GazeHeatmap({
         const el = containerRef.current
         if (!el || destroyed) return
 
-        // Scale down to fit within viewport (90vw x 65vh), maintain aspect ratio
-        const maxW = Math.max(320, Math.floor(viewport.vw * 0.9))
-        const maxH = Math.max(240, Math.floor(viewport.vh * 0.65))
-        const scale = Math.min(maxW / W, maxH / H, 1)
+        // Determine scale
+        let scale: number
+        if (fitHeight) {
+          const targetH = Math.max(1, Math.floor(viewport.vh * Math.max(0.1, Math.min(1, heightRatio))))
+          scale = Math.min(targetH / H, 1)
+        } else {
+          const maxW = Math.max(320, Math.floor(viewport.vw * 0.9))
+          const maxH = Math.max(240, Math.floor(viewport.vh * 0.65))
+          scale = Math.min(maxW / W, maxH / H, 1)
+        }
         const SW = Math.max(1, Math.floor(W * scale))
         const SH = Math.max(1, Math.floor(H * scale))
 
@@ -112,11 +125,15 @@ export default function GazeHeatmap({
       ref={containerRef}
       className={className}
       style={{
-        backgroundColor: "#fff",
-        border: "1px solid #ccc",
-        background:
-          "repeating-linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,.03) 24px, transparent 24px, transparent 48px)," +
-          "repeating-linear-gradient(90deg, rgba(0,0,0,.03), rgba(0,0,0,.03) 24px, transparent 24px, transparent 48px)",
+        ...(transparentBackground
+          ? {}
+          : {
+              backgroundColor: "#fff",
+              border: "1px solid #ccc",
+              background:
+                "repeating-linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,.03) 24px, transparent 24px, transparent 48px)," +
+                "repeating-linear-gradient(90deg, rgba(0,0,0,.03), rgba(0,0,0,.03) 24px, transparent 24px, transparent 48px)",
+            }),
         ...style,
       }}
     />
